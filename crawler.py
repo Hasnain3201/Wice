@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-
+from collections import deque
 
 #Headers to prevent website from flagging bot
 headers = {
@@ -10,32 +10,40 @@ headers = {
                   "Chrome/120.0.0.0 Safari/537.36"
 }
 
-#Scrapes all text from a url
-def scrape(url):
-    domain = urlparse(url).netloc
-    urls = set()
+#Scrapes all text and links from a url
+def crawl(startURL, outFile = "output.txt"):
+    domain = urlparse(startURL).netloc
+    visited = set()
+    q = deque([startURL])
     
-    request = requests.get(url, headers=headers)
-    
-    soup = BeautifulSoup(request.text, "html.parser")
-    
-    text = soup.get_text(separator=" ", strip = True)
-    
-    for link in soup.find_all("a", href=True):
-        newLink = urljoin(url, link["href"])
-        if urlparse(newLink).netloc == domain:
-            urls.add(newLink)
-    
-    return text, urls
-
+    with open(outFile, "w", encoding="utf-8") as file:
+        while q:
+            url = q.popleft()
+            
+            if url in visited:
+                continue
+            visited.add(url)
+            
+            try:
+                request = requests.get(url, headers=headers, timeout=5)
+            except Exception as e:
+                print(f"Cannot scrape {url}: {e}")
+                continue
+            
+            if request.status_code != 200 or "text/html" not in request.headers.get("Content-Type", ""):
+                continue
+            
+            soup = BeautifulSoup(request.text, "html.parser")
+            text = soup.get_text(separator=" ", strip = True)
+            
+            file.write(f"\n\n[{url}]\n")
+            file.write(text)
+            
+            for link in soup.find_all("a", href=True):
+                newLink = urljoin(url, link["href"])
+                if urlparse(newLink).netloc == domain and newLink not in visited:
+                    q.append(newLink)
 
 
 tempURL = "https://lillyendowment.org/for-grantseekers/renewal-programs/"
-text, urls = scrape(tempURL)
-
-print("TEXT")
-print(text[:500], "...")  
-
-print("LINKS")
-for u in urls:
-    print(u)
+crawl(tempURL)
