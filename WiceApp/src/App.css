@@ -1,23 +1,174 @@
-body{
+/* ================================
+   WICE Login – App.css (full file)
+   ================================ */
 
+:root {
+  --navy: #1f2a44;
+  --navy-hover: #2a3660;
+  --gold: #d5b77a;
+  --gold-dark: #c7a662;
+  --ink: #0f172a;
+  --muted: #6b7280;
+  --page: #f3f4f6;
 }
 
-.wice_logo{
-
+/* Outer page framing */
+.page {
+  min-height: 100vh;
+  background: var(--page);
+  padding: 24px;
 }
 
-.slogan_bold{
-
+/* White card container */
+.card {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 48px);
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
 }
 
-.slogan_normal{
-
+/* ---------- Left Panel (50%) ---------- */
+.left {
+  flex: 0 0 50%;
+  max-width: 50%;
+  /* push content down & away from the left edge */
+  padding: 96px 72px 56px 96px; /* top, right, bottom, left */
+  display: flex;
+  flex-direction: column;
 }
 
-.login_buttons{
-
+/* Brand: logo lower + closer to the title */
+.brand-logo {
+  width: 128px;
+  height: auto;
+  margin-bottom: 8px; /* closer to heading */
 }
 
-.learn_more_button{
+/* Bigger heading, pulled a bit tighter */
+.title {
+  margin: 6px 0 8px;          /* small gap under logo */
+  font-size: 2.8rem;           /* bigger */
+  line-height: 1.12;
+  color: var(--ink);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;       /* safety if browser adds underline from focus */
+}
 
+.subtitle {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 1.3rem;
+}
+
+/* Wider buttons */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 380px;                /* wider */
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: background-color .15s ease, transform .02s ease;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn.primary { background: var(--navy); color: #fff; }
+.btn.primary:hover { background: var(--navy-hover); }
+
+/* Gold bar under buttons (same width as buttons) */
+.rule {
+  width: 380px;
+  height: 2px;
+  background: var(--gold);
+  margin: 22px 0 12px;
+}
+
+/* Signup centered under the buttons */
+.signup {
+  width: 380px;
+  text-align: center;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.link {
+  color: var(--gold);
+  text-decoration: underline;
+  font-weight: 700;
+}
+.link:hover { color: var(--gold-dark); }
+
+/* ---------- Right Panel (50%) ---------- */
+.right {
+  flex: 0 0 50%;
+  max-width: 50%;
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 28px;
+  border-bottom-left-radius: 28px;
+}
+
+/* Gold inner separator */
+.right::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  z-index: 2;
+}
+
+.hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.98) contrast(0.99);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .actions, .rule, .signup { width: 340px; }
+  .left { padding-left: 72px; }
+}
+
+@media (max-width: 900px) {
+  .card { flex-direction: column; }
+
+  .left {
+    flex: 0 0 auto;
+    max-width: 100%;
+    padding: 44px 28px 32px 28px;
+  }
+
+  .right {
+    flex: 0 0 auto;
+    max-width: 100%;
+    height: 42vh;
+    border-radius: 0;
+  }
+
+  .right::before { display: none; }
+
+  .actions, .rule, .signup {
+    width: 100%;
+    max-width: 420px;
+  }
 }
