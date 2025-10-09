@@ -1,70 +1,34 @@
 import React from "react";
-import "../Client/Client_login_page.css"; // reuse the same styles
+import "../Client/Client_login_page.css";
 import WiceLogo from "../../assets/Wice_logo.jpg";
+import LoginCard from "../../Components/login_card"; // ✅ lowercase filename
 
 export default function EmployeeLogin() {
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: auth
+    // TODO: employee authentication
   };
 
   return (
     <main className="wice-page">
       <section className="wice-frame">
         <div className="wice-left">
-          <a className="wice-back" href="/" aria-label="Back to Welcome">
-            ← Back
-          </a>
+          <a className="wice-back" href="/">← Back</a>
 
           <div className="wice-brand">
             <img src={WiceLogo} alt="WICE logo" className="wice-logo-img" />
-            <span className="wice-brand-name">WICE</span>
           </div>
 
-          <h1 className="wice-title">Consultant Login</h1>
-          <p className="wice-subtitle">Sign in below to access your consultant portal.</p>
+          <h1 className="wice-title">Employee Login</h1>
+          <p className="wice-subtitle">Sign in below to access your employee portal.</p>
 
-          <div className="wice-card" role="group" aria-labelledby="consultant-login-form">
-            <form id="consultant-login-form" onSubmit={handleSubmit} noValidate>
-              <div className="wice-field">
-                <label htmlFor="email">Email Address</label>
-                <input
-                  className="wice-input"
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@wice.org"
-                  autoComplete="email"
-                  required
-                />
-              </div>
+          <LoginCard
+            onSubmit={handleSubmit}
+            forgotPath="/employee/forgot"
+            placeholderEmail="you@wice.org"
+          />
 
-              <div className="wice-field">
-                <label htmlFor="password">Password</label>
-                <input
-                  className="wice-input"
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-
-              <div className="wice-row">
-                <label className="wice-checkbox">
-                  <input type="checkbox" id="remember" name="remember" defaultChecked />
-                  Remember me
-                </label>
-                <a className="wice-link" href="/employee/forgot">Forgot password?</a>
-              </div>
-
-              <button className="wice-btn" type="submit">Sign In</button>
-            </form>
-          </div>
-
-          <div className="wice-accent" aria-hidden="true" />
+          <div className="wice-accent" />
         </div>
 
         <div className="wice-right" aria-hidden="true">

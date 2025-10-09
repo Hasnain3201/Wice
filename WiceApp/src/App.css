@@ -48,7 +48,7 @@
 
 /* Bigger heading, pulled a bit tighter */
 .title {
-  margin: 6px 0 8px;          /* small gap under logo */
+  margin: 6px 0px 6px ;          /* small gap under logo */
   font-size: 2.8rem;           /* bigger */
   line-height: 1.12;
   color: var(--ink);
@@ -118,9 +118,10 @@
   max-width: 50%;
   position: relative;
   overflow: hidden;
-  border-top-left-radius: 28px;
-  border-bottom-left-radius: 28px;
+  border-top-left-radius: 0;    /* was 28px */
+  border-bottom-left-radius: 0; /* was 28px */
 }
+
 
 /* Gold inner separator */
 .right::before {
@@ -141,6 +142,7 @@
   height: 100%;
   object-fit: cover;
   filter: saturate(0.98) contrast(0.99);
+  
 }
 
 /* ---------- Responsive ---------- */

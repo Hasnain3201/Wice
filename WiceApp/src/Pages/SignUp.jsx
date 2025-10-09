@@ -46,11 +46,6 @@ export default function SignUp() {
             Already have an account? <a href="/" className="link">Log In</a>
           </p>
         </div>
-
-        {/* RIGHT */}
-        <div className="signup-right">
-          <img src="/hero.jpg" alt="WICE background" className="hero" />
-        </div>
       </div>
     </div>
   );

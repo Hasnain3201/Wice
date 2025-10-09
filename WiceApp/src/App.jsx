@@ -10,6 +10,7 @@ import "./App.css";
 
 // assets
 import WiceLogo from "./assets/Wice_logo.jpg";
+import hero from "./assets/hero.jpg";
 
 // pages (match casing exactly as on disk)
 import ClientLogin from "./Pages/Client/Client_login_page";
@@ -30,7 +31,7 @@ function HomePage() {
           <img src={WiceLogo} alt="WICE logo" className="brand-logo" />
 
           <h1 className="title">Welcome to WICE</h1>
-          <p className="subtitle">Sign in here</p>
+          <p className="subtitle">Sign in here to connect & explore opportunities</p>
 
           <div className="actions">
             <button
@@ -44,7 +45,7 @@ function HomePage() {
               className="btn primary"
               onClick={() => navigate("/employee/login")}
             >
-              Consultant Login
+              Employee Login
             </button>
           </div>
 
@@ -63,7 +64,7 @@ function HomePage() {
         {/* RIGHT PANEL (image served from /public) */}
         <section className="right">
           <img
-            src="/hero.jpg"
+            src={hero}
             alt="Scenic mountains and river"
             className="hero"
           />

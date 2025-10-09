@@ -10,30 +10,47 @@
 
 /* Page layout */
 .signup-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* align card closer to top */
   min-height: 100vh;
-  background: var(--page);
-  padding: 24px;
+  background: linear-gradient(
+    to top,
+    rgba(31, 42, 90, 0.3),
+    rgba(255, 255, 255, 0.6)
+  );
+  padding: 60px 0; /* adds a little breathing room top and bottom */
 }
 
 .signup-card {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  min-height: calc(100vh - 48px);
+  max-width: 600px;
   background: #fff;
   border-radius: 20px;
-  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 40px 50px; /* reduced padding */
 }
+
+
 
 /* Left section */
 .signup-left {
-  flex: 0 0 50%;
-  max-width: 50%;
-  padding: 80px 72px 56px 96px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  max-width: 100%;
+  padding: 0px 72px 60px; /* top smaller, bottom moderate */
 }
 
-.signup-logo { width: 120px; margin-bottom: 12px; }
+
+
+.signup-logo { width: 120px; margin-bottom: 12px; margin-top: 0px; }
 
 .signup-title {
   font-size: 2.6rem;
@@ -107,7 +124,7 @@
 .link { color: var(--gold); text-decoration: underline; font-weight: 600; }
 .link:hover { color: var(--gold-dark); }
 
-/* Right panel */
+/* Right panel 
 .signup-right {
   flex: 0 0 50%;
   max-width: 50%;
@@ -126,13 +143,12 @@
   background: var(--gold);
   z-index: 2;
 }
-.hero { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; } 
+*/
 
 /* Responsive */
 @media (max-width: 900px) {
   .signup-card { flex-direction: column; }
   .signup-left { flex: 0 0 auto; max-width: 100%; padding: 40px 28px 32px; }
-  .signup-right { flex: 0 0 auto; max-width: 100%; height: 40vh; border-radius: 0; }
-  .signup-right::before { display: none; }
   .signup-form { width: 100%; max-width: 420px; }
 }
