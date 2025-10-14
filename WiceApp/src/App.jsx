@@ -16,8 +16,8 @@ import hero from "./assets/hero.jpg";
 const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
 
 // marketplace pages
-import Marketplace from "./Pages/Marketplace/Marketplace.jsx";
-import ConsultantProfile from "./Pages/Marketplace/ConsultantProfile.jsx";
+import Marketplace from "./Pages/Client/Marketplace.jsx";
+import ConsultantProfile from "./Pages/Client/ConsultantProfile.jsx";
 
 // login pages
 import ClientLogin from "./Pages/Client/Client_login_page.jsx";
