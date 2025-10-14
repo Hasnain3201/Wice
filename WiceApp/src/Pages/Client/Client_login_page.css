@@ -113,6 +113,13 @@ body{
 .wice-checkbox input{ width:18px; height:18px; accent-color:var(--wice-gold); }
 .wice-link{ font-size:14px; color:var(--wice-navy); text-decoration:none; margin-bottom:10px;}
 .wice-link:hover{ text-decoration:underline; }
+.wice-error{
+  width:100%;
+  margin:-4px 0 12px;
+  color:#b91c1c;
+  font-size:14px;
+  font-weight:600;
+}
 
 .wice-btn{
   width:100%; height:56px; border-radius:var(--radius);

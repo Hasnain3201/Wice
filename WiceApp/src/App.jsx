@@ -12,12 +12,16 @@ import "./App.css";
 import WiceLogo from "./assets/Wice_logo.jpg";
 import hero from "./assets/hero.jpg";
 
-// pages (match casing exactly as on disk)
-import ClientLogin from "./Pages/Client/Client_login_page";
-import EmployeeLogin from "./Pages/Employee/Employee_login_page";
-
-// LAZY load SignUp so it doesn't block the homepage if its import fails
+// pages (lazy signup to avoid blocking)
 const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
+
+// marketplace pages
+import Marketplace from "./Pages/Marketplace/Marketplace.jsx";
+import ConsultantProfile from "./Pages/Marketplace/ConsultantProfile.jsx";
+
+// login pages
+import ClientLogin from "./Pages/Client/Client_login_page.jsx";
+import EmployeeLogin from "./Pages/Employee/Employee_login_page.jsx";
 
 // ----------------- HOME / WELCOME PAGE -----------------
 function HomePage() {
@@ -31,9 +35,12 @@ function HomePage() {
           <img src={WiceLogo} alt="WICE logo" className="brand-logo" />
 
           <h1 className="title">Welcome to WICE</h1>
-          <p className="subtitle">Sign in here to connect & explore opportunities</p>
+          <p className="subtitle">
+            Sign in here to connect & explore opportunities
+          </p>
 
           <div className="actions">
+            {/* Step 1: choose client vs employee */}
             <button
               className="btn primary"
               onClick={() => navigate("/client/login")}
@@ -61,13 +68,9 @@ function HomePage() {
           </p>
         </section>
 
-        {/* RIGHT PANEL (image served from /public) */}
+        {/* RIGHT PANEL */}
         <section className="right">
-          <img
-            src={hero}
-            alt="Scenic mountains and river"
-            className="hero"
-          />
+          <img src={hero} alt="Scenic mountains and river" className="hero" />
         </section>
       </div>
     </div>
@@ -81,9 +84,30 @@ export default function App() {
       <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+
+          {/* Step 2: dedicated login pages */}
           <Route path="/client/login" element={<ClientLogin />} />
           <Route path="/employee/login" element={<EmployeeLogin />} />
+
+          {/* Sign up */}
           <Route path="/signup" element={<SignUp />} />
+
+          {/* Marketplace */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/consultant/:id" element={<ConsultantProfile />} />
+
+          {/* 404 */}
+          <Route
+            path="*"
+            element={
+              <div style={{ padding: 24 }}>
+                <h2>Page not found</h2>
+                <p>
+                  Go back <Link to="/">home</Link>.
+                </p>
+              </div>
+            }
+          />
         </Routes>
       </Suspense>
     </Router>

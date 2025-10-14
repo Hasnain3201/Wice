@@ -25,7 +25,10 @@ export default function EmployeeLogin() {
           <LoginCard
             onSubmit={handleSubmit}
             forgotPath="/employee/forgot"
-            placeholderEmail="you@wice.org"
+            identifierLabel="Work Email"
+            identifierType="email"
+            identifierName="email"
+            placeholderIdentifier="you@wice.org"
           />
 
           <div className="wice-accent" />

@@ -1,13 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Client_login_page.css";
 import WiceLogo from "../../assets/Wice_logo.jpg";
-import LoginCard from "../../Components/login_card"; 
+import LoginCard from "../../Components/login_card";
 
 
 export default function ClientLogin() {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: client authentication
+    const formData = new FormData(e.currentTarget);
+    const username = (formData.get("username") || "").trim();
+    const password = formData.get("password") || "";
+
+    const isValidAdmin = username === "admin" && password === "123";
+
+    if (isValidAdmin) {
+      setError("");
+      navigate("/marketplace");
+    } else {
+      setError("Invalid username or password. Try admin / 123.");
+    }
   };
 
   return (
@@ -26,7 +41,11 @@ export default function ClientLogin() {
           <LoginCard
             onSubmit={handleSubmit}
             forgotPath="/client/forgot"
-            placeholderEmail="you@example.org"
+            identifierLabel="Username"
+            identifierType="text"
+            identifierName="username"
+            placeholderIdentifier="admin"
+            errorMessage={error}
           />
 
           <div className="wice-accent" />

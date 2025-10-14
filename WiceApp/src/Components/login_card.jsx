@@ -1,24 +1,30 @@
 import React from "react";
-import "../Pages/Client/Client_login_page.css"; // reuse existing styles from Client login 
-
+import "../Pages/Client/Client_login_page.css"; // reuse existing client login styles
 
 export default function LoginCard({
   onSubmit,
   forgotPath,
-  placeholderEmail = "you@example.org",
+  identifierLabel = "Email Address",
+  identifierType = "email",
+  identifierName = "email",
+  placeholderIdentifier = "you@example.org",
+  errorMessage,
 }) {
+  const autoComplete =
+    identifierType === "email" ? "email" : "username";
+
   return (
     <div className="wice-card" role="group" aria-labelledby="login-form">
       <form id="login-form" onSubmit={onSubmit} noValidate>
         <div className="wice-field">
-          <label htmlFor="email">Email Address</label>
+          <label htmlFor={identifierName}>{identifierLabel}</label>
           <input
             className="wice-input"
-            id="email"
-            name="email"
-            type="email"
-            placeholder={placeholderEmail}
-            autoComplete="email"
+            id={identifierName}
+            name={identifierName}
+            type={identifierType}
+            placeholder={placeholderIdentifier}
+            autoComplete={autoComplete}
             required
           />
         </div>
@@ -38,13 +44,28 @@ export default function LoginCard({
 
         <div className="wice-row">
           <label className="wice-checkbox">
-            <input type="checkbox" id="remember" name="remember" defaultChecked />
+            <input
+              type="checkbox"
+              id="remember"
+              name="remember"
+              defaultChecked
+            />
             Remember me
           </label>
-          <a className="wice-link" href={forgotPath}>Forgot password?</a>
+          <a className="wice-link" href={forgotPath}>
+            Forgot password?
+          </a>
         </div>
 
-        <button className="wice-btn" type="submit">Sign In</button>
+        {errorMessage ? (
+          <div className="wice-error" role="alert">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        <button className="wice-btn" type="submit">
+          Sign In
+        </button>
       </form>
     </div>
   );
