@@ -3,6 +3,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import deque
 
+from openai import OpenAI
+
+API_KEY = "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"
+client = OpenAI(api_key="")
+
 #Headers to prevent website from flagging bot
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -45,5 +50,26 @@ def crawl(startURL, outFile = "output.txt"):
                     q.append(newLink)
 
 
-tempURL = "https://lillyendowment.org/for-grantseekers/renewal-programs/"
-crawl(tempURL)
+tempURL = "https://wellcome.org/research-funding/schemes"
+#crawl(tempURL)
+
+
+text = """
+"""
+
+prompt = f"""
+Extract all grants mentioned in the following text and return them in JSON with fields:
+name, short_description, deadline, amount, link, and tags (3–5 relevant ones).
+Text:
+{text}
+"""
+
+response = client.chat.completions.create(
+    model="gpt-4.1",  
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0
+)
+
+print(response.choices[0].message.content)
+
+
