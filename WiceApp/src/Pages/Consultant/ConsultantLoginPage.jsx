@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Client_login_page.css";
+import "../Client/ClientLoginPage.css";
 import WiceLogo from "../../assets/Wice_logo.jpg";
 import LoginCard from "../../Components/login_card";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-
-export default function ClientLogin() {
+export default function ConsultantLogin() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const { loginAs } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -15,13 +16,14 @@ export default function ClientLogin() {
     const username = (formData.get("username") || "").trim();
     const password = formData.get("password") || "";
 
-    const isValidAdmin = username === "admin" && password === "123";
+    const isValidConsultant = username === "consultant" && password === "123";
 
-    if (isValidAdmin) {
+    if (isValidConsultant) {
       setError("");
-      navigate("/marketplace");
+      loginAs("consultant");
+      navigate("/consultant/portal");
     } else {
-      setError("Invalid username or password. Try admin / 123.");
+      setError("Invalid username or password. Try consultant / 123.");
     }
   };
 
@@ -35,16 +37,16 @@ export default function ClientLogin() {
             <img src={WiceLogo} alt="WICE logo" className="wice-logo-img" />
           </div>
 
-          <h1 className="wice-title">Client Login</h1>
-          <p className="wice-subtitle">Sign in below to access your WICE client portal.</p>
+          <h1 className="wice-title">Consultant Login</h1>
+          <p className="wice-subtitle">Access your consultant portal and tools below.</p>
 
           <LoginCard
             onSubmit={handleSubmit}
-            forgotPath="/client/forgot"
+            forgotPath="/consultant/forgot"
             identifierLabel="Username"
             identifierType="text"
             identifierName="username"
-            placeholderIdentifier="admin"
+            placeholderIdentifier="consultant"
             errorMessage={error}
           />
 

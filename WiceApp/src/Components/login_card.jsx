@@ -1,5 +1,5 @@
 import React from "react";
-import "../Pages/Client/Client_login_page.css"; // reuse existing client login styles
+import "../Pages/Client/ClientLoginPage.css"; // reuse existing client login styles
 
 export default function LoginCard({
   onSubmit,

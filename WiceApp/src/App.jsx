@@ -5,6 +5,7 @@ import {
   Route,
   Link,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 import "./App.css";
 
@@ -17,11 +18,20 @@ const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
 
 // marketplace pages
 import Marketplace from "./Pages/Client/Marketplace.jsx";
-import ConsultantProfile from "./Pages/Client/ConsultantProfile.jsx";
+import ConsultantProfile from "./Pages/Client/ClientConsultantProfile.jsx";
+import ClientHome from "./Pages/Client/ClientHome.jsx";
 
-// login pages
-import ClientLogin from "./Pages/Client/Client_login_page.jsx";
-import EmployeeLogin from "./Pages/Employee/Employee_login_page.jsx";
+// auth + portals
+import ClientLogin from "./Pages/Client/ClientLoginPage.jsx";
+import ConsultantLogin from "./Pages/Consultant/ConsultantLoginPage.jsx";
+import ConsultantGrantHunt from "./Pages/Consultant/ConsultantGrantHunt.jsx";
+import ConsultantProfileEditor from "./Pages/Consultant/ConsultantProfile.jsx";
+import Profile from "./Pages/Profile/Profile.jsx";
+import ConsultantPortal from "./Pages/Consultant/ConsultantPortal.jsx";
+import Chat from "./Pages/Chat/Chat.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import Heading from "./Components/Heading.jsx";
+import SideNav from "./Components/SideNav.jsx";
 
 // ----------------- HOME / WELCOME PAGE -----------------
 function HomePage() {
@@ -40,7 +50,7 @@ function HomePage() {
           </p>
 
           <div className="actions">
-            {/* Step 1: choose client vs employee */}
+            {/* Step 1: choose client vs consultant */}
             <button
               className="btn primary"
               onClick={() => navigate("/client/login")}
@@ -50,9 +60,9 @@ function HomePage() {
 
             <button
               className="btn primary"
-              onClick={() => navigate("/employee/login")}
+              onClick={() => navigate("/consultant/login")}
             >
-              Employee Login
+              Consultant Login
             </button>
           </div>
 
@@ -80,36 +90,176 @@ function HomePage() {
 // ----------------- MAIN APP ROUTES -----------------
 export default function App() {
   return (
-    <Router>
-      <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
+    <AuthProvider>
+      <Router>
+        <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
 
-          {/* Step 2: dedicated login pages */}
-          <Route path="/client/login" element={<ClientLogin />} />
-          <Route path="/employee/login" element={<EmployeeLogin />} />
+            {/* Step 2: dedicated login pages */}
+            <Route path="/client/login" element={<ClientLogin />} />
+            <Route path="/consultant/login" element={<ConsultantLogin />} />
 
-          {/* Sign up */}
-          <Route path="/signup" element={<SignUp />} />
+            {/* Sign up */}
+            <Route path="/signup" element={<SignUp />} />
 
-          {/* Marketplace */}
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/consultant/:id" element={<ConsultantProfile />} />
+            <Route
+              path="/client/home"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client"]}
+                  fallback="/client/login"
+                  element={
+                    <DashboardLayout>
+                      <ClientHome />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
 
-          {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <div style={{ padding: 24 }}>
-                <h2>Page not found</h2>
-                <p>
-                  Go back <Link to="/">home</Link>.
-                </p>
-              </div>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </Router>
+            {/* Marketplace */}
+            <Route
+              path="/marketplace"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client", "consultant"]}
+                  fallback="/client/login"
+                  element={(
+                    <DashboardLayout>
+                      <Marketplace />
+                    </DashboardLayout>
+                  )}
+                />
+              }
+            />
+            <Route
+              path="/consultant/:id"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client", "consultant"]}
+                  fallback="/client/login"
+                  element={(
+                    <DashboardLayout>
+                      <ConsultantProfile />
+                    </DashboardLayout>
+                  )}
+                />
+              }
+            />
+
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client", "consultant"]}
+                  fallback="/client/login"
+                  element={
+                    <DashboardLayout>
+                      <Chat />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
+
+            {/* Consultant tools */}
+            <Route
+              path="/granthunt"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["consultant"]}
+                  fallback="/consultant/login"
+                  element={
+                    <DashboardLayout>
+                      <ConsultantGrantHunt />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
+            <Route
+              path="/consultant/profile"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["consultant"]}
+                  fallback="/consultant/login"
+                  element={
+                    <DashboardLayout>
+                      <ConsultantProfileEditor />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
+            <Route
+              path="/consultant/portal"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["consultant"]}
+                  fallback="/consultant/login"
+                  element={
+                    <DashboardLayout>
+                      <ConsultantPortal />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client"]}
+                  fallback="/client/login"
+                  element={(
+                    <DashboardLayout>
+                      <Profile />
+                    </DashboardLayout>
+                  )}
+                />
+              }
+            />
+
+            {/* 404 */}
+            <Route
+              path="*"
+              element={
+                <div style={{ padding: 24 }}>
+                  <h2>Page not found</h2>
+                  <p>
+                    Go back <Link to="/">home</Link>.
+                  </p>
+                </div>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </Router>
+    </AuthProvider>
   );
+}
+
+function DashboardLayout({ children }) {
+  return (
+    <div className="dashboard-container">
+      <Heading />
+      <SideNav />
+      <div className="dashboard-main">{children}</div>
+    </div>
+  );
+}
+
+function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
+  const { role } = useAuth();
+  const isAllowed =
+    role && (!allowedRoles || allowedRoles.length === 0
+      ? true
+      : allowedRoles.includes(role));
+
+  if (!isAllowed) {
+    return <Navigate to={fallback} replace />;
+  }
+
+  return element;
 }

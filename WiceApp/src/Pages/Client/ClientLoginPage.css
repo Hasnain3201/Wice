@@ -67,16 +67,8 @@ body{
   color:var(--wice-gold); text-decoration:none; font-weight:600; font-size:14px;
 }
 
-.wice-brand{ display:flex; align-items:center; gap:16px; margin-bottom:4px; }
-.wice-logo{
-  width:40px; height:40px; border-radius:50%;
-  /* Placeholder orb — replace with <img> if you have the SVG/PNG */
-  background:
-    radial-gradient(circle at 30% 30%, #e9d49a 0 28%, transparent 29%),
-    conic-gradient(from 0deg at 50% 50%, #e9d49a 0 25%, #caa84e 25% 100%);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
-}
-.wice-logo-img{ width:80px; height:80px; object-fit:contain; }
+.wice-brand{ display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:8px; }
+.wice-logo-img{ width:64px; height:64px; object-fit:contain; }
 .wice-brand-name{ font-size:24px; font-weight:700; color:var(--wice-navy); letter-spacing:.2px; }
 
 .wice-title{ font-size:44px; line-height:1.2; font-weight:700; color:var(--wice-navy); margin:12px 0 0; }

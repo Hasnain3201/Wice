@@ -1,47 +1,94 @@
-export const consultants = [
-  {
-    id: 1,
-    name: "Jeremy Foster",
-    location: "Washington, DC, USA",
-    headline: "Energy Efficiency & Community Energy Advisor",
-    languages: "English",
-    linkedin: "https://www.linkedin.com/in/jeremy-barrett-foster",
-    image: null,
-    bio:
-      "Certified Energy Manager with 15+ years leading energy efficiency, urban energy systems, and decarbonization initiatives across public and international development sectors.",
-  },
-  {
-    id: 2,
-    name: "Sara Calvert",
-    location: "Accra, Ghana",
-    headline: "International Agriculture & Environment Program Specialist",
-    languages: "English, Spanish, French, Arabic, Bahasa Indonesia, Tetum",
-    linkedin: "https://www.linkedin.com/in/sara-calvert-94210215",
-    image: null,
-    bio:
-      "International development professional with multi-region experience across Africa, Asia, Latin America, and the Middle East. Focus areas include agriculture, environment, and program delivery.",
-  },
-  {
-    id: 3,
-    name: "Robert Layng",
-    location: "Pretoria, South Africa",
-    headline: "Environmental & Humanitarian Policy Advisor",
-    languages: "English, French, Portuguese",
-    linkedin: "https://www.linkedin.com/in/robertlayng",
-    image: null,
-    bio:
-      "Global policy leader experienced in international geopolitics and multi-stakeholder collaboration across environmental and humanitarian domains.",
-  },
-  {
-    id: 4,
-    name: "Schala Battle",
-    location: "Florida, USA",
-    headline: "Technical Advisor & Program Manager",
-    languages: "English",
-    linkedin: null,
-    image:
-      "https://static.wixstatic.com/media/7047e0_ab740c82c47e47588735a5ddf3b74270~mv2.jpg",
-    bio:
-      "18+ years promoting peace and stability in complex and conflict-affected environments. Skilled in program management and technical advisory.",
-  },
-];
+import rawCsv from "./Members Directory Master List.csv?raw";
+
+function parseCsv(text) {
+  const rows = [];
+  let current = "";
+  let row = [];
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === "\"") {
+      if (inQuotes && next === "\"") {
+        current += "\"";
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && (char === "\n" || char === "\r")) {
+      if (char === "\r" && next === "\n") {
+        i += 1;
+      }
+      row.push(current);
+      rows.push(row);
+      current = "";
+      row = [];
+      continue;
+    }
+
+    if (!inQuotes && char === ",") {
+      row.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  row.push(current);
+  rows.push(row);
+  return rows;
+}
+
+function normalize(value) {
+  return (value || "").replace(/\u0000/g, "").trim();
+}
+
+const rows = parseCsv(rawCsv);
+const [headerRow = [], ...dataRows] = rows;
+const headers = headerRow.map((h) => normalize(h));
+
+function rowToRecord(row) {
+  const record = {};
+  headers.forEach((header, index) => {
+    if (!header) return;
+    record[header] = normalize(row[index]);
+  });
+  return record;
+}
+
+const consultants = dataRows
+  .map((row, index) => {
+    if (!row || row.length === 0) return null;
+    const record = rowToRecord(row);
+    const name = record["Full Name"];
+    if (!name) return null;
+
+    const location = record.Location || record["Location:"] || "";
+    const headline = record["One-line Headline"] || "";
+    const bio = record["Professional Bio"] || "";
+    const languages = record["Languages Spoken"] || "";
+    const linkedin = record["LinkedIn Profile"] || "";
+    const image = record["Upload your profile picture"] || "";
+
+    return {
+      id: index + 1,
+      name,
+      location,
+      headline,
+      bio,
+      languages,
+      linkedin,
+      image: image || null,
+      skills: record.Skills || "",
+      sectors: record.Sectors || "",
+    };
+  })
+  .filter(Boolean);
+
+export { consultants };

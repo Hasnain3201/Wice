@@ -1,0 +1,133 @@
+.consultant-portal {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.consultant-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.consultant-header p {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 1rem;
+}
+
+.consultant-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.consultant-metric {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.metric-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: var(--navy);
+  display: grid;
+  place-items: center;
+}
+
+.metric-label {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.metric-value {
+  margin: 4px 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.metric-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.consultant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.consultant-panel {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+}
+
+.consultant-panel h3 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.consultant-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.consultant-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.consultant-date {
+  background: #eef2ff;
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.consultant-client {
+  margin: 0;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.consultant-topic {
+  margin: 2px 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.consultant-value {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+@media (max-width: 720px) {
+  .consultant-header h2 {
+    font-size: 1.6rem;
+  }
+}
