@@ -22,7 +22,7 @@ export default function ClientLogin() {
     if (isValidClient) {
       setError("");
       loginAs("client");
-      navigate("/marketplace");
+      navigate("/client/home");
     } else {
       setError("Invalid username or password. Try client / 123.");
     }

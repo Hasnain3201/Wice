@@ -6,41 +6,76 @@ import React, {
   useEffect,
 } from "react";
 
-const STORAGE_KEY = "wice-role";
+const ROLE_KEY = "wice-role";
+const USER_KEY = "wice-user";
+const USERDATA_KEY = "wice-userData"; // 🔹 new key for persistent user data
+
 const AuthContext = createContext(null);
 
-function getInitialRole() {
-  if (typeof window === "undefined") return null;
-  return window.sessionStorage.getItem(STORAGE_KEY);
+function getInitialAuth() {
+  if (typeof window === "undefined")
+    return { role: null, user: null, userData: {} };
+
+  const role = window.sessionStorage.getItem(ROLE_KEY);
+  const user = JSON.parse(window.sessionStorage.getItem(USER_KEY) || "null");
+  const userData = JSON.parse(window.sessionStorage.getItem(USERDATA_KEY) || "{}");
+
+  return { role, user, userData };
 }
 
 export function AuthProvider({ children }) {
-  const [role, setRole] = useState(getInitialRole);
+  const [role, setRole] = useState(getInitialAuth().role);
+  const [user, setUser] = useState(getInitialAuth().user);
+  const [userData, setUserData] = useState(getInitialAuth().userData);
 
+  // 🔁 Persist to sessionStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (role) {
-      window.sessionStorage.setItem(STORAGE_KEY, role);
-    } else {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    }
-  }, [role]);
 
-  const loginAs = (nextRole) => {
+    if (role) window.sessionStorage.setItem(ROLE_KEY, role);
+    else window.sessionStorage.removeItem(ROLE_KEY);
+
+    if (user) window.sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+    else window.sessionStorage.removeItem(USER_KEY);
+
+    if (userData)
+      window.sessionStorage.setItem(USERDATA_KEY, JSON.stringify(userData));
+    else window.sessionStorage.removeItem(USERDATA_KEY);
+  }, [role, user, userData]);
+
+  // 🔹 Extend login to initialize userData if missing
+  const loginAs = (nextRole, userDataInput = {}) => {
     setRole(nextRole);
+    setUser(userDataInput.user || { name: "User", email: "unknown" });
+    setUserData(userDataInput.data || { saved: [], notifications: [], calendar: [] });
+  };
+
+  // 🔹 Allow updating persistent userData (e.g., add saved item, toggle bell, etc.)
+  const updateUserData = (newData) => {
+    setUserData((prev) => {
+      const updated = { ...prev, ...newData };
+      window.sessionStorage.setItem(USERDATA_KEY, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const logout = () => {
     setRole(null);
+    setUser(null);
+    setUserData({});
+    window.sessionStorage.clear();
   };
 
   const value = useMemo(
     () => ({
       role,
+      user,
+      userData,
       loginAs,
       logout,
+      updateUserData, // 🔹 new helper available for pages
     }),
-    [role]
+    [role, user, userData]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

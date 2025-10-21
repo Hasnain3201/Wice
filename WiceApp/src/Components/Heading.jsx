@@ -8,12 +8,11 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function Heading() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { role, logout } = useAuth();
+  const { role, user, logout } = useAuth();
 
-  const userName = "Jane Doe";
-
+  const userName = user?.name || "User";
   const profilePath = role === "consultant" ? "/consultant/profile" : "/profile";
-  const profileTarget = role ? profilePath : "/client/login";
+  const settingsPath = "/settings";
 
   const handleNavigate = (path) => {
     setMenuOpen(false);
@@ -56,15 +55,15 @@ export default function Heading() {
           <ChevronDown className="user-btn-icon" aria-hidden="true" size={16} />
         </button>
 
-        {menuOpen ? (
+        {menuOpen && (
           <ul className="user-dropdown">
             <li>
-              <button type="button" onClick={() => handleNavigate(profileTarget)}>
+              <button type="button" onClick={() => handleNavigate(profilePath)}>
                 Profile
               </button>
             </li>
             <li>
-              <button type="button" onClick={() => handleNavigate(profileTarget)}>
+              <button type="button" onClick={() => handleNavigate(settingsPath)}>
                 Settings
               </button>
             </li>
@@ -74,7 +73,7 @@ export default function Heading() {
               </button>
             </li>
           </ul>
-        ) : null}
+        )}
       </div>
     </header>
   );
