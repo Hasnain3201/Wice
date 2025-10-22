@@ -28,7 +28,7 @@ import Settings from "./Pages/Settings.jsx";
 import Saved from "./Pages/Saved.jsx";
 import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
-
+import BillingClientSide from "./Pages/Client/BillingClientSide.jsx"; // 🆕 Added Billing import
 
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Heading from "./Components/Heading.jsx";
@@ -80,6 +80,7 @@ export default function App() {
             <Route path="/consultant/login" element={<ConsultantLogin />} />
             <Route path="/signup" element={<SignUp />} />
 
+            {/* Client home */}
             <Route
               path="/client/home"
               element={
@@ -158,7 +159,19 @@ export default function App() {
               }
             />
 
-            {/* 404 */}
+            {/* 🆕 Billing route for client */}
+            <Route
+              path="/client/billing"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["client"]}
+                  fallback="/client/login"
+                  element={<DashboardLayout><BillingClientSide /></DashboardLayout>}
+                />
+              }
+            />
+
+            {/* 404 fallback */}
             <Route
               path="*"
               element={

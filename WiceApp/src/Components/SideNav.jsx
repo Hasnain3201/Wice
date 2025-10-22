@@ -44,6 +44,7 @@ export default function SideNav() {
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
+        { to: "/client/billing", label: "Billing", icon: DollarSign },
         { to: "/settings", label: "Settings", icon: Settings },
         { to: "/profile", label: "Profile", icon: User },
       ];
