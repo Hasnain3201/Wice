@@ -14,8 +14,8 @@ const leads = [
 
 export default function ConsultantPortal() {
   return (
-    <div className="consultant-portal">
-      <header className="consultant-header">
+    <div className="dashboard-page consultant-portal">
+      <header className="dashboard-header consultant-header">
         <h2>Consultant Workspace</h2>
         <p>Track your engagements, opportunities, and workflow in one place.</p>
       </header>

@@ -27,50 +27,82 @@ export default function GrantHunt() {
   }, [q, sector, region, type]);
 
   return (
-    <main className="shell">
-      <h2 className="title" style={{ margin: 0 }}>GrantHunt</h2>
-      <p className="subtitle" style={{ marginTop: 8 }}>
-        Quickly scan for relevant funding opportunities across sectors.
-      </p>
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">GrantHunt</h1>
+        <p className="dashboard-subtitle">
+          Quickly scan for relevant funding opportunities across sectors.
+        </p>
+      </header>
 
       {/* Toolbar */}
-      <div className="toolbar">
-        <input
-          className="searchbar"
-          placeholder="Search by title, agency, keywords…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          aria-label="Search grants"
-        />
+      <div className="grant-toolbar">
+        <div className="grant-toolbar__search">
+          <input
+            className="searchbar"
+            placeholder="Search by title, agency, keywords…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search grants"
+          />
+        </div>
 
-        <div className="filters">
-          <label className="label small">Sector</label>
-          <select className="select" value={sector} onChange={(e) => setSector(e.target.value)}>
-            {sectors.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+        <div className="grant-toolbar__filters">
+          <div className="filter-control">
+            <label className="label small" htmlFor="grant-sector">Sector</label>
+            <select
+              id="grant-sector"
+              className="select"
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+            >
+              {sectors.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
 
-          <label className="label small">Region</label>
-          <select className="select" value={region} onChange={(e) => setRegion(e.target.value)}>
-            {regions.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
+          <div className="filter-control">
+            <label className="label small" htmlFor="grant-region">Region</label>
+            <select
+              id="grant-region"
+              className="select"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+            >
+              {regions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
 
-          <label className="label small">Type</label>
-          <select className="select" value={type} onChange={(e) => setType(e.target.value)}>
-            {types.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <div className="filter-control">
+            <label className="label small" htmlFor="grant-type">Type</label>
+            <select
+              id="grant-type"
+              className="select"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
+              {types.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Results */}
-      <section className="grant-grid">
-        {filtered.map((g) => <GrantCard key={g.id} grant={g} />)}
-      </section>
+      <section className="dashboard-card">
+        <section className="grant-grid">
+          {filtered.map((g) => <GrantCard key={g.id} grant={g} />)}
+        </section>
 
-      {filtered.length === 0 && (
-        <p style={{ marginTop: 16, color: "#6b7280" }}>
-          No results. Try changing filters or search terms.
-        </p>
-      )}
-    </main>
+        {filtered.length === 0 && (
+          <p style={{ marginTop: 16, color: "#6b7280" }}>
+            No results. Try changing filters or search terms.
+          </p>
+        )}
+      </section>
+    </div>
   );
 }

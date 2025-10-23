@@ -108,21 +108,27 @@ export default function Settings() {
 
   if (!user) {
     return (
-      <div className="settings-shell">
-        <div className="settings-card settings-card--wide">
-          <h1>Settings</h1>
+      <div className="dashboard-page">
+        <section className="dashboard-card">
+          <h1 className="dashboard-title" style={{ fontSize: "1.9rem" }}>Settings</h1>
           <p>Please log in to view your personalized settings.</p>
-        </div>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="settings-shell">
-      <div className="settings-card settings-card--wide">
-        <h1 className="settings-title">
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">
           {user.name ? `${user.name}'s Settings` : "Settings"}
         </h1>
+        <p className="dashboard-subtitle">
+          Manage the alerts you receive inside Wice and by email.
+        </p>
+      </header>
+
+      <div className="dashboard-card settings-card settings-card--wide">
 
         {/* PORTAL NOTIFICATIONS */}
         <section className="settings-section">

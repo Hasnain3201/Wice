@@ -1,18 +1,5 @@
 .c-home-container {
-  padding: 2rem;
-  background-color: #f8fafc;
-  min-height: 100vh;
-}
-
-.c-home-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0a2342; /* Wice navy */
-}
-
-.c-home-header p {
-  color: #475569;
-  margin-bottom: 2rem;
+  gap: 32px;
 }
 
 .c-home-tiles {

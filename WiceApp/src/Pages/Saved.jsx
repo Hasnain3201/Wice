@@ -13,19 +13,23 @@ export default function Saved() {
 
   if (!user) {
     return (
-      <div className="saved-page">
-        <div className="saved-card">
-          <h1>Saved</h1>
+      <div className="dashboard-page">
+        <section className="dashboard-card">
+          <h1 className="dashboard-title" style={{ fontSize: "1.6rem" }}>Saved</h1>
           <p>Please log in to view your saved content.</p>
-        </div>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="saved-page">
-      <div className="saved-card">
-        <h1 className="saved-title">{user.name ? `${user.name}'s Saved` : "Saved"}</h1>
+    <div className="dashboard-page">
+      <div className="dashboard-card saved-card">
+        <header className="dashboard-header" style={{ marginBottom: 0 }}>
+          <h1 className="dashboard-title" style={{ fontSize: "1.9rem" }}>
+            {user.name ? `${user.name}'s Saved` : "Saved"}
+          </h1>
+        </header>
 
         {/* 🔍 Saved Searches (shown to everyone) */}
         <div className="saved-section">

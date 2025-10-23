@@ -20,12 +20,12 @@ export default function Marketplace() {
   }, [q]);
 
   return (
-    <div className="marketplace-shell">
-      <header style={{ marginBottom: 16 }}>
-        <h2 className="title" style={{ margin: 0 }}>
+    <div className="dashboard-page marketplace-shell">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">
           {isConsultant ? "Marketplace Preview" : "Consultant Marketplace"}
-        </h2>
-        <p className="subtitle" style={{ marginTop: 8 }}>
+        </h1>
+        <p className="dashboard-subtitle">
           {isConsultant
             ? "Preview how clients see consultants, optimize your listing, and monitor peers."
             : "Search and explore vetted experts across climate, health, energy, and community development."}
@@ -56,7 +56,7 @@ export default function Marketplace() {
         />
       </div>
 
-      <section className="grid" aria-live="polite">
+      <section className="marketplace-grid" aria-live="polite">
         {filtered.map((c) => (
           <ConsultantCard
             key={c.id}

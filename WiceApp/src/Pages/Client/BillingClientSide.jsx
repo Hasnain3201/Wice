@@ -85,10 +85,15 @@ export default function BillingClientSide() {
  
  
   return (
-    <div className="wrap">
-      {/* LEFT: form card */}
-      <main className="main">
-        <section className="card" aria-labelledby="heading">
+    <div className="dashboard-page billing-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Billing &amp; Payment</h1>
+        <p className="dashboard-subtitle">Update your billing information.</p>
+      </header>
+
+      <div className="billing-layout">
+        <main className="billing-main">
+          <section className="billing-card" aria-labelledby="heading">
           <div className="hd">
             <div className="brand">
               <span className="dot" aria-hidden="true"></span>
@@ -236,18 +241,17 @@ export default function BillingClientSide() {
  
            
           </form>
-        </section>
-      </main>
- 
- 
-      {/* RIGHT: Scenic image */}
-      <aside className="side" aria-hidden="true">
-        <img
-          alt="Scenic mountains and river"
-          src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop"
-        />
-      </aside>
+          </section>
+        </main>
+
+        <aside className="billing-side" aria-hidden="true">
+          <img
+            alt="Scenic mountains and river"
+            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop"
+          />
+        </aside>
+      </div>
     </div>
   );
- }
+}
  

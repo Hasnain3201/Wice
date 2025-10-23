@@ -82,7 +82,13 @@ export default function Chat() {
   };
 
   return (
-    <div className="chat-shell">
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Messages</h1>
+        <p className="dashboard-subtitle">Keep the conversation going with your Wice contacts.</p>
+      </header>
+
+      <div className="chat-shell">
       <aside className="chat-sidebar" aria-label="Conversation list">
         <header className="chat-sidebar-header">
           <h3>Chats</h3>
@@ -145,6 +151,7 @@ export default function Chat() {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

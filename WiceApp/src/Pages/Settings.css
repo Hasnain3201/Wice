@@ -1,51 +1,6 @@
-/* ==============================
-   SETTINGS PAGE LAYOUT
-   ============================== */
-
-:root {
-  --sidebar-width: 240px;  /* match your side nav width */
-  --topbar-height: 64px;   /* match your header height */
-}
-
-/* Main wrapper for the page */
-.settings-shell {
-  background: #f5f7fa;
-  min-height: calc(100vh - var(--topbar-height));
-  padding: 32px 40px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* ==============================
-   SETTINGS CARD
-   ============================== */
-
 .settings-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   padding: 32px;
-  width: 100%;
-  max-width: none;
-  box-sizing: border-box;
 }
-
-.settings-card--wide {
-  width: 100%;
-  max-width: none;
-}
-
-/* Title */
-.settings-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-}
-
-/* ==============================
-   SECTION STYLING
-   ============================== */
 
 .settings-section {
   border-top: 1px solid #ececec;
@@ -59,7 +14,6 @@
   margin-top: 0;
 }
 
-/* Header (dropdown title) */
 .settings-section__header {
   width: 100%;
   background: transparent;
@@ -67,11 +21,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #111827;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 8px 0;
   transition: color 0.2s ease;
 }
 
@@ -79,18 +33,13 @@
   color: #0b69ff;
 }
 
-/* Section descriptions */
 .settings-section__desc {
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   color: #6b7280;
   margin: 6px 0 10px 0;
   max-width: 80ch;
   line-height: 1.45;
 }
-
-/* ==============================
-   CHECKBOX CONTAINERS
-   ============================== */
 
 .settings-section__body {
   overflow: hidden;
@@ -102,7 +51,7 @@
 }
 
 .settings-section__body.is-open {
-  max-height: 600px; /* big enough to fit all items */
+  max-height: 620px;
 }
 
 .settings-section__body label {
@@ -117,25 +66,4 @@
 .settings-section__body input[type="checkbox"] {
   width: 16px;
   height: 16px;
-}
-
-/* ==============================
-   RESPONSIVE FIXES
-   ============================== */
-
-@media (max-width: 1024px) {
-  .settings-shell {
-    padding: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .settings-shell {
-    padding: 16px;
-  }
-
-  .settings-card {
-    padding: 24px;
-    border-radius: 12px;
-  }
 }

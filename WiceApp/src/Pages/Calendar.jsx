@@ -6,16 +6,21 @@ export default function CalendarPage() {
   const { user, role } = useAuth();
 
   return (
-    <div style={{ padding: "24px" }}>
-      <h1>
-        <Calendar size={20} style={{ verticalAlign: "middle" }} /> Calendar
-      </h1>
-      <p>
-        {user?.name
-          ? `${user.name}'s calendar`
-          : "Your calendar events will appear here."}
-      </p>
-      <p>Role: {role}</p>
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Calendar</h1>
+        <p className="dashboard-subtitle">
+          {user?.name
+            ? `${user.name}'s calendar`
+            : "Your calendar events will appear here."}
+        </p>
+      </header>
+
+      <section className="dashboard-card">
+        <p><Calendar size={20} style={{ verticalAlign: "middle", marginRight: 8 }} /> Upcoming events</p>
+        <p>Role: {role}</p>
+        <p>Calendar integration coming soon.</p>
+      </section>
     </div>
   );
 }

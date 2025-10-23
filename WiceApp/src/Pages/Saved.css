@@ -1,24 +1,6 @@
-.saved-page {
-  background: #f5f7fa;
-  min-height: calc(100vh - 64px);
-  padding: 32px 40px;
-  box-sizing: border-box;
-}
-
 .saved-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   padding: 32px;
-  width: 100%;
   box-sizing: border-box;
-}
-
-.saved-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 24px;
 }
 
 .saved-section {

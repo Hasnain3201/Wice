@@ -45,13 +45,15 @@ export default function Profile() {
   const photoSrc = form.photo || defaultAvatar;
 
   return (
-    <main className="shell">
-      <h2 className="title" style={{ margin: 0 }}>Your Profile</h2>
-      <p className="subtitle" style={{ marginTop: 8 }}>
-        Update your client details to keep consultants in the loop.
-      </p>
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Your Profile</h1>
+        <p className="dashboard-subtitle">
+          Update your client details to keep consultants in the loop.
+        </p>
+      </header>
 
-      <form className="settings" onSubmit={onSubmit}>
+      <form className="dashboard-card settings" onSubmit={onSubmit}>
         <div className="profile-photo-editor">
           <img
             src={photoSrc}
@@ -153,11 +155,11 @@ export default function Profile() {
         </div>
 
         <div className="settings-row">
-          <div className="settings-col" style={{ flex: 1 }}>
+          <div className="settings-col settings-col--full">
             <label className="label">About</label>
             <textarea
               className="input"
-              rows={5}
+              rows={6}
               value={form.about}
               onChange={(e) => update("about", e.target.value)}
             />
@@ -169,6 +171,6 @@ export default function Profile() {
           {msg && <span className="hint-ok">{msg}</span>}
         </div>
       </form>
-    </main>
+    </div>
   );
 }
