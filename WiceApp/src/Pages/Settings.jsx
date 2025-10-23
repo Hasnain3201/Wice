@@ -46,7 +46,7 @@ function mergeWithCurrentFields(savedObj = {}, fieldList) {
 
 export default function Settings() {
   const { user, role } = useAuth(); // role should be "client" or "consultant"
-  const [openSection, setOpenSection] = useState("portal");
+  const [openSection, setOpenSection] = useState(null);
 
   // Which fields to show based on role
   const portalFields = useMemo(

@@ -1,0 +1,65 @@
+.saved-page {
+  background: #f5f7fa;
+  min-height: calc(100vh - 64px);
+  padding: 32px 40px;
+  box-sizing: border-box;
+}
+
+.saved-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.saved-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 24px;
+}
+
+.saved-section {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.saved-section:first-of-type {
+  border-top: none;
+}
+
+.saved-section-header {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+}
+
+.saved-section-header:hover {
+  color: #2563eb;
+}
+
+.saved-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saved-options {
+  margin-top: 10px;
+  color: #4b5563;
+  font-size: 0.95rem;
+  padding-left: 10px;
+  line-height: 1.4;
+}

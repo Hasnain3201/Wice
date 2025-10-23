@@ -28,7 +28,7 @@ import Settings from "./Pages/Settings.jsx";
 import Saved from "./Pages/Saved.jsx";
 import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
-import BillingClientSide from "./Pages/Client/BillingClientSide.jsx"; // 🆕 Added Billing import
+import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Heading from "./Components/Heading.jsx";
@@ -46,14 +46,20 @@ function HomePage() {
             Sign in here to connect & explore opportunities
           </p>
           <div className="actions">
-            <button className="btn primary" onClick={() => navigate("/client/login")}>
+            <button
+              className="btn primary"
+              onClick={() => navigate("/client/login")}
+            >
               Client Login
             </button>
-            <button className="btn primary" onClick={() => navigate("/consultant/login")}>
+            <button
+              className="btn primary"
+              onClick={() => navigate("/consultant/login")}
+            >
               Consultant Login
             </button>
           </div>
-          <div className="rule"><span className="rule-accent" /></div>
+          <div className="rule" />
           <p className="signup">
             Don’t have an account?{" "}
             <Link to="/signup" className="link">
@@ -87,12 +93,16 @@ export default function App() {
                 <ProtectedRoute
                   allowedRoles={["client"]}
                   fallback="/client/login"
-                  element={<DashboardLayout><ClientHome /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <ClientHome />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
 
-            {/* Shared routes for both roles */}
+            {/* Shared pages */}
             {[
               { path: "/marketplace", element: <Marketplace /> },
               { path: "/notifications", element: <Notifications /> },
@@ -122,7 +132,11 @@ export default function App() {
                 <ProtectedRoute
                   allowedRoles={["consultant"]}
                   fallback="/consultant/login"
-                  element={<DashboardLayout><ConsultantGrantHunt /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <ConsultantGrantHunt />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
@@ -132,7 +146,11 @@ export default function App() {
                 <ProtectedRoute
                   allowedRoles={["consultant"]}
                   fallback="/consultant/login"
-                  element={<DashboardLayout><ConsultantProfileEditor /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <ConsultantProfileEditor />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
@@ -142,36 +160,46 @@ export default function App() {
                 <ProtectedRoute
                   allowedRoles={["consultant"]}
                   fallback="/consultant/login"
-                  element={<DashboardLayout><ConsultantPortal /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <ConsultantPortal />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
 
-            {/* Client-specific */}
+            {/* Client profile & billing */}
             <Route
               path="/profile"
               element={
                 <ProtectedRoute
                   allowedRoles={["client"]}
                   fallback="/client/login"
-                  element={<DashboardLayout><Profile /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <Profile />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
-
-            {/* 🆕 Billing route for client */}
             <Route
               path="/client/billing"
               element={
                 <ProtectedRoute
                   allowedRoles={["client"]}
                   fallback="/client/login"
-                  element={<DashboardLayout><BillingClientSide /></DashboardLayout>}
+                  element={
+                    <DashboardLayout>
+                      <BillingClientSide />
+                    </DashboardLayout>
+                  }
                 />
               }
             />
 
-            {/* 404 fallback */}
+            {/* 404 */}
             <Route
               path="*"
               element={
@@ -202,6 +230,7 @@ function DashboardLayout({ children }) {
 
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   const { role } = useAuth();
-  const isAllowed = role && (!allowedRoles?.length || allowedRoles.includes(role));
+  const isAllowed =
+    role && (!allowedRoles?.length || allowedRoles.includes(role));
   return isAllowed ? element : <Navigate to={fallback} replace />;
 }
