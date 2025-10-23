@@ -1,68 +1,193 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import "./Settings.css";
 import { useAuth } from "../context/AuthContext.jsx";
 
+/** ---- Field catalog & labels ---- */
+const LABELS = {
+  projectMilestones: "Project Milestones",
+  projectMemberUpdates: "Project Member Updates",
+  bookingUpdates: "Booking Updates",
+  pendingPayments: "Pending Payments",
+  paidPayments: "Paid Payments",
+  consultantApprovals: "Consultant Approvals",
+  calendarReminders: "Calendar Reminders",
+  newOpportunities: "New Opportunities",
+  newGrantsAvailable: "New Grants Available",
+};
+
+const CLIENT_FIELDS = [
+  "projectMilestones",
+  "projectMemberUpdates",
+  "bookingUpdates",
+  "pendingPayments",
+  "paidPayments",
+  "consultantApprovals",
+  "calendarReminders",
+];
+
+const CONSULTANT_FIELDS = [
+  ...CLIENT_FIELDS,
+  "newOpportunities",
+  "newGrantsAvailable",
+];
+
+/** Merge saved settings with the current field list so new fields appear (default false)
+ * without losing anything previously saved.
+ */
+function mergeWithCurrentFields(savedObj = {}, fieldList) {
+  const merged = { ...savedObj };
+  fieldList.forEach((k) => {
+    if (typeof merged[k] !== "boolean") merged[k] = false;
+  });
+  // If old keys exist that are no longer in fieldList, keep them (non-destructive)
+  return merged;
+}
+
 export default function Settings() {
-  const { role, user } = useAuth();
+  const { user, role } = useAuth(); // role should be "client" or "consultant"
+  const [openSection, setOpenSection] = useState("portal");
+
+  // Which fields to show based on role
+  const portalFields = useMemo(
+    () => (role === "consultant" ? CONSULTANT_FIELDS : CLIENT_FIELDS),
+    [role]
+  );
+  // Email == same as portal for both roles
+  const emailFields = portalFields;
+
+  // Settings state is keyed by section name, then by field key
+  const [settings, setSettings] = useState({
+    portal: Object.fromEntries(portalFields.map((k) => [k, false])),
+    email: Object.fromEntries(emailFields.map((k) => [k, false])),
+  });
+
+  const storageKey = user ? `settings_${user.email}` : null;
+
+  // Load saved + shape to current fields
+  useEffect(() => {
+    if (!storageKey) return;
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) {
+      // Initialize clean with current fields
+      setSettings({
+        portal: Object.fromEntries(portalFields.map((k) => [k, false])),
+        email: Object.fromEntries(emailFields.map((k) => [k, false])),
+      });
+      return;
+    }
+    try {
+      const saved = JSON.parse(raw);
+      setSettings({
+        portal: mergeWithCurrentFields(saved.portal, portalFields),
+        email: mergeWithCurrentFields(saved.email, emailFields),
+      });
+    } catch {
+      // Fallback if JSON is corrupted
+      setSettings({
+        portal: Object.fromEntries(portalFields.map((k) => [k, false])),
+        email: Object.fromEntries(emailFields.map((k) => [k, false])),
+      });
+    }
+  }, [storageKey, portalFields, emailFields]);
+
+  // Persist
+  useEffect(() => {
+    if (!storageKey) return;
+    localStorage.setItem(storageKey, JSON.stringify(settings));
+  }, [settings, storageKey]);
+
+  const toggleSection = (sec) =>
+    setOpenSection((prev) => (prev === sec ? null : sec));
+
+  const flip = (section, key) =>
+    setSettings((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [key]: !prev[section][key] },
+    }));
 
   if (!user) {
     return (
-      <div className="settings-page" style={{ padding: "24px" }}>
-        <h1>Settings</h1>
-        <p>Please log in to view your personalized settings.</p>
+      <div className="settings-shell">
+        <div className="settings-card settings-card--wide">
+          <h1>Settings</h1>
+          <p>Please log in to view your personalized settings.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="settings-page" style={{ padding: "24px" }}>
-      <h1>{user.name ? `${user.name}'s Settings` : "Settings"}</h1>
-      <p>Email: {user.email || "Not provided"}</p>
-      <p>Role: {role}</p>
+    <div className="settings-shell">
+      <div className="settings-card settings-card--wide">
+        <h1 className="settings-title">
+          {user.name ? `${user.name}'s Settings` : "Settings"}
+        </h1>
 
-      {role === "consultant" ? (
-        <>
-          <h2>Consultant Preferences</h2>
-          <form className="settings-form">
-            <label>
-              Availability:
-              <select>
-                <option>Available</option>
-                <option>Busy</option>
-                <option>Offline</option>
-              </select>
-            </label>
-            <label>
-              Payment Method:
-              <input type="text" placeholder="Enter payout details" />
-            </label>
-            <label>
-              Email Alerts:
-              <input type="checkbox" /> Receive client notifications
-            </label>
-          </form>
-        </>
-      ) : (
-        <>
-          <h2>Client Preferences</h2>
-          <form className="settings-form">
-            <label>
-              Display Name:
-              <input type="text" placeholder="Enter display name" />
-            </label>
-            <label>
-              Email Updates:
-              <input type="checkbox" /> Receive consultant updates
-            </label>
-            <label>
-              Project Visibility:
-              <select>
-                <option>Private</option>
-                <option>Public</option>
-              </select>
-            </label>
-          </form>
-        </>
-      )}
+        {/* PORTAL NOTIFICATIONS */}
+        <section className="settings-section">
+          <button
+            className="settings-section__header"
+            onClick={() => toggleSection("portal")}
+            aria-expanded={openSection === "portal"}
+          >
+            <span>Portal Notification Settings</span>
+            {openSection === "portal" ? <ChevronUp /> : <ChevronDown />}
+          </button>
+          <p className="settings-section__desc">
+            These control alerts shown inside the Wice portal (while you’re logged in).
+            Unchecking an item means you won’t see those in-portal updates.
+          </p>
+          <div
+            className={`settings-section__body ${
+              openSection === "portal" ? "is-open" : ""
+            }`}
+          >
+            {portalFields.map((key) => (
+              <label key={`portal-${key}`}>
+                <input
+                  type="checkbox"
+                  checked={!!settings.portal[key]}
+                  onChange={() => flip("portal", key)}
+                />
+                {LABELS[key] || key}
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* EMAIL SETTINGS */}
+        <section className="settings-section">
+          <button
+            className="settings-section__header"
+            onClick={() => toggleSection("email")}
+            aria-expanded={openSection === "email"}
+          >
+            <span>Email Settings</span>
+            {openSection === "email" ? <ChevronUp /> : <ChevronDown />}
+          </button>
+          <p className="settings-section__desc">
+            Choose which updates Wice should email you. Unchecking an item
+            means you won’t receive those messages in your inbox.
+          </p>
+          <div
+            className={`settings-section__body ${
+              openSection === "email" ? "is-open" : ""
+            }`}
+          >
+            {emailFields.map((key) => (
+              <label key={`email-${key}`}>
+                <input
+                  type="checkbox"
+                  checked={!!settings.email[key]}
+                  onChange={() => flip("email", key)}
+                />
+                {LABELS[key] || key}
+              </label>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

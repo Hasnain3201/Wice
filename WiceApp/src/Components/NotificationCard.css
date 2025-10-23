@@ -1,0 +1,79 @@
+.notif-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.notif-card.viewed {
+  opacity: 0.7;
+}
+
+.notif-left {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.notif-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.notif-body {
+  flex: 1;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.notif-type {
+  font-weight: 600;
+  color: #2563eb;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.notif-checkbox {
+  font-size: 0.85rem;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-body h3 {
+  font-size: 1.1rem;
+  margin: 4px 0;
+  color: #111827;
+}
+
+.notif-body p {
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.notif-dates {
+  font-size: 0.85rem;
+  color: #6b7280;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
