@@ -27,7 +27,7 @@ export default function GrantHunt() {
   }, [q, sector, region, type]);
 
   return (
-    <div className="dashboard-page">
+    <div className="dashboard-page grant-page">
       <header className="dashboard-header">
         <h1 className="dashboard-title">GrantHunt</h1>
         <p className="dashboard-subtitle">
