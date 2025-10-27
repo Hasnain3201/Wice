@@ -92,9 +92,12 @@ export default function GrantHunt() {
         </div>
       </div>
 
+      {/* Results card */}
       <section className="dashboard-card">
         <section className="grant-grid">
-          {filtered.map((g) => <GrantCard key={g.id} grant={g} />)}
+          {filtered.map((g) => (
+            <GrantCard key={g.id} grant={g} viewerRole="consultant" />
+          ))}
         </section>
 
         {filtered.length === 0 && (
