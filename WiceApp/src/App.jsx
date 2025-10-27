@@ -30,10 +30,17 @@ import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 
+// Admin imports
+import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
+import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
+
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Heading from "./Components/Heading.jsx";
 import SideNav from "./Components/SideNav.jsx";
 
+// -------------------------
+// Landing Page
+// -------------------------
 function HomePage() {
   const navigate = useNavigate();
   return (
@@ -43,7 +50,7 @@ function HomePage() {
           <img src={WiceLogo} alt="WICE logo" className="brand-logo" />
           <h1 className="title">Welcome to WICE</h1>
           <p className="subtitle">
-            Sign in here to connect & explore opportunities
+            Sign in here to connect, manage, and explore opportunities
           </p>
           <div className="actions">
             <button
@@ -57,6 +64,12 @@ function HomePage() {
               onClick={() => navigate("/consultant/login")}
             >
               Consultant Login
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => navigate("/admin/login")}
+            >
+              Admin Login
             </button>
           </div>
           <div className="rule" />
@@ -75,18 +88,25 @@ function HomePage() {
   );
 }
 
+// -------------------------
+// Main App Router
+// -------------------------
 export default function App() {
   return (
     <AuthProvider>
       <Router>
         <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
           <Routes>
+            {/* Landing */}
             <Route path="/" element={<HomePage />} />
+
+            {/* Logins */}
             <Route path="/client/login" element={<ClientLogin />} />
             <Route path="/consultant/login" element={<ConsultantLogin />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/signup" element={<SignUp />} />
 
-            {/* Client home */}
+            {/* Client Home */}
             <Route
               path="/client/home"
               element={
@@ -199,6 +219,22 @@ export default function App() {
               }
             />
 
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["admin"]}
+                  fallback="/admin/login"
+                  element={
+                    <DashboardLayout>
+                      <AdminDashboard />
+                    </DashboardLayout>
+                  }
+                />
+              }
+            />
+
             {/* 404 */}
             <Route
               path="*"
@@ -218,6 +254,9 @@ export default function App() {
   );
 }
 
+// -------------------------
+// Layout & Protected Route
+// -------------------------
 function DashboardLayout({ children }) {
   return (
     <div className="dashboard-container">

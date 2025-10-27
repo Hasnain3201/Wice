@@ -1,0 +1,141 @@
+.project-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.project-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Milestone Bar */
+.milestone-track {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.milestone-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.milestone-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  background-color: white;
+  z-index: 2;
+}
+
+.milestone-dot.filled {
+  background-color: #3b82f6;
+}
+
+.milestone-line {
+  width: 40px;
+  height: 2px;
+  background-color: #3b82f6;
+}
+
+.milestone-label {
+  margin-left: 6px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* File Section */
+.file-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.file-box {
+  flex: 1;
+  background: #f8faff;
+  border-radius: 10px;
+  padding: 10px 15px;
+}
+
+.file-box h3 {
+  color: #3b82f6;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.file-box ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.file-box li {
+  font-size: 0.9rem;
+  padding: 3px 0;
+}
+
+.file-box .empty {
+  color: #999;
+}
+
+/* Chat Section */
+.chat-section {
+  margin-top: 25px;
+}
+
+.chat-box {
+  background: #f1f5ff;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  margin: 5px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  max-width: 75%;
+}
+
+.message.received {
+  background: #dbeafe;
+  align-self: flex-start;
+}
+
+.message.sent {
+  background: #3b82f6;
+  color: white;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.chat-input button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+}

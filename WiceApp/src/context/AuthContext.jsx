@@ -8,7 +8,7 @@ import React, {
 
 const ROLE_KEY = "wice-role";
 const USER_KEY = "wice-user";
-const USERDATA_KEY = "wice-userData"; // 🔹 new key for persistent user data
+const USERDATA_KEY = "wice-userData";
 
 const AuthContext = createContext(null);
 
@@ -18,7 +18,9 @@ function getInitialAuth() {
 
   const role = window.sessionStorage.getItem(ROLE_KEY);
   const user = JSON.parse(window.sessionStorage.getItem(USER_KEY) || "null");
-  const userData = JSON.parse(window.sessionStorage.getItem(USERDATA_KEY) || "{}");
+  const userData = JSON.parse(
+    window.sessionStorage.getItem(USERDATA_KEY) || "{}"
+  );
 
   return { role, user, userData };
 }
@@ -28,7 +30,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(getInitialAuth().user);
   const [userData, setUserData] = useState(getInitialAuth().userData);
 
-  // 🔁 Persist to sessionStorage
+  // Persist to sessionStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -43,14 +45,15 @@ export function AuthProvider({ children }) {
     else window.sessionStorage.removeItem(USERDATA_KEY);
   }, [role, user, userData]);
 
-  // 🔹 Extend login to initialize userData if missing
-  const loginAs = (nextRole, userDataInput = {}) => {
+  // login() now supports multiple user roles
+  const login = (nextRole, userDataInput = {}) => {
     setRole(nextRole);
-    setUser(userDataInput.user || { name: "User", email: "unknown" });
-    setUserData(userDataInput.data || { saved: [], notifications: [], calendar: [] });
+    setUser(userDataInput.user || { name: nextRole, email: "unknown" });
+    setUserData(
+      userDataInput.data || { saved: [], notifications: [], calendar: [] }
+    );
   };
 
-  // 🔹 Allow updating persistent userData (e.g., add saved item, toggle bell, etc.)
   const updateUserData = (newData) => {
     setUserData((prev) => {
       const updated = { ...prev, ...newData };
@@ -71,9 +74,9 @@ export function AuthProvider({ children }) {
       role,
       user,
       userData,
-      loginAs,
+      login,
       logout,
-      updateUserData, // 🔹 new helper available for pages
+      updateUserData,
     }),
     [role, user, userData]
   );

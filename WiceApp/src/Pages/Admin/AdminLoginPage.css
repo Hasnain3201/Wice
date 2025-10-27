@@ -1,0 +1,72 @@
+.admin-login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--page);
+  padding: 32px;
+}
+
+.admin-login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  padding: 48px 64px;
+  border-radius: 18px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+}
+
+.admin-login-logo {
+  width: 96px;
+  margin-bottom: 12px;
+}
+
+.admin-login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.admin-login-subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-bottom: 24px;
+  text-align: center;
+  max-width: 360px;
+}
+
+/* Back button */
+.admin-back-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.admin-back-btn:hover {
+  color: var(--gold);
+}
+
+@media (max-width: 600px) {
+  .admin-login-content {
+    padding: 36px 24px;
+  }
+
+  .admin-login-title {
+    font-size: 1.7rem;
+  }
+}
