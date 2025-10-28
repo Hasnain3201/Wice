@@ -9,12 +9,14 @@ import {
 } from "react-router-dom";
 import "./App.css";
 
+// Assets
 import WiceLogo from "./assets/Wice_logo.jpg";
 import hero from "./assets/hero.jpg";
 
+// Lazy + pages (use current-main paths)
 const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
 import Marketplace from "./Pages/Client/Marketplace.jsx";
-import ConsultantProfile from "./Pages/Client/ClientConsultantProfile.jsx";
+import ClientConsultantProfile from "./Pages/Client/ClientConsultantProfile.jsx";
 import ClientHome from "./Pages/Client/ClientHome.jsx";
 import ClientLogin from "./Pages/Client/ClientLoginPage.jsx";
 import ConsultantLogin from "./Pages/Consultant/ConsultantLoginPage.jsx";
@@ -29,14 +31,13 @@ import Saved from "./Pages/Saved.jsx";
 import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
-
-// Admin imports
+// Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
 
 // Contexts
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
-import { ChatProvider } from "./context/ChatContext.jsx"; // 🟦 NEW
+import { ChatProvider } from "./context/ChatContext.jsx";
 
 // Components
 import Heading from "./Components/Heading.jsx";
@@ -57,31 +58,19 @@ function HomePage() {
             Sign in here to connect, manage, and explore opportunities
           </p>
           <div className="actions">
-            <button
-              className="btn primary"
-              onClick={() => navigate("/client/login")}
-            >
+            <button className="btn primary" onClick={() => navigate("/client/login")}>
               Client Login
             </button>
-            <button
-              className="btn primary"
-              onClick={() => navigate("/consultant/login")}
-            >
+            <button className="btn primary" onClick={() => navigate("/consultant/login")}>
               Consultant Login
             </button>
-            <button
-              className="btn primary"
-              onClick={() => navigate("/admin/login")}
-            >
+            <button className="btn primary" onClick={() => navigate("/admin/login")}>
               Admin Login
             </button>
           </div>
           <div className="rule" />
           <p className="signup">
-            Don’t have an account?{" "}
-            <Link to="/signup" className="link">
-              Sign up
-            </Link>
+            Don’t have an account? <Link to="/signup" className="link">Sign up</Link>
           </p>
         </section>
         <section className="right">
@@ -93,21 +82,41 @@ function HomePage() {
 }
 
 // -------------------------
+// Layout & Protected Route
+// -------------------------
+function DashboardLayout({ children }) {
+  return (
+    <div className="dashboard-container">
+      <Heading />
+      <SideNav />
+      <div className="dashboard-main">{children}</div>
+    </div>
+  );
+}
+
+function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
+  const { role } = useAuth();
+  const isAllowed = role && (!allowedRoles?.length || allowedRoles.includes(role));
+  return isAllowed ? element : <Navigate to={fallback} replace />;
+}
+
+// -------------------------
 // Main App Router
 // -------------------------
 export default function App() {
   return (
     <AuthProvider>
-      <ChatProvider> {/* 🟦 Added wrapper here */}
+      <ChatProvider>
         <Router>
           <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
             <Routes>
               {/* Landing */}
               <Route path="/" element={<HomePage />} />
 
-              {/* Logins */}
+              {/* Logins (keep main) + alias Vansh's employee route */}
               <Route path="/client/login" element={<ClientLogin />} />
               <Route path="/consultant/login" element={<ConsultantLogin />} />
+              <Route path="/employee/login" element={<ConsultantLogin />} /> {/* alias */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
 
@@ -194,6 +203,22 @@ export default function App() {
                 }
               />
 
+              {/* Consultant detail page (from Vansh) */}
+              <Route
+                path="/consultant/:id"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client", "consultant"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <ClientConsultantProfile />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
               {/* Client profile & billing */}
               <Route
                 path="/profile"
@@ -258,24 +283,4 @@ export default function App() {
       </ChatProvider>
     </AuthProvider>
   );
-}
-
-// -------------------------
-// Layout & Protected Route
-// -------------------------
-function DashboardLayout({ children }) {
-  return (
-    <div className="dashboard-container">
-      <Heading />
-      <SideNav />
-      <div className="dashboard-main">{children}</div>
-    </div>
-  );
-}
-
-function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
-  const { role } = useAuth();
-  const isAllowed =
-    role && (!allowedRoles?.length || allowedRoles.includes(role));
-  return isAllowed ? element : <Navigate to={fallback} replace />;
 }

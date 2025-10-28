@@ -5,24 +5,41 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { ArrowLeft } from "lucide-react";
 import WiceLogo from "../../assets/Wice_logo.jpg";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase";
 
 export default function ConsultantLoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const username = (formData.get("username") || "").trim();
     const password = formData.get("password") || "";
 
-    if (username === "consultant" && password === "123") {
+    try {
+      await signInWithEmailAndPassword(auth, username, password);
+      setErrorMessage("");
+      login("consultant");
+      navigate("/consultant/portal");
+      return;
+    } catch (err) {
+      console.error("Firebase login error:", err);
+    }
+
+    if (
+      (username === "consultant" || username === "consultant@example.com") &&
+      password === "123"
+    ) {
       setErrorMessage("");
       login("consultant");
       navigate("/consultant/portal");
     } else {
-      setErrorMessage("Invalid username or password. Try consultant / 123.");
+      setErrorMessage(
+        "Invalid email or password. Try consultant@example.com / 123."
+      );
     }
   };
 
@@ -47,10 +64,10 @@ export default function ConsultantLoginPage() {
         <LoginCard
           onSubmit={handleSubmit}
           forgotPath="/consultant/forgot"
-          identifierLabel="Username"
-          identifierType="text"
+          identifierLabel="Email"
+          identifierType="email"
           identifierName="username"
-          placeholderIdentifier="consultant"
+          placeholderIdentifier="consultant@example.com"
           errorMessage={errorMessage}
         />
       </div>

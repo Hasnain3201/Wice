@@ -5,17 +5,29 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { ArrowLeft } from "lucide-react";
 import WiceLogo from "../../assets/Wice_logo.jpg";
+import { signInWithEmailAndPassword } from "firebase/auth";  
+import { auth } from "../../firebase";                      
 
 export default function ClientLoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const username = (formData.get("username") || "").trim();
     const password = formData.get("password") || "";
+
+    try {
+      await signInWithEmailAndPassword(auth, username, password);
+      setErrorMessage("");
+      login("client");
+      navigate("/client/home");
+      return;
+    } catch (err) {
+      console.error("Firebase login error:", err);
+    }
 
     if (username === "client" && password === "123") {
       setErrorMessage("");
@@ -47,10 +59,10 @@ export default function ClientLoginPage() {
         <LoginCard
           onSubmit={handleSubmit}
           forgotPath="/client/forgot"
-          identifierLabel="Username"
-          identifierType="text"
+          identifierLabel="Email"
+          identifierType="email"
           identifierName="username"
-          placeholderIdentifier="client"
+          placeholderIdentifier="client@example.com"
           errorMessage={errorMessage}
         />
       </div>
