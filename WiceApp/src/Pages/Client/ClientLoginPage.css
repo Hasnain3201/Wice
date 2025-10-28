@@ -1,152 +1,180 @@
-/* Google font */
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap");
 
-:root{
-  /* Brand tokens */
-  --wice-navy:#1F2A5A;
-  --wice-navy-600:#2A3B7C; /* hover */
-  --wice-gold:#C6A24A;
-  --ink-600:#6B7280;
-  --panel:#D6DEE8;
-  --bg:#FFFFFF;
-
-  --radius:12px;
-  --shadow-soft:0 8px 20px rgba(0,0,0,.06);
-  --shadow-card:0 10px 30px rgba(0,0,0,.08);
-  --maxw:1440px;
+:root {
+  --navy: #1F2A5A;
+  --gold: #C6A24A;
+  --muted: #6B7280;
+  --page: #f9fafb;
 }
 
-*{ box-sizing:border-box }
-html, body, #root { height:100% }
-body{
-  margin:0;
-  background:var(--bg);
-  color:#0f172a;
-  font-family:Manrope, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+* {
+  box-sizing: border-box;
 }
 
-/* Page shell */
-.wice-page{
-  min-height:100dvh;
-  display:flex;
-  justify-content:center;
-  background:var(--bg);
-}
-.wice-frame{
-  grid-template-columns: 1fr;
-  place-items: center;     /* centers horizontally & vertically */
-  text-align: center;
-  width:100%;
-  max-width:var(--maxw);
-  min-height:100dvh;
-  display:grid;
+body {
+  margin: 0;
+  font-family: Manrope, system-ui, sans-serif;
+  background: var(--page);
 }
 
-/* LEFT */
-.wice-left{
-  justify-content: center;
+/* Unified Admin-style Layout */
+.admin-login-container {
+  display: flex;
   align-items: center;
-  text-align: left;
-  padding:72px clamp(40px,6vw,96px);
-  display:flex;
-  flex-direction:column;
-  gap:28px;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--page);
+  padding: 32px;
 }
 
-
-.wice-brand,
-.wice-title,
-.wice-subtitle,
-.wice-card {
-  margin-left: auto;
-  margin-right: auto;
+.admin-login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  padding: 48px 64px;
+  border-radius: 18px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  width: 100%;
+  max-width: 480px;
+  position: relative;
 }
 
-.wice-back{
-  display:inline-flex; gap:8px; align-items:center;
-  color:var(--wice-gold); text-decoration:none; font-weight:600; font-size:14px;
+.admin-login-logo {
+  width: 96px;
+  margin-bottom: 12px;
 }
 
-.wice-brand{ display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:8px; }
-.wice-logo-img{ width:64px; height:64px; object-fit:contain; }
-.wice-brand-name{ font-size:24px; font-weight:700; color:var(--wice-navy); letter-spacing:.2px; }
-
-.wice-title{ font-size:44px; line-height:1.2; font-weight:700; color:var(--wice-navy); margin:12px 0 0; }
-.wice-subtitle{ font-size:20px; color:var(--ink-600); margin:0 0 8px; }
-
-/* Card form */
-.wice-card{
-  width:min(520px,100%);
-  background:#fff;
-  border-radius:16px;
-  padding:28px;
-  box-shadow:var(--shadow-card);
-  border:1px solid rgba(0,0,0,.04);
-  display:flex; flex-direction:column; gap:18px;
+.admin-login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+  text-align: center;
 }
 
-.wice-field label{
-  display:block; font-size:14px; color:#334155; margin:10px 0 8px; font-weight:600;
-}
-.wice-input{
-  width:100%; height:48px; padding:0 14px;
-  border-radius:10px; border:1px solid var(--panel);
-  background:#fff; font-size:16px; outline:none;
-  transition:border-color .2s ease, box-shadow .2s ease;
-  margin-bottom: 10px;
-}
-.wice-input:focus{
-  border-color:var(--wice-gold);
-  box-shadow:0 0 0 3px rgba(198,162,74,.20);
+.admin-login-subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-bottom: 24px;
+  text-align: center;
+  max-width: 360px;
 }
 
-.wice-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-.wice-checkbox{ display:flex; align-items:center; gap:10px; font-size:14px; color:#334155; margin-bottom:10px; }
-.wice-checkbox input{ width:18px; height:18px; accent-color:var(--wice-gold); }
-.wice-link{ font-size:14px; color:var(--wice-navy); text-decoration:none; margin-bottom:10px;}
-.wice-link:hover{ text-decoration:underline; }
-.wice-error{
-  width:100%;
-  margin:-4px 0 12px;
-  color:#b91c1c;
-  font-size:14px;
-  font-weight:600;
+/* Back button */
+.admin-back-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.wice-btn{
-  width:100%; height:56px; border-radius:var(--radius);
-  border:1px solid var(--wice-navy); background:var(--wice-navy);
-  color:#fff; font-weight:600; font-size:16px; letter-spacing:.2px;
-  display:inline-flex; align-items:center; justify-content:center;
-  transition: background .2s ease, box-shadow .2s ease, border-color .2s ease;
-  cursor:pointer;
-}
-.wice-btn:hover{
-  background:var(--wice-navy-600);
-  border-color:var(--wice-navy-600);
-  box-shadow:var(--shadow-soft), 0 0 0 1px rgba(198,162,74,.65) inset;
+.admin-back-btn:hover {
+  color: var(--gold);
 }
 
-.wice-accent{ width:160px; height:2px; background:var(--wice-gold); opacity:.5; border-radius:2px; margin-top:6px; }
-
-/* RIGHT */
-.wice-right{ display: none;}
-.wice-hero{
-  position:absolute; inset:0;
-  background-size:cover; background-position:center;
+/* Input boxes */
+.wice-input {
+  border: 1.5px solid #ccc; /* Always visible light grey border */
+  border-radius: 10px;
+  height: 48px;
+  padding: 0 14px;
+  font-size: 16px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
 }
-.wice-hero::after{
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(to left, rgba(31,42,90,.28), rgba(255,255,255,0) 48%);
-  pointer-events:none;
+
+.wice-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(198, 162, 74, 0.2);
+}
+
+/* Button */
+.wice-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--navy);
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.wice-btn:hover {
+  background: #2A3B7C;
+  border-color: #2A3B7C;
+  box-shadow: 0 0 0 1px rgba(198, 162, 74, 0.4) inset;
+}
+
+/* Error message */
+.wice-error {
+  width: 100%;
+  margin-top: 4px;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Checkbox and link row */
+.wice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.wice-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.wice-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+}
+
+.wice-link {
+  font-size: 14px;
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.wice-link:hover {
+  text-decoration: underline;
 }
 
 /* Responsive */
-@media (max-width: 1024px){
-  .wice-frame{ grid-template-columns: 1fr; }
-  .wice-left {
-    justify-content: center;
-    align-items: center;
+@media (max-width: 600px) {
+  .admin-login-content {
+    padding: 36px 24px;
   }
-  .wice-card{ width:100%; }
+
+  .admin-login-title {
+    font-size: 1.7rem;
+  }
 }

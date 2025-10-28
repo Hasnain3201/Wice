@@ -1,62 +1,59 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./ClientLoginPage.css";
-import WiceLogo from "../../assets/Wice_logo.jpg";
-import LoginCard from "../../Components/login_card";
+import LoginCard from "../../Components/login_card.jsx";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { ArrowLeft } from "lucide-react";
+import WiceLogo from "../../assets/Wice_logo.jpg";
 
-export default function ClientLogin() {
+export default function ClientLoginPage() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const { login } = useAuth(); // ✅ changed from loginAs
+  const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
     const username = (formData.get("username") || "").trim();
     const password = formData.get("password") || "";
 
-    const isValidClient = username === "client" && password === "123";
-
-    if (isValidClient) {
-      setError("");
-      login("client"); // ✅ unified login method
+    if (username === "client" && password === "123") {
+      setErrorMessage("");
+      login("client");
       navigate("/client/home");
     } else {
-      setError("Invalid username or password. Try client / 123.");
+      setErrorMessage("Invalid username or password. Try client / 123.");
     }
   };
 
   return (
-    <main className="wice-page">
-      <section className="wice-frame">
-        <div className="wice-left">
-          <a className="wice-back" href="/">← Back</a>
+    <div className="admin-login-container">
+      <div className="admin-login-content">
+        <button
+          className="admin-back-btn"
+          onClick={() => navigate("/")}
+          aria-label="Back to login options"
+        >
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
 
-          <div className="wice-brand">
-            <img src={WiceLogo} alt="WICE logo" className="wice-logo-img" />
-          </div>
+        <img src={WiceLogo} alt="WICE logo" className="admin-login-logo" />
+        <h1 className="admin-login-title">Client Login</h1>
+        <p className="admin-login-subtitle">
+          Sign in below to access your WICE client portal.
+        </p>
 
-          <h1 className="wice-title">Client Login</h1>
-          <p className="wice-subtitle">Sign in below to access your WICE client portal.</p>
-
-          <LoginCard
-            onSubmit={handleSubmit}
-            forgotPath="/client/forgot"
-            identifierLabel="Username"
-            identifierType="text"
-            identifierName="username"
-            placeholderIdentifier="client"
-            errorMessage={error}
-          />
-
-          <div className="wice-accent" />
-        </div>
-
-        <div className="wice-right" aria-hidden="true">
-          <div className="wice-hero" style={{ backgroundImage: "url('/hero.jpg')" }} />
-        </div>
-      </section>
-    </main>
+        <LoginCard
+          onSubmit={handleSubmit}
+          forgotPath="/client/forgot"
+          identifierLabel="Username"
+          identifierType="text"
+          identifierName="username"
+          placeholderIdentifier="client"
+          errorMessage={errorMessage}
+        />
+      </div>
+    </div>
   );
 }
