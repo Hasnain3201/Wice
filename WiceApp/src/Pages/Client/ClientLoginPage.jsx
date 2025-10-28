@@ -5,11 +5,10 @@ import WiceLogo from "../../assets/Wice_logo.jpg";
 import LoginCard from "../../Components/login_card";
 import { useAuth } from "../../context/AuthContext.jsx";
 
-
 export default function ClientLogin() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
-  const { loginAs } = useAuth();
+  const { login } = useAuth(); // ✅ changed from loginAs
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +20,7 @@ export default function ClientLogin() {
 
     if (isValidClient) {
       setError("");
-      loginAs("client");
+      login("client"); // ✅ unified login method
       navigate("/client/home");
     } else {
       setError("Invalid username or password. Try client / 123.");

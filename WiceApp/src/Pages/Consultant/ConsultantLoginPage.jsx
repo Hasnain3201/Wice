@@ -8,7 +8,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 export default function ConsultantLogin() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
-  const { loginAs } = useAuth();
+  const { login } = useAuth(); // ✅ changed from loginAs
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,7 +20,7 @@ export default function ConsultantLogin() {
 
     if (isValidConsultant) {
       setError("");
-      loginAs("consultant");
+      login("consultant"); // ✅ unified login method
       navigate("/consultant/portal");
     } else {
       setError("Invalid username or password. Try consultant / 123.");

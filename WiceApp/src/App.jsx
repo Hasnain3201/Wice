@@ -34,7 +34,11 @@ import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
 
+// Contexts
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import { ChatProvider } from "./context/ChatContext.jsx"; // 🟦 NEW
+
+// Components
 import Heading from "./Components/Heading.jsx";
 import SideNav from "./Components/SideNav.jsx";
 
@@ -94,162 +98,164 @@ function HomePage() {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-          <Routes>
-            {/* Landing */}
-            <Route path="/" element={<HomePage />} />
+      <ChatProvider> {/* 🟦 Added wrapper here */}
+        <Router>
+          <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+            <Routes>
+              {/* Landing */}
+              <Route path="/" element={<HomePage />} />
 
-            {/* Logins */}
-            <Route path="/client/login" element={<ClientLogin />} />
-            <Route path="/consultant/login" element={<ConsultantLogin />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
+              {/* Logins */}
+              <Route path="/client/login" element={<ClientLogin />} />
+              <Route path="/consultant/login" element={<ConsultantLogin />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/signup" element={<SignUp />} />
 
-            {/* Client Home */}
-            <Route
-              path="/client/home"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["client"]}
-                  fallback="/client/login"
-                  element={
-                    <DashboardLayout>
-                      <ClientHome />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
-
-            {/* Shared pages */}
-            {[
-              { path: "/marketplace", element: <Marketplace /> },
-              { path: "/notifications", element: <Notifications /> },
-              { path: "/saved", element: <Saved /> },
-              { path: "/chat", element: <Chat /> },
-              { path: "/projects", element: <ProjectsHome /> },
-              { path: "/calendar", element: <CalendarPage /> },
-              { path: "/settings", element: <Settings /> },
-            ].map(({ path, element }) => (
+              {/* Client Home */}
               <Route
-                key={path}
-                path={path}
+                path="/client/home"
                 element={
                   <ProtectedRoute
-                    allowedRoles={["client", "consultant"]}
+                    allowedRoles={["client"]}
                     fallback="/client/login"
-                    element={<DashboardLayout>{element}</DashboardLayout>}
+                    element={
+                      <DashboardLayout>
+                        <ClientHome />
+                      </DashboardLayout>
+                    }
                   />
                 }
               />
-            ))}
 
-            {/* Consultant-specific */}
-            <Route
-              path="/granthunt"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["consultant"]}
-                  fallback="/consultant/login"
+              {/* Shared pages */}
+              {[
+                { path: "/marketplace", element: <Marketplace /> },
+                { path: "/notifications", element: <Notifications /> },
+                { path: "/saved", element: <Saved /> },
+                { path: "/chat", element: <Chat /> },
+                { path: "/projects", element: <ProjectsHome /> },
+                { path: "/calendar", element: <CalendarPage /> },
+                { path: "/settings", element: <Settings /> },
+              ].map(({ path, element }) => (
+                <Route
+                  key={path}
+                  path={path}
                   element={
-                    <DashboardLayout>
-                      <ConsultantGrantHunt />
-                    </DashboardLayout>
+                    <ProtectedRoute
+                      allowedRoles={["client", "consultant"]}
+                      fallback="/client/login"
+                      element={<DashboardLayout>{element}</DashboardLayout>}
+                    />
                   }
                 />
-              }
-            />
-            <Route
-              path="/consultant/profile"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["consultant"]}
-                  fallback="/consultant/login"
-                  element={
-                    <DashboardLayout>
-                      <ConsultantProfileEditor />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
-            <Route
-              path="/consultant/portal"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["consultant"]}
-                  fallback="/consultant/login"
-                  element={
-                    <DashboardLayout>
-                      <ConsultantPortal />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
+              ))}
 
-            {/* Client profile & billing */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["client"]}
-                  fallback="/client/login"
-                  element={
-                    <DashboardLayout>
-                      <Profile />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
-            <Route
-              path="/client/billing"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["client"]}
-                  fallback="/client/login"
-                  element={
-                    <DashboardLayout>
-                      <BillingClientSide />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
+              {/* Consultant-specific */}
+              <Route
+                path="/granthunt"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantGrantHunt />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+              <Route
+                path="/consultant/profile"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantProfileEditor />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+              <Route
+                path="/consultant/portal"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantPortal />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
 
-            {/* Admin Dashboard */}
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["admin"]}
-                  fallback="/admin/login"
-                  element={
-                    <DashboardLayout>
-                      <AdminDashboard />
-                    </DashboardLayout>
-                  }
-                />
-              }
-            />
+              {/* Client profile & billing */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <Profile />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+              <Route
+                path="/client/billing"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <BillingClientSide />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
 
-            {/* 404 */}
-            <Route
-              path="*"
-              element={
-                <div style={{ padding: 24 }}>
-                  <h2>Page not found</h2>
-                  <p>
-                    Go back <Link to="/">home</Link>.
-                  </p>
-                </div>
-              }
-            />
-          </Routes>
-        </Suspense>
-      </Router>
+              {/* Admin Dashboard */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["admin"]}
+                    fallback="/admin/login"
+                    element={
+                      <DashboardLayout>
+                        <AdminDashboard />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              {/* 404 */}
+              <Route
+                path="*"
+                element={
+                  <div style={{ padding: 24 }}>
+                    <h2>Page not found</h2>
+                    <p>
+                      Go back <Link to="/">home</Link>.
+                    </p>
+                  </div>
+                }
+              />
+            </Routes>
+          </Suspense>
+        </Router>
+      </ChatProvider>
     </AuthProvider>
   );
 }

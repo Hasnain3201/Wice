@@ -1,16 +1,56 @@
-import React from "react";
+import React, { useEffect } from "react";
+import ProjectCard from "../../Components/ProjectCard.jsx";
+import "./ProjectsHome.css";
+import { useChat } from "../../context/ChatContext.jsx";
 
 export default function ProjectsHome() {
+  const { createProjectChat } = useChat();
+
+  const projects = [
+    {
+      id: "proj-1",
+      name: "Website Redesign",
+      milestones: [
+        { name: "Planning", completed: true },
+        { name: "Wireframes", completed: true },
+        { name: "Development", completed: false },
+        { name: "Testing", completed: false },
+      ],
+      members: ["Client", "Consultant"],
+      myFiles: ["proposal.pdf", "design.png"],
+      theirFiles: ["requirements.docx", "feedback.txt"],
+    },
+    {
+      id: "proj-2",
+      name: "Marketing Campaign",
+      milestones: [
+        { name: "Research", completed: true },
+        { name: "Design", completed: false },
+        { name: "Launch", completed: false },
+      ],
+      members: ["Client", "Consultant"],
+      myFiles: ["pitch.pdf"],
+      theirFiles: ["brief.docx"],
+    },
+  ];
+
+  // ✅ Create chats for all projects immediately when the page loads
+  useEffect(() => {
+    projects.forEach((proj) => createProjectChat(proj.id, proj.name));
+  }, [createProjectChat]);
+
   return (
-    <div className="dashboard-page">
-      <header className="dashboard-header">
-        <h1 className="dashboard-title">Projects</h1>
-        <p className="dashboard-subtitle">Welcome to the shared projects page.</p>
+    <div className="projects-page">
+      <header className="projects-header">
+        <h1>Projects</h1>
+        <p>Collaborate with your team and track progress easily.</p>
       </header>
 
-      <section className="dashboard-card">
-        <p>Project tracking tools will appear here.</p>
-      </section>
+      <div className="projects-container">
+        {projects.map((p) => (
+          <ProjectCard key={p.id} project={p} />
+        ))}
+      </div>
     </div>
   );
 }
