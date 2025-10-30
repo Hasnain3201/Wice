@@ -12,6 +12,7 @@ import {
   Bell,
   Bookmark,
   Calendar,
+  HelpCircle,
   LogOut,
 } from "lucide-react";
 import "./SideNav.css";
@@ -46,7 +47,7 @@ export default function SideNav() {
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
-        { to: "/client/billing", label: "Billing", icon: DollarSign }, // normalized
+        { to: "/client/billing", label: "Billing", icon: DollarSign },
         { to: "/settings", label: "Settings", icon: Settings },
         { to: "/profile", label: "Profile", icon: User },
       ];
@@ -77,6 +78,17 @@ export default function SideNav() {
             <span>{label}</span>
           </NavLink>
         ))}
+
+        {/* Help icon link */}
+        <NavLink
+          to="/help"
+          className={({ isActive }) =>
+            isActive ? "nav-item active" : "nav-item"
+          }
+        >
+          <HelpCircle size={18} className="nav-icon" />
+          <span>Help</span>
+        </NavLink>
 
         {/* Logout pinned to bottom */}
         <button
