@@ -233,7 +233,7 @@
 
 .dashboard-main {
   margin-left: 220px;
-  padding: 108px 56px 56px;
+  padding: 80px 56px 56px;
   min-height: 100vh;
   background: #f7f9fc;
 }
@@ -266,7 +266,7 @@
 .dashboard-title {
   margin: 0;
   font-size: 2.4rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--navy);
   letter-spacing: -0.01em;
 }
