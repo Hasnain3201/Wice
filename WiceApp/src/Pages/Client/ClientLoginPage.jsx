@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import "./ClientLoginPage.css";
-import LoginCard from "../../Components/login_card.jsx";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { ArrowLeft } from "lucide-react";
 import WiceLogo from "../../assets/Wice_logo.jpg";
-import { signInWithEmailAndPassword } from "firebase/auth";  
-import { auth } from "../../firebase";                      
+import LoginCard from "../../Components/login_card.jsx";
 
 export default function ClientLoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loginWithEmail, logout } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -19,22 +18,35 @@ export default function ClientLoginPage() {
     const username = (formData.get("username") || "").trim();
     const password = formData.get("password") || "";
 
-    try {
-      await signInWithEmailAndPassword(auth, username, password);
-      setErrorMessage("");
-      login("client");
-      navigate("/client/home");
+    if (!username || !password) {
+      setErrorMessage("Email and password are required.");
       return;
-    } catch (err) {
-      console.error("Firebase login error:", err);
     }
 
-    if (username === "client" && password === "123") {
+    setSubmitting(true);
+    try {
+      const { profile } = await loginWithEmail(username, password);
+      const accountType = profile?.accountType || profile?.role;
+
+      if (accountType !== "client") {
+        await logout();
+        setErrorMessage(
+          "This account is not registered as a client. Please use the correct portal."
+        );
+        return;
+      }
+
       setErrorMessage("");
-      login("client");
       navigate("/client/home");
-    } else {
-      setErrorMessage("Invalid username or password. Try client / 123.");
+    } catch (err) {
+      console.error("Firebase login error:", err);
+      const message =
+        err?.code === "auth/invalid-credential"
+          ? "Invalid email or password."
+          : err?.message || "Unable to sign in right now.";
+      setErrorMessage(message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -64,6 +76,7 @@ export default function ClientLoginPage() {
           identifierName="username"
           placeholderIdentifier="client@example.com"
           errorMessage={errorMessage}
+          loading={submitting}
         />
       </div>
     </div>

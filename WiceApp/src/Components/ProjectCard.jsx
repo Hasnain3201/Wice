@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useChat } from "../context/ChatContext.jsx";
-import { useAuth } from "../context/AuthContext.jsx"; // ✅ access name + role
+import { useAuth } from "../context/AuthContext.jsx";
 import "./ProjectCard.css";
 
 export default function ProjectCard({ project }) {
-  const { role, user } = useAuth(); // ✅ ensure AuthContext provides "user"
-  const { chats, sendMessage, createProjectChat } = useChat();
+  const { role, user, profile } = useAuth();
+  const { messages, sendMessage, createProjectChat } = useChat();
 
   const [isOpen, setIsOpen] = useState(false);
   const [inputMsg, setInputMsg] = useState("");
@@ -14,12 +14,12 @@ export default function ProjectCard({ project }) {
   const [newMilestone, setNewMilestone] = useState({ name: "", date: "" });
 
   useEffect(() => {
-    createProjectChat(project.id, project.name);
-  }, [project.id, project.name, createProjectChat]);
+    if (!user?.uid) return;
+    createProjectChat(project.id, project.name, project.participants || []);
+  }, [createProjectChat, project.id, project.name, project.participants, user?.uid]);
 
-  const chat = chats.find((c) => c.id === project.id);
+  const chatMessages = messages[project.id] || [];
 
-  // Default milestones
   const [milestones, setMilestones] = useState(() => {
     const base = [
       { name: "Consultation Approval", completed: true, date: new Date().toLocaleString() },
@@ -28,60 +28,65 @@ export default function ProjectCard({ project }) {
     return project.milestones?.length ? [...base, ...project.milestones] : base;
   });
 
-  const handleAddMilestone = (e) => {
-    e.preventDefault();
+  const handleAddMilestone = (event) => {
+    event.preventDefault();
     if (!newMilestone.name.trim()) return;
     setMilestones((prev) => [...prev, { ...newMilestone, completed: false }]);
     setNewMilestone({ name: "", date: "" });
     setShowAddForm(false);
   };
 
-  // ✅ Include uploader name and timestamp
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files).map((file) => ({
+  const displayName = useMemo(
+    () => profile?.fullName || user?.displayName || user?.email || "Unknown User",
+    [profile?.fullName, user?.displayName, user?.email]
+  );
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files || []).map((file) => ({
       name: file.name,
-      uploadedByName: user?.name || "Unknown User",
+      uploadedByName: displayName,
       uploadedByRole: role,
       date: new Date().toLocaleString(),
     }));
     setUploadedFiles((prev) => [...prev, ...files]);
   };
 
-  const handleSendMsg = () => {
+  const handleSendMsg = async () => {
     if (!inputMsg.trim()) return;
-    sendMessage(project.id, inputMsg);
+    await sendMessage(project.id, inputMsg);
     setInputMsg("");
   };
 
-  const myFiles = uploadedFiles.filter((f) => f.uploadedByName === user?.name);
-  const theirFiles = uploadedFiles.filter((f) => f.uploadedByName !== user?.name);
+  const myFiles = uploadedFiles.filter((file) => file.uploadedByName === displayName);
+  const theirFiles = uploadedFiles.filter((file) => file.uploadedByName !== displayName);
 
   return (
     <div className={`project-card ${isOpen ? "open" : ""}`}>
-      <div className="project-header" onClick={() => setIsOpen(!isOpen)}>
+      <div className="project-header" onClick={() => setIsOpen((open) => !open)}>
         <h2 className="project-title">{project.name}</h2>
         <span className="toggle-icon">{isOpen ? "▾" : "▸"}</span>
       </div>
 
       {isOpen && (
         <>
-          {/* Timeline */}
           <div className="timeline-container">
             <div className="timeline-line"></div>
             <div className="timeline-points">
-              {milestones.map((m, i) => (
-                <div key={i} className={`milestone-item ${i % 2 === 0 ? "top" : "bottom"}`}>
-                  <div className={`milestone-dot ${m.completed ? "filled" : "unfilled"}`}></div>
+              {milestones.map((milestone, index) => (
+                <div
+                  key={`${milestone.name}-${index}`}
+                  className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"}`}
+                >
+                  <div className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"}`} />
                   <div className="milestone-info">
-                    <p className="milestone-label">{m.name}</p>
-                    <p className="milestone-date">{m.date}</p>
+                    <p className="milestone-label">{milestone.name}</p>
+                    <p className="milestone-date">{milestone.date}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Add Milestone */}
           {!showAddForm ? (
             <button className="add-btn" onClick={() => setShowAddForm(true)}>
               + Add Milestone
@@ -92,13 +97,17 @@ export default function ProjectCard({ project }) {
                 type="text"
                 placeholder="Milestone name..."
                 value={newMilestone.name}
-                onChange={(e) => setNewMilestone((p) => ({ ...p, name: e.target.value }))}
+                onChange={(event) =>
+                  setNewMilestone((prev) => ({ ...prev, name: event.target.value }))
+                }
                 required
               />
               <input
                 type="datetime-local"
                 value={newMilestone.date}
-                onChange={(e) => setNewMilestone((p) => ({ ...p, date: e.target.value }))}
+                onChange={(event) =>
+                  setNewMilestone((prev) => ({ ...prev, date: event.target.value }))
+                }
               />
               <div className="add-actions">
                 <button type="submit">Save</button>
@@ -109,23 +118,21 @@ export default function ProjectCard({ project }) {
             </form>
           )}
 
-          {/* File Upload */}
           <div className="file-upload">
             <h3>Project Files</h3>
             <input type="file" multiple onChange={handleFileUpload} />
           </div>
 
-          {/* File Lists */}
           <div className="file-lists">
             <div className="file-section">
               <h4>My Files</h4>
               {myFiles.length > 0 ? (
                 <ul>
-                  {myFiles.map((f, i) => (
-                    <li key={i} className="my-file">
-                      📄 {f.name}{" "}
+                  {myFiles.map((file, index) => (
+                    <li key={`${file.name}-${index}`} className="my-file">
+                      📄 {file.name}{" "}
                       <span className="file-meta">
-                        (uploaded by {f.uploadedByName} — {f.date})
+                        (uploaded by {file.uploadedByName} — {file.date})
                       </span>
                     </li>
                   ))}
@@ -139,11 +146,11 @@ export default function ProjectCard({ project }) {
               <h4>Their Files</h4>
               {theirFiles.length > 0 ? (
                 <ul>
-                  {theirFiles.map((f, i) => (
-                    <li key={i} className="their-file">
-                      📁 {f.name}{" "}
+                  {theirFiles.map((file, index) => (
+                    <li key={`${file.name}-${index}`} className="their-file">
+                      📁 {file.name}{" "}
                       <span className="file-meta">
-                        (uploaded by {f.uploadedByName} — {f.date})
+                        (uploaded by {file.uploadedByName} — {file.date})
                       </span>
                     </li>
                   ))}
@@ -154,7 +161,6 @@ export default function ProjectCard({ project }) {
             </div>
           </div>
 
-          {/* Project Chat */}
           <div className="project-members">
             <h3 className="chat-title">
               Project Group Chat{" "}
@@ -164,20 +170,31 @@ export default function ProjectCard({ project }) {
 
           <div className="chat-section">
             <div className="chat-box">
-              {chat?.messages.map((msg, i) => (
-                <div key={i} className={`message ${msg.type}`}>
-                  {msg.text}
-                </div>
-              ))}
+              {chatMessages.length > 0 ? (
+                chatMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${
+                      message.senderId === user?.uid ? "sent" : "received"
+                    }`}
+                  >
+                    <strong>{message.senderName}:</strong> {message.text}
+                  </div>
+                ))
+              ) : (
+                <p className="no-files">No messages yet.</p>
+              )}
             </div>
             <div className="chat-input">
               <input
                 type="text"
                 value={inputMsg}
-                onChange={(e) => setInputMsg(e.target.value)}
+                onChange={(event) => setInputMsg(event.target.value)}
                 placeholder="Type a message..."
               />
-              <button onClick={handleSendMsg}>Send</button>
+              <button type="button" onClick={handleSendMsg}>
+                Send
+              </button>
             </div>
           </div>
         </>

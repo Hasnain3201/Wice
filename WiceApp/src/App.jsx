@@ -95,8 +95,24 @@ function DashboardLayout({ children }) {
 }
 
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
-  const { role } = useAuth();
-  const isAllowed = role && (!allowedRoles?.length || allowedRoles.includes(role));
+  const { role, user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ padding: 24 }}>
+        <h2>Loading...</h2>
+        <p>Checking your access.</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to={fallback} replace />;
+  }
+
+  const isAllowed =
+    !allowedRoles?.length || (role && allowedRoles.includes(role));
+
   return isAllowed ? element : <Navigate to={fallback} replace />;
 }
 

@@ -7,8 +7,7 @@ export default function BillingClientSide() {
   const [exp, setExp] = useState("");
   const [cvc, setCvc] = useState("");
   const [error, setError] = useState("");
- 
- 
+
   // --- helpers ---
   const luhnOk = (num) => {
     const s = num.replace(/\s+/g, "");
@@ -105,6 +104,11 @@ export default function BillingClientSide() {
  
  
           <form className="bd" onSubmit={handleSubmit} noValidate>
+            {error && (
+              <div className="billing-error" role="alert">
+                {error}
+              </div>
+            )}
             {/* Contact */}
             <div className="row">
               <h2 className="h2-tight">Contact</h2>

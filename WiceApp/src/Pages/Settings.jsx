@@ -43,9 +43,8 @@ function mergeWithCurrentFields(savedObj = {}, fieldList) {
   // If old keys exist that are no longer in fieldList, keep them (non-destructive)
   return merged;
 }
-
 export default function Settings() {
-  const { user, role } = useAuth(); // role should be "client" or "consultant"
+  const { user, role, profile } = useAuth(); // role should be "client" or "consultant"
   const [openSection, setOpenSection] = useState(null);
 
   // Which fields to show based on role
@@ -121,7 +120,11 @@ export default function Settings() {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <h1 className="dashboard-title">
-          {user.name ? `${user.name}'s Settings` : "Settings"}
+          {profile?.fullName || user?.displayName
+            ? `${profile?.fullName || user?.displayName}'s Settings`
+            : user?.email
+            ? `${user.email}'s Settings`
+            : "Settings"}
         </h1>
         <p className="dashboard-subtitle">
           Manage the alerts you receive inside Wice and by email.

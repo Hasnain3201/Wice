@@ -40,6 +40,23 @@
   flex-shrink: 0;
 }
 
+.nav-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+.nav-item.active .nav-dot {
+  background: #dc2626;
+}
+
 .nav-item:hover {
   background-color: var(--gold);
   color: var(--navy);

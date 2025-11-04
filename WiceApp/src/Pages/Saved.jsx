@@ -1,96 +1,119 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
   Bookmark,
   Users,
-  Briefcase,
   Landmark,
-  Search,
   FolderPlus,
-  Filter,
   X,
   Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { grants } from "../data/grants.js";
+import {
+  createEmptySavedSections,
+  createSavedFolder,
+  ensureSavedCollectionsDoc,
+  removeItemFromSavedFolder,
+  subscribeToSavedCollections,
+} from "../services/saved.js";
 import "./Saved.css";
 
 export default function Saved() {
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const [openSection, setOpenSection] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [activeSection, setActiveSection] = useState(null);
-  const [folders, setFolders] = useState({});
+  const [folders, setFolders] = useState(() => createEmptySavedSections());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modalError, setModalError] = useState("");
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [removingItemId, setRemovingItemId] = useState(null);
 
-  const key = user ? `savedFolders_${role}_${user.email}` : null;
-
-  // ✅ Load folders once
   useEffect(() => {
-    if (key) {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        try {
-          setFolders(JSON.parse(stored));
-        } catch {
-          setFolders({});
-        }
-      }
+    if (!user?.uid) {
+      setFolders(createEmptySavedSections());
+      setLoading(false);
+      return () => {};
     }
-  }, [key]);
 
-  // ✅ Listen for external updates (e.g., saving consultants)
-  useEffect(() => {
-    if (!key) return;
-    const handleStorage = () => {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        setFolders(JSON.parse(stored));
+    let unsubscribe;
+    setLoading(true);
+    ensureSavedCollectionsDoc(user.uid, role).catch((err) => {
+      if (import.meta.env.DEV) {
+        console.error("Failed to ensure saved collections doc:", err);
       }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, [key]);
+    });
 
-  // ✅ Helper to write back safely without overwriting
-  const updateLocalStorage = (newData) => {
-    if (!key) return;
-    localStorage.setItem(key, JSON.stringify(newData));
-    setFolders(newData);
-  };
+    unsubscribe = subscribeToSavedCollections(
+      user.uid,
+      (payload) => {
+        setFolders(payload.sections);
+        setLoading(false);
+        setError("");
+      },
+      (err) => {
+        if (import.meta.env.DEV) {
+          console.error("Saved collections listener error:", err);
+        }
+        setError("Unable to load saved items right now.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe?.();
+  }, [user?.uid, role]);
 
   const toggleSection = (section) =>
     setOpenSection(openSection === section ? null : section);
 
   const openModal = (section) => {
     setActiveSection(section);
+    setModalError("");
     setShowModal(true);
   };
 
   const closeModal = () => {
+    if (creatingFolder) return;
     setShowModal(false);
     setNewFolderName("");
+    setActiveSection(null);
+    setModalError("");
   };
 
-  const handleCreateFolder = () => {
-    if (!newFolderName.trim() || !activeSection) return;
-    const updated = { ...folders };
-    if (!updated[activeSection]) updated[activeSection] = [];
-    updated[activeSection].push({ name: newFolderName.trim(), items: [] });
-    updateLocalStorage(updated);
-    closeModal();
-  };
-
-  const handleRemoveItem = (section, folderName, itemIndex) => {
-    const updated = { ...folders };
-    const folderList = updated[section] || [];
-    const target = folderList.find((f) => f.name === folderName);
-    if (target && target.items) {
-      target.items.splice(itemIndex, 1);
+  const handleCreateFolder = async () => {
+    if (!user?.uid || !activeSection || !newFolderName.trim()) return;
+    setCreatingFolder(true);
+    setModalError("");
+    try {
+      await createSavedFolder(user.uid, activeSection, newFolderName.trim());
+      setNewFolderName("");
+      setShowModal(false);
+      setActiveSection(null);
+    } catch (err) {
+      setModalError(
+        err?.message || "Unable to create folder. Please try again."
+      );
+    } finally {
+      setCreatingFolder(false);
     }
-    updateLocalStorage(updated);
+  };
+
+  const handleRemoveItem = async (section, folderId, itemId) => {
+    if (!user?.uid) return;
+    setRemovingItemId(itemId);
+    try {
+      await removeItemFromSavedFolder(user.uid, section, folderId, itemId);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to remove saved item:", err);
+      }
+    } finally {
+      setRemovingItemId(null);
+    }
   };
 
   const AddFolderButton = ({ section }) => (
@@ -110,8 +133,8 @@ export default function Saved() {
         {open && (
           <div className="folder-items">
             {folder.items?.length > 0 ? (
-              folder.items.map((item, i) => (
-                <div key={i} className="folder-item">
+              folder.items.map((item) => (
+                <div key={item.id} className="folder-item">
                   {item.link.startsWith("http") ? (
                     <a href={item.link} target="_blank" rel="noreferrer">
                       {item.title}
@@ -123,8 +146,9 @@ export default function Saved() {
                   <button
                     className="remove-btn"
                     onClick={() =>
-                      handleRemoveItem(sectionKey, folder.name, i)
+                      handleRemoveItem(sectionKey, folder.id, item.id)
                     }
+                    disabled={removingItemId === item.id}
                     title="Remove saved item"
                   >
                     <Trash2 size={14} />
@@ -140,6 +164,26 @@ export default function Saved() {
     );
   };
 
+  const savedConsultantItems = useMemo(() => {
+    return (folders.consultantCollections || []).flatMap((folder) =>
+      (folder.items || []).map((item) => ({
+        ...item,
+        folderId: folder.id,
+        folderName: folder.name,
+      }))
+    );
+  }, [folders]);
+
+  const consultantAllItems = useMemo(() => {
+    return (folders.savedGrants || []).flatMap((folder) =>
+      (folder.items || []).map((item) => ({
+        ...item,
+        folderId: folder.id,
+        folderName: folder.name,
+      }))
+    );
+  }, [folders]);
+
   if (!user) {
     return (
       <div className="dashboard-page">
@@ -153,51 +197,30 @@ export default function Saved() {
     );
   }
 
-  const allItems =
-    role === "consultant"
-      ? [
-          ...(folders.savedOpportunities || []),
-          ...(folders.savedGrants || []),
-        ].flatMap((f) => f.items || [])
-      : [];
+  const allItems = role === "consultant" ? consultantAllItems : [];
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-card saved-card">
         <header className="dashboard-header">
-          <h1 className="dashboard-title">{user.name}'s Saved</h1>
+          <h1 className="dashboard-title">
+            {(profile?.fullName || user?.displayName || user?.email || "User") +
+              "'s Saved"}
+          </h1>
         </header>
+
+        {loading ? (
+          <p style={{ marginTop: "8px", color: "#6b7280" }}>
+            Loading saved collections…
+          </p>
+        ) : null}
+        {error ? (
+          <p style={{ marginTop: "8px", color: "#b91c1c" }}>{error}</p>
+        ) : null}
 
         {/* CLIENT VIEW */}
         {role === "client" && (
           <>
-            {/* Saved Searches */}
-            <div className="saved-section">
-              <button
-                className="saved-section-header"
-                onClick={() => toggleSection("savedSearches")}
-              >
-                <div className="saved-section-label">
-                  <Search size={18} />
-                  <span>Saved Searches</span>
-                </div>
-                {openSection === "savedSearches" ? (
-                  <ChevronUp />
-                ) : (
-                  <ChevronDown />
-                )}
-              </button>
-              {openSection === "savedSearches" && (
-                <div className="saved-options">
-                  <AddFolderButton section="savedSearches" />
-                  {(folders.savedSearches || []).map((f, i) => (
-                    <Folder key={i} folder={f} sectionKey="savedSearches" />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Consultant Collections */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -218,7 +241,7 @@ export default function Saved() {
                   <AddFolderButton section="consultantCollections" />
                   {(folders.consultantCollections || []).map((f, i) => (
                     <Folder
-                      key={i}
+                      key={f.id || `${f.name}-${i}`}
                       folder={f}
                       sectionKey="consultantCollections"
                     />
@@ -227,7 +250,6 @@ export default function Saved() {
               )}
             </div>
 
-            {/* All Saved Consultants */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -245,14 +267,19 @@ export default function Saved() {
               </button>
               {openSection === "savedConsultants" && (
                 <div className="saved-options">
-                  {(folders.consultantCollections || [])
-                    .flatMap((f) => f.items || [])
-                    .map((item, i) => (
-                      <div key={i} className="folder-item">
+                  {savedConsultantItems.length > 0 ? (
+                    savedConsultantItems.map((item) => (
+                      <div key={item.id} className="folder-item">
                         <Link to={item.link}>{item.title}</Link>
-                        <p className="item-desc">{item.description}</p>
+                        {item.description ? (
+                          <p className="item-desc">{item.description}</p>
+                        ) : null}
+                        <p className="item-desc">Folder: {item.folderName}</p>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <p>No consultants saved yet.</p>
+                  )}
                 </div>
               )}
             </div>
@@ -262,51 +289,47 @@ export default function Saved() {
         {/* CONSULTANT VIEW */}
         {role === "consultant" && (
           <>
-            {[
-              { key: "savedSearches", label: "Saved Searches", icon: Search },
-              { key: "savedOpportunities", label: "Saved Opportunities", icon: Briefcase },
-              { key: "savedGrants", label: "Saved Grants", icon: Landmark },
-              { key: "clientFilters", label: "Saved Client Search Filters", icon: Filter },
-            ].map(({ key, label, icon: Icon }) => (
-              <div key={key} className="saved-section">
-                <button
-                  className="saved-section-header"
-                  onClick={() => toggleSection(key)}
-                >
-                  <div className="saved-section-label">
-                    <Icon size={18} />
-                    <span>{label}</span>
-                  </div>
-                  {openSection === key ? <ChevronUp /> : <ChevronDown />}
-                </button>
-                {openSection === key && (
-                  <div className="saved-options">
-                    <AddFolderButton section={key} />
-                    {(folders[key] || []).map((f, i) => (
-                      <Folder key={i} folder={f} sectionKey={key} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* All Saved Opportunities & Grants */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
-                onClick={() => toggleSection("allItems")}
+                onClick={() => toggleSection("savedGrants")}
+              >
+                <div className="saved-section-label">
+                  <Landmark size={18} />
+                  <span>Saved Grants</span>
+                </div>
+                {openSection === "savedGrants" ? <ChevronUp /> : <ChevronDown />}
+              </button>
+              {openSection === "savedGrants" && (
+                <div className="saved-options">
+                  <AddFolderButton section="savedGrants" />
+                  {(folders.savedGrants || []).map((f, i) => (
+                    <Folder
+                      key={f.id || `${f.name}-${i}`}
+                      folder={f}
+                      sectionKey="savedGrants"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="saved-section">
+              <button
+                className="saved-section-header"
+                onClick={() => toggleSection("allGrants")}
               >
                 <div className="saved-section-label">
                   <Bookmark size={18} />
-                  <span>All Saved Opportunities & Grants</span>
+                  <span>All Saved Grants</span>
                 </div>
-                {openSection === "allItems" ? <ChevronUp /> : <ChevronDown />}
+                {openSection === "allGrants" ? <ChevronUp /> : <ChevronDown />}
               </button>
-              {openSection === "allItems" && (
+              {openSection === "allGrants" && (
                 <div className="saved-options">
                   {allItems.length > 0 ? (
-                    allItems.map((item, i) => (
-                      <div key={i} className="folder-item">
+                    allItems.map((item) => (
+                      <div key={item.id} className="folder-item">
                         {item.link.startsWith("http") ? (
                           <a href={item.link} target="_blank" rel="noreferrer">
                             {item.title}
@@ -314,11 +337,18 @@ export default function Saved() {
                         ) : (
                           <Link to={item.link}>{item.title}</Link>
                         )}
-                        <p className="item-desc">{item.description}</p>
+                        {item.description ? (
+                          <p className="item-desc">{item.description}</p>
+                        ) : null}
+                        {item.folderName ? (
+                          <p className="item-desc">
+                            Folder: {item.folderName}
+                          </p>
+                        ) : null}
                       </div>
                     ))
                   ) : (
-                    <p>No saved opportunities or grants yet.</p>
+                    <p>No grants saved yet.</p>
                   )}
                 </div>
               )}
@@ -335,6 +365,11 @@ export default function Saved() {
               <h3>Create New Folder</h3>
               <X className="close-icon" size={20} onClick={closeModal} />
             </div>
+            {modalError ? (
+              <p style={{ color: "#dc2626", marginBottom: "0.75rem" }}>
+                {modalError}
+              </p>
+            ) : null}
             <input
               type="text"
               value={newFolderName}
@@ -343,11 +378,19 @@ export default function Saved() {
               className="modal-input"
             />
             <div className="modal-actions">
-              <button className="cancel-btn" onClick={closeModal}>
+              <button
+                className="cancel-btn"
+                onClick={closeModal}
+                disabled={creatingFolder}
+              >
                 Cancel
               </button>
-              <button className="create-btn" onClick={handleCreateFolder}>
-                Create
+              <button
+                className="create-btn"
+                onClick={handleCreateFolder}
+                disabled={creatingFolder || !newFolderName.trim()}
+              >
+                {creatingFolder ? "Creating…" : "Create"}
               </button>
             </div>
           </div>

@@ -400,6 +400,52 @@
 
 .card-cta:hover { background: var(--navy); color: #fff; }
 
+.card-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.message-btn,
+.card-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: var(--navy);
+  color: #fff;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.message-btn svg,
+.card-save-btn svg {
+  flex-shrink: 0;
+}
+
+.message-btn { background: var(--navy); }
+.message-btn:hover { background: var(--navy-hover); }
+
+.card-save-btn {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.card-save-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.card-error {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
 /* ================================
    Profile / Settings shared styles
    ================================ */

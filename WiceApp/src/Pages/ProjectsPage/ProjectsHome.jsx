@@ -1,43 +1,40 @@
-import React, { useEffect } from "react";
+import React, { useMemo } from "react";
 import ProjectCard from "../../Components/ProjectCard.jsx";
 import "./ProjectsHome.css";
-import { useChat } from "../../context/ChatContext.jsx";
 
 export default function ProjectsHome() {
-  const { createProjectChat } = useChat();
-
-  const projects = [
-    {
-      id: "proj-1",
-      name: "Website Redesign",
-      milestones: [
-        { name: "Planning", completed: true },
-        { name: "Wireframes", completed: true },
-        { name: "Development", completed: false },
-        { name: "Testing", completed: false },
-      ],
-      members: ["Client", "Consultant"],
-      myFiles: ["proposal.pdf", "design.png"],
-      theirFiles: ["requirements.docx", "feedback.txt"],
-    },
-    {
-      id: "proj-2",
-      name: "Marketing Campaign",
-      milestones: [
-        { name: "Research", completed: true },
-        { name: "Design", completed: false },
-        { name: "Launch", completed: false },
-      ],
-      members: ["Client", "Consultant"],
-      myFiles: ["pitch.pdf"],
-      theirFiles: ["brief.docx"],
-    },
-  ];
-
-  // ✅ Create chats for all projects immediately when the page loads
-  useEffect(() => {
-    projects.forEach((proj) => createProjectChat(proj.id, proj.name));
-  }, [createProjectChat]);
+  const projects = useMemo(
+    () => [
+      {
+        id: "proj-1",
+        name: "Website Redesign",
+        milestones: [
+          { name: "Planning", completed: true },
+          { name: "Wireframes", completed: true },
+          { name: "Development", completed: false },
+          { name: "Testing", completed: false },
+        ],
+        members: ["Client", "Consultant"],
+        myFiles: ["proposal.pdf", "design.png"],
+        theirFiles: ["requirements.docx", "feedback.txt"],
+        participants: [],
+      },
+      {
+        id: "proj-2",
+        name: "Marketing Campaign",
+        milestones: [
+          { name: "Research", completed: true },
+          { name: "Design", completed: false },
+          { name: "Launch", completed: false },
+        ],
+        members: ["Client", "Consultant"],
+        myFiles: ["pitch.pdf"],
+        theirFiles: ["brief.docx"],
+        participants: [],
+      },
+    ],
+    []
+  );
 
   return (
     <div className="projects-page">

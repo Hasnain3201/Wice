@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { Bookmark, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import {
+  addItemToSavedFolder,
+  ensureSavedCollectionsDoc,
+  listSavedFolders,
+} from "../services/saved.js";
 
 export default function GrantCard({ grant, viewerRole = "client" }) {
   const { user, role } = useAuth();
@@ -8,58 +13,76 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [folders, setFolders] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [modalSaveError, setModalSaveError] = useState("");
+  const [savingGrant, setSavingGrant] = useState(false);
+  const [loadingFolders, setLoadingFolders] = useState(false);
 
   const isConsultant = viewerRole === "consultant" || role === "consultant";
 
-  const loadFolders = () => {
-    if (!user) return;
-    const key = `savedFolders_${role}_${user.email}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setFolders(parsed.savedGrants || []);
+  const loadFolders = async () => {
+    if (!user?.uid) return;
+    await ensureSavedCollectionsDoc(user.uid, role);
+    const savedFolders = await listSavedFolders(user.uid, "savedGrants");
+    setFolders(savedFolders);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      setSaveError("Please sign in to save grants.");
+      return;
+    }
+    setSaveError("");
+    setModalSaveError("");
+    setSelectedFolder("");
+    setLoadingFolders(true);
+    try {
+      await loadFolders();
+      setShowSaveModal(true);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to load grant folders:", err);
+      }
+      setSaveError("Unable to load your collections right now.");
+    } finally {
+      setLoadingFolders(false);
     }
   };
 
-  const handleSave = () => {
-    loadFolders();
-    setShowSaveModal(true);
-  };
-
-  const addGrantToFolder = () => {
-    if (!selectedFolder || !user) return;
-    const key = `savedFolders_${role}_${user.email}`;
-    const stored = localStorage.getItem(key);
-    let data = stored ? JSON.parse(stored) : {};
-    const section = "savedGrants";
-
-    if (!data[section]) data[section] = [];
-
-    // find folder
-    let target = data[section].find((f) => f.name === selectedFolder);
-    if (!target) {
-      target = { name: selectedFolder, items: [] };
-      data[section].push(target);
-    }
-
-    // check for duplicates
-    const alreadySaved = target.items.some((i) => i.link === grant.url);
-    if (!alreadySaved) {
-      const newItem = {
+  const addGrantToFolder = async () => {
+    if (!selectedFolder || !user?.uid) return;
+    setModalSaveError("");
+    setSavingGrant(true);
+    try {
+      await addItemToSavedFolder(user.uid, "savedGrants", selectedFolder, {
         title: grant.title,
         description: grant.summary || "Grant opportunity",
-        link: grant.url,
-      };
-      target.items.push(newItem);
-
-      // also push to All Saved section
-      if (!data.allSaved) data.allSaved = [];
-      data.allSaved.push(newItem);
+        link: grant.url || "",
+        metadata: {
+          grantId: grant.id || null,
+          agency: grant.agency || null,
+          deadline: grant.deadline || null,
+        },
+      });
+      setShowSaveModal(false);
+      setSelectedFolder("");
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to save grant:", err);
+      }
+      setModalSaveError(
+        err?.message || "Unable to save this grant right now."
+      );
+    } finally {
+      setSavingGrant(false);
     }
+  };
 
-    localStorage.setItem(key, JSON.stringify(data));
-    window.dispatchEvent(new Event("storage"));
+  const closeSaveModal = () => {
+    if (savingGrant) return;
     setShowSaveModal(false);
+    setSelectedFolder("");
+    setModalSaveError("");
   };
 
   return (
@@ -88,6 +111,7 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
             className="save-btn"
             onClick={handleSave}
             title="Save grant"
+            disabled={loadingFolders}
           >
             <Bookmark size={18} />
           </button>
@@ -133,7 +157,7 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
 
       {/* 💾 Save modal */}
       {showSaveModal && (
-        <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
+        <div className="modal-overlay" onClick={closeSaveModal}>
           <div
             className="modal-card"
             onClick={(e) => e.stopPropagation()}
@@ -143,7 +167,7 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
               <X
                 className="close-icon"
                 size={20}
-                onClick={() => setShowSaveModal(false)}
+                onClick={closeSaveModal}
               />
             </div>
 
@@ -159,19 +183,26 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
                   onChange={(e) => setSelectedFolder(e.target.value)}
                 >
                   <option value="">Select folder</option>
-                  {folders.map((f, i) => (
-                    <option key={i} value={f.name}>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>
                       {f.name}
                     </option>
                   ))}
                 </select>
 
+                {modalSaveError ? (
+                  <p style={{ marginTop: "8px", color: "#dc2626" }}>
+                    {modalSaveError}
+                  </p>
+                ) : null}
+
                 <button
                   className="create-btn"
                   style={{ marginTop: "10px" }}
                   onClick={addGrantToFolder}
+                  disabled={savingGrant || !selectedFolder}
                 >
-                  Save to Collection
+                  {savingGrant ? "Saving…" : "Save to Collection"}
                 </button>
               </>
             ) : (
@@ -182,6 +213,9 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
           </div>
         </div>
       )}
+      {saveError ? (
+        <p style={{ marginTop: "8px", color: "#dc2626" }}>{saveError}</p>
+      ) : null}
     </article>
   );
 }

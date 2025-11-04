@@ -2,16 +2,45 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./ClientHome.css";
 import { CalendarDays, MessageSquare, Search } from "lucide-react";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function ClientHome() {
-  const userName = "Jane Doe";
   const navigate = useNavigate();
+  const { profile, user } = useAuth();
+
+  const name = profile?.fullName || user?.displayName || "Client";
+  const dashboard = profile?.dashboardClient || {};
+  const upcomingConsultations = dashboard.upcoming || [];
+  const recentUpdates = dashboard.recentUpdates || [];
+
+  const upcomingRows =
+    upcomingConsultations.length > 0
+      ? upcomingConsultations
+      : [
+          {
+            id: "placeholder-1",
+            date: "—",
+            consultant: "No consultations scheduled",
+            topic: "Add bookings to see them here.",
+          },
+        ];
+
+  const updatesList =
+    recentUpdates.length > 0
+      ? recentUpdates
+      : [
+          {
+            id: "update-1",
+            icon: "ℹ️",
+            text: "Updates from your engagements will appear here.",
+          },
+        ];
 
   return (
     <div className="dashboard-page c-home-container">
       <header className="dashboard-header">
-        <h1 className="dashboard-title">Welcome, {userName}!</h1>
-        <p className="dashboard-subtitle">Your personalized Wice client dashboard</p>
+        <h1 className="dashboard-title">Welcome, {name}!</h1>
+        <p className="dashboard-subtitle">Your personalized WICE client dashboard</p>
       </header>
 
       <div className="c-home-tiles">
@@ -63,25 +92,25 @@ export default function ClientHome() {
             <span>Consultant</span>
             <span>Topic</span>
           </div>
-          <div className="c-home-row">
-            <span>10/20/2025</span>
-            <span>Jeremy Foster</span>
-            <span>Community Energy</span>
-          </div>
-          <div className="c-home-row">
-            <span>10/24/2025</span>
-            <span>Sara Calvert</span>
-            <span>Environmental Policy</span>
-          </div>
+          {upcomingRows.map((item) => (
+            <div className="c-home-row" key={item.id || `${item.date}-${item.consultant}`}>
+              <span>{item.date}</span>
+              <span>{item.consultant}</span>
+              <span>{item.topic}</span>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="c-home-section">
         <h2>Recent Updates</h2>
         <ul className="c-home-list">
-          <li>🔔 New consultant added: Schala Battle</li>
-          <li>📅 Consultation with Robert Layng confirmed.</li>
-          <li>💬 You have 2 unread messages in chat.</li>
+          {updatesList.map((item) => (
+            <li key={item.id || item.text}>
+              {item.icon ? `${item.icon} ` : ""}
+              {item.text}
+            </li>
+          ))}
         </ul>
       </section>
     </div>

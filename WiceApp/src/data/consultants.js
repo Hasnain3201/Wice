@@ -46,7 +46,8 @@ function parseCsv(text) {
 }
 
 function normalize(value) {
-  return (value || "").replace(/\u0000/g, "").trim();
+  const text = value || "";
+  return text.split("\u0000").join("").trim();
 }
 
 const rows = parseCsv(rawCsv);
@@ -75,6 +76,12 @@ const consultants = dataRows
     const languages = record["Languages Spoken"] || "";
     const linkedin = record["LinkedIn Profile"] || "";
     const image = record["Upload your profile picture"] || "";
+    const email =
+      record.Email ||
+      record["Email Address"] ||
+      record["Email address"] ||
+      record["Work Email"] ||
+      "";
 
     return {
       id: index + 1,
@@ -85,6 +92,7 @@ const consultants = dataRows
       languages,
       linkedin,
       image: image || null,
+      email,
       skills: record.Skills || "",
       sectors: record.Sectors || "",
     };

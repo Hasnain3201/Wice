@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./Chat.css";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -31,6 +31,7 @@ export default function Chat() {
   const [draft, setDraft] = useState("");
   const [chatPendingHide, setChatPendingHide] = useState(null);
   const [isHiding, setIsHiding] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const role = profile?.accountType;
   const hiddenChatsMap = useMemo(
@@ -74,11 +75,20 @@ export default function Chat() {
     markChatAsRead(activeChat.id, latestMessage.createdAt);
   }, [activeChat, latestMessage, markChatAsRead]);
 
-  const handleSend = async (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    if (!messagesEndRef.current) return;
+    messagesEndRef.current.scrollIntoView({ block: "end" });
+  }, [activeChatId, messageList.length]);
+
+  const sendCurrentMessage = async () => {
     if (!activeChat || !draft.trim()) return;
     await sendMessage(activeChat.id, draft);
     setDraft("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await sendCurrentMessage();
   };
 
   const handleSelectChat = (chatId) => {
@@ -179,15 +189,21 @@ export default function Chat() {
         </aside>
 
         <section className="chat-window" aria-live="polite">
-          {activeChat ? (
-            <>
-              <header className="chat-window-header">
-                <div>
-                  <h3>{activeChatLabel}</h3>
-                  <p>Direct Chat</p>
-                </div>
-              </header>
-
+          <header className="chat-window-header">
+            {activeChat ? (
+              <div>
+                <h3>{activeChatLabel}</h3>
+                <p>Direct Chat</p>
+              </div>
+            ) : (
+              <div>
+                <h3>No chat selected</h3>
+                <p>Select a conversation to view messages.</p>
+              </div>
+            )}
+          </header>
+          <div className="chat-window-content">
+            {activeChat ? (
               <div className="chat-messages">
                 {loading && messageList.length === 0 ? (
                   <p className="empty-chat-note">Loading conversation…</p>
@@ -208,33 +224,35 @@ export default function Chat() {
                     </article>
                   ))
                 )}
+                <div ref={messagesEndRef} />
               </div>
-
-              <form className="chat-composer" onSubmit={handleSend}>
-                <textarea
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      handleSend(event);
-                    }
-                  }}
-                  placeholder="Type your message…"
-                  rows={2}
-                  required
-                />
-                <button type="submit" disabled={!draft.trim()}>
-                  Send
-                </button>
-              </form>
-            </>
-          ) : (
-            <div className="chat-empty">
-              <h3>No conversation selected</h3>
-              <p>Choose a chat from the list or start one from the marketplace.</p>
-            </div>
-          )}
+            ) : (
+              <div className="chat-empty">
+                <h3>Select a conversation</h3>
+                <p>Choose a chat from the list or start one from the marketplace.</p>
+              </div>
+            )}
+          </div>
+          <form className="chat-composer" onSubmit={handleSubmit}>
+            <textarea
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  sendCurrentMessage();
+                }
+              }}
+              placeholder={
+                activeChat ? "Type your message…" : "Select a chat to start typing…"
+              }
+              rows={2}
+              disabled={!activeChat}
+            />
+            <button type="submit" disabled={!activeChat || !draft.trim()}>
+              Send
+            </button>
+          </form>
         </section>
       </div>
       {chatPendingHide ? (

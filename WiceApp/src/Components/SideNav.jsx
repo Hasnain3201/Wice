@@ -16,10 +16,13 @@ import {
 } from "lucide-react";
 import "./SideNav.css";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useChat } from "../context/ChatContext.jsx";
 
 export default function SideNav() {
   const navigate = useNavigate();
   const { role, logout } = useAuth();
+  const { unreadChatIds } = useChat();
+  const hasUnreadChats = unreadChatIds.length > 0;
 
   const links = useMemo(() => {
     if (role === "consultant") {
@@ -65,18 +68,27 @@ export default function SideNav() {
   return (
     <aside className="sidenav" aria-label="Primary navigation">
       <nav className="sidenav-links">
-        {links.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
-            <Icon size={18} className="nav-icon" />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+        {links.map(({ to, label, icon }) => {
+          const isChatLink = to === "/chat";
+          const showDot = isChatLink && hasUnreadChats;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                isActive ? "nav-item active" : "nav-item"
+              }
+            >
+              {React.createElement(icon, { size: 18, className: "nav-icon" })}
+              <span className="nav-label">
+                {label}
+                {showDot ? (
+                  <span className="nav-dot" aria-hidden="true" />
+                ) : null}
+              </span>
+            </NavLink>
+          );
+        })}
 
         {/* Logout pinned to bottom */}
         <button

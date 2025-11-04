@@ -3,15 +3,16 @@ import { Calendar } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function CalendarPage() {
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
+  const name = profile?.fullName || user?.displayName || user?.email;
 
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
         <h1 className="dashboard-title">Calendar</h1>
         <p className="dashboard-subtitle">
-          {user?.name
-            ? `${user.name}'s calendar`
+          {name
+            ? `${name}'s calendar`
             : "Your calendar events will appear here."}
         </p>
       </header>

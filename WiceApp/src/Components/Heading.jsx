@@ -8,10 +8,16 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function Heading() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { role, user, logout } = useAuth();
+  const { role, user, profile, logout } = useAuth();
 
-  const userName = user?.name || "User";
-  const profilePath = role === "consultant" ? "/consultant/profile" : "/profile";
+  const userName =
+    profile?.fullName || user?.displayName || user?.email || "User";
+  const profilePath =
+    role === "consultant"
+      ? "/consultant/profile"
+      : role === "client"
+      ? "/profile"
+      : "/admin/dashboard";
   const settingsPath = "/settings";
 
   const handleNavigate = (path) => {
@@ -19,9 +25,9 @@ export default function Heading() {
     navigate(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMenuOpen(false);
-    logout();
+    await logout();
     navigate("/");
   };
 

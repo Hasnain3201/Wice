@@ -98,6 +98,38 @@ body {
   box-shadow: 0 0 0 3px rgba(198, 162, 74, 0.2);
 }
 
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .wice-input {
+  padding-right: 110px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 8px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.toggle-password:hover {
+  background: rgba(31, 42, 90, 0.08);
+}
+
+.toggle-password:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* Button */
 .wice-btn {
   width: 100%;

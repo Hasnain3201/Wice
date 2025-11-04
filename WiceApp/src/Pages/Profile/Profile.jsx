@@ -1,63 +1,158 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { updateProfile as updateAuthProfile } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { auth } from "../../firebase";
+import { saveUserProfile } from "../../services/userProfile.js";
+
+function arrayFromCsv(input) {
+  return (input || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function csvFromArray(arr) {
+  return Array.isArray(arr) ? arr.join(", ") : "";
+}
 
 export default function Profile() {
-  // mock client profile state (no backend yet)
+  const { user, profile, refreshProfile, loading } = useAuth();
   const [form, setForm] = useState({
-    name: "Jane Doe",
-    organization: "Coastal Resilience Org",
-    email: "jane@example.org",
-    location: "Newark, NJ, USA",
-    sectors: ["Climate", "Health"],
-    languages: "English, Spanish",
-    about:
-      "Community development lead focusing on climate resilience, public health, and equitable access to services.",
-    photo: "",
+    fullName: "",
+    organization: "",
+    email: "",
+    location: "",
+    sectorsCsv: "",
+    languages: "",
+    about: "",
+    photoUrl: "",
   });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const [msg, setMsg] = useState("");
+  const isClient = useMemo(
+    () => profile?.accountType === "client",
+    [profile?.accountType]
+  );
 
-  const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+  useEffect(() => {
+    if (!profile || !user) return;
+
+    setForm({
+      fullName: profile.fullName || user.displayName || "",
+      organization: profile.organization || "",
+      email: user.email || profile.email || "",
+      location: profile.location || "",
+      sectorsCsv: csvFromArray(profile.sectors),
+      languages: profile.languages || "",
+      about: profile.about || "",
+      photoUrl: profile.photoUrl || "",
+    });
+  }, [profile, user]);
+
+  const handleFieldChange = (key) => (event) => {
+    const value = event.target.value;
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handlePhotoChange = (event) => {
-    const file = event.target.files && event.target.files[0];
+    const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
-      update("photo", reader.result || "");
+      setForm((prev) => ({ ...prev, photoUrl: reader.result || "" }));
     };
     reader.readAsDataURL(file);
   };
 
-  const clearPhoto = () => update("photo", "");
-
-  const onSubmit = (e) => {
-    e.preventDefault();
-    // TODO: send to API later
-    console.log("Profile save (mock):", form);
-    setMsg("Profile saved (local only).");
-    setTimeout(() => setMsg(""), 2500);
+  const clearPhoto = () => {
+    setForm((prev) => ({ ...prev, photoUrl: "" }));
   };
 
-  const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    form.name || "Client"
-  )}&background=E5E7EB&color=111827&size=180&bold=true`;
-  const photoSrc = form.photo || defaultAvatar;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    setError("");
+
+    if (!user) {
+      setError("You must be signed in to update your profile.");
+      setSaving(false);
+      return;
+    }
+
+    const sectors = arrayFromCsv(form.sectorsCsv);
+
+    try {
+      await saveUserProfile(user.uid, {
+        fullName: form.fullName,
+        organization: form.organization,
+        location: form.location,
+        sectors,
+        languages: form.languages,
+        about: form.about,
+        photoUrl: form.photoUrl,
+      });
+
+      if (auth.currentUser && form.fullName) {
+        await updateAuthProfile(auth.currentUser, {
+          displayName: form.fullName,
+        });
+      }
+
+      await refreshProfile();
+      setMessage("Profile saved.");
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      setError(
+        err?.message || "Unable to save your profile right now. Try again later."
+      );
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMessage(""), 4000);
+    }
+  };
+
+  const defaultAvatar = useMemo(() => {
+    const name = form.fullName || user?.displayName || "Client";
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      name
+    )}&background=E5E7EB&color=111827&size=180&bold=true`;
+  }, [form.fullName, user?.displayName]);
+
+  if (!user && !loading) {
+    return (
+      <div className="dashboard-page">
+        <header className="dashboard-header">
+          <h1 className="dashboard-title">Your Profile</h1>
+          <p className="dashboard-subtitle">
+            Sign in to manage your profile details.
+          </p>
+        </header>
+      </div>
+    );
+  }
+
+  const photoSrc = form.photoUrl || defaultAvatar;
 
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
         <h1 className="dashboard-title">Your Profile</h1>
         <p className="dashboard-subtitle">
-          Update your client details to keep consultants in the loop.
+          {isClient
+            ? "Update your client details to keep consultants in the loop."
+            : "Keep your information current for consultants across WICE."}
         </p>
       </header>
 
-      <form className="dashboard-card settings" onSubmit={onSubmit}>
+      <form className="dashboard-card settings" onSubmit={handleSubmit}>
         <div className="profile-photo-editor">
           <img
             src={photoSrc}
-            alt={`${form.name || "Client"} avatar`}
+            alt={`${form.fullName || "Client"} avatar`}
             className="profile-photo"
           />
           <div className="profile-photo-actions">
@@ -71,7 +166,7 @@ export default function Profile() {
               style={{ display: "none" }}
               onChange={handlePhotoChange}
             />
-            {form.photo ? (
+            {form.photoUrl ? (
               <button
                 className="ghost-btn"
                 type="button"
@@ -88,8 +183,9 @@ export default function Profile() {
             <label className="label">Full Name</label>
             <input
               className="input"
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
+              value={form.fullName}
+              onChange={handleFieldChange("fullName")}
+              required
             />
           </div>
 
@@ -98,7 +194,8 @@ export default function Profile() {
             <input
               className="input"
               value={form.organization}
-              onChange={(e) => update("organization", e.target.value)}
+              onChange={handleFieldChange("organization")}
+              placeholder="Coastal Resilience Org"
             />
           </div>
         </div>
@@ -110,7 +207,9 @@ export default function Profile() {
               className="input"
               type="email"
               value={form.email}
-              onChange={(e) => update("email", e.target.value)}
+              readOnly
+              disabled
+              title="Email updates will be supported soon."
             />
           </div>
 
@@ -119,7 +218,8 @@ export default function Profile() {
             <input
               className="input"
               value={form.location}
-              onChange={(e) => update("location", e.target.value)}
+              onChange={handleFieldChange("location")}
+              placeholder="Newark, NJ, USA"
             />
           </div>
         </div>
@@ -130,16 +230,8 @@ export default function Profile() {
             <input
               className="input"
               placeholder="Climate, Health, Energy…"
-              value={form.sectors.join(", ")}
-              onChange={(e) =>
-                update(
-                  "sectors",
-                  e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                )
-              }
+              value={form.sectorsCsv}
+              onChange={handleFieldChange("sectorsCsv")}
             />
           </div>
 
@@ -149,7 +241,7 @@ export default function Profile() {
               className="input"
               placeholder="English, Spanish…"
               value={form.languages}
-              onChange={(e) => update("languages", e.target.value)}
+              onChange={handleFieldChange("languages")}
             />
           </div>
         </div>
@@ -161,14 +253,18 @@ export default function Profile() {
               className="input"
               rows={6}
               value={form.about}
-              onChange={(e) => update("about", e.target.value)}
+              onChange={handleFieldChange("about")}
+              placeholder="Share a short introduction for consultants."
             />
           </div>
         </div>
 
         <div className="settings-actions">
-          <button className="btn primary" type="submit">Save Changes</button>
-          {msg && <span className="hint-ok">{msg}</span>}
+          <button className="btn primary" type="submit" disabled={saving}>
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+          {message && <span className="hint-ok">{message}</span>}
+          {error && <span className="hint-error">{error}</span>}
         </div>
       </form>
     </div>

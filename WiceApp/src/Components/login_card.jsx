@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../Pages/Client/ClientLoginPage.css"; // reuse existing client login styles
 
 export default function LoginCard({
@@ -9,7 +9,9 @@ export default function LoginCard({
   identifierName = "email",
   placeholderIdentifier = "you@example.org",
   errorMessage,
+  loading = false,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   const autoComplete =
     identifierType === "email" ? "email" : "username";
 
@@ -31,15 +33,24 @@ export default function LoginCard({
 
         <div className="wice-field">
           <label htmlFor="password">Password</label>
-          <input
-            className="wice-input"
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            required
-          />
+          <div className="password-wrapper">
+            <input
+              className="wice-input"
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
 
         <div className="wice-row">
@@ -63,8 +74,8 @@ export default function LoginCard({
           </div>
         ) : null}
 
-        <button className="wice-btn" type="submit">
-          Sign In
+        <button className="wice-btn" type="submit" disabled={loading}>
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
     </div>

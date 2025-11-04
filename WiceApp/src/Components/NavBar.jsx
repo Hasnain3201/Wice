@@ -34,8 +34,8 @@ export default function NavBar() {
     </Link>
   );
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 

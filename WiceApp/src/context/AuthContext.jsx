@@ -1,84 +1,227 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
+  useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
-  useEffect,
 } from "react";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
-const ROLE_KEY = "wice-role";
-const USER_KEY = "wice-user";
-const USERDATA_KEY = "wice-userData";
+const TEST_SESSION_KEY = "wice-test-session";
+
+function getStoredTestSession() {
+  if (typeof window === "undefined") return null;
+  const raw = window.sessionStorage.getItem(TEST_SESSION_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    window.sessionStorage.removeItem(TEST_SESSION_KEY);
+    if (import.meta.env.DEV) {
+      console.warn("Failed to parse stored test session:", error);
+    }
+    return null;
+  }
+}
 
 const AuthContext = createContext(null);
 
-function getInitialAuth() {
-  if (typeof window === "undefined")
-    return { role: null, user: null, userData: {} };
+export function AuthProvider({ children }) {
+  const storedTestSession = getStoredTestSession();
 
-  const role = window.sessionStorage.getItem(ROLE_KEY);
-  const user = JSON.parse(window.sessionStorage.getItem(USER_KEY) || "null");
-  const userData = JSON.parse(
-    window.sessionStorage.getItem(USERDATA_KEY) || "{}"
+  const [user, setUser] = useState(storedTestSession?.user ?? null);
+  const [role, setRole] = useState(storedTestSession?.role ?? null);
+  const [profile, setProfile] = useState(storedTestSession?.profile ?? null);
+  const [isTestSession, setIsTestSession] = useState(Boolean(storedTestSession));
+  const [loading, setLoading] = useState(true);
+
+  const applyTestSession = useCallback((session) => {
+    if (!session) return;
+
+    setIsTestSession(true);
+    setUser(session.user);
+    setRole(session.role);
+    setProfile(session.profile);
+    setLoading(false);
+
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(
+        TEST_SESSION_KEY,
+        JSON.stringify(session)
+      );
+    }
+  }, []);
+
+  const clearTestSession = useCallback(() => {
+    setIsTestSession(false);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(TEST_SESSION_KEY);
+    }
+  }, []);
+
+  const restoreTestSession = useCallback(() => {
+    const stored = getStoredTestSession();
+    if (!stored) {
+      clearTestSession();
+      return null;
+    }
+    applyTestSession(stored);
+    return stored;
+  }, [applyTestSession, clearTestSession]);
+
+  const loadProfile = useCallback(
+    async (firebaseUser) => {
+      if (!firebaseUser) {
+        const restored = restoreTestSession();
+        if (!restored) {
+          setUser(null);
+          setRole(null);
+          setProfile(null);
+        } else {
+          return restored.profile;
+        }
+        setLoading(false);
+        return null;
+      }
+
+      setLoading(true);
+      try {
+        const snapshot = await getDoc(doc(db, "users", firebaseUser.uid));
+        const data = snapshot.exists() ? snapshot.data() : null;
+        const normalized = data
+          ? { ...data, hiddenChats: data.hiddenChats || {} }
+          : null;
+
+        clearTestSession();
+        setUser(firebaseUser);
+        setProfile(normalized);
+        setRole(normalized?.accountType || normalized?.role || null);
+
+        if (!normalized && import.meta.env.DEV) {
+          console.warn(
+            `No profile found for uid ${firebaseUser.uid}. Check Firestore "users" collection.`
+          );
+        }
+
+        return normalized;
+      } catch (error) {
+        console.error("Failed to load user profile:", error);
+        setUser(firebaseUser);
+        setProfile(null);
+        setRole(null);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [clearTestSession, restoreTestSession]
   );
 
-  return { role, user, userData };
-}
-
-export function AuthProvider({ children }) {
-  const [role, setRole] = useState(getInitialAuth().role);
-  const [user, setUser] = useState(getInitialAuth().user);
-  const [userData, setUserData] = useState(getInitialAuth().userData);
-
-  // Persist to sessionStorage
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (role) window.sessionStorage.setItem(ROLE_KEY, role);
-    else window.sessionStorage.removeItem(ROLE_KEY);
-
-    if (user) window.sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-    else window.sessionStorage.removeItem(USER_KEY);
-
-    if (userData)
-      window.sessionStorage.setItem(USERDATA_KEY, JSON.stringify(userData));
-    else window.sessionStorage.removeItem(USERDATA_KEY);
-  }, [role, user, userData]);
-
-  // login() now supports multiple user roles
-  const login = (nextRole, userDataInput = {}) => {
-    setRole(nextRole);
-    setUser(userDataInput.user || { name: nextRole, email: "unknown" });
-    setUserData(
-      userDataInput.data || { saved: [], notifications: [], calendar: [] }
-    );
-  };
-
-  const updateUserData = (newData) => {
-    setUserData((prev) => {
-      const updated = { ...prev, ...newData };
-      window.sessionStorage.setItem(USERDATA_KEY, JSON.stringify(updated));
-      return updated;
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      loadProfile(firebaseUser).catch((error) => {
+        if (import.meta.env.DEV) {
+          console.error("Auth state listener error:", error);
+        }
+      });
     });
-  };
 
-  const logout = () => {
-    setRole(null);
-    setUser(null);
-    setUserData({});
-    window.sessionStorage.clear();
-  };
+    return () => unsubscribe();
+  }, [loadProfile]);
+
+  const loginWithEmail = useCallback(
+    async (email, password) => {
+      const credentials = await signInWithEmailAndPassword(auth, email, password);
+      const data = await loadProfile(credentials.user);
+      return { credentials, profile: data };
+    },
+    [loadProfile]
+  );
+
+  const refreshProfile = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      const restored = restoreTestSession();
+      if (restored) {
+        return restored.profile;
+      }
+      setProfile(null);
+      setRole(null);
+      return null;
+    }
+    return loadProfile(currentUser);
+  }, [loadProfile, restoreTestSession]);
+
+  const setTestSession = useCallback(
+    ({ email, fullName = "Admin Tester" }) => {
+      const session = {
+        user: {
+          uid: `test-admin-${Date.now()}`,
+          email,
+        },
+        role: "admin",
+        profile: {
+          fullName,
+          email,
+          role: "admin",
+          accountType: "admin",
+          hiddenChats: {},
+        },
+      };
+
+      applyTestSession(session);
+      return session;
+    },
+    [applyTestSession]
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Error signing out:", error);
+      }
+    } finally {
+      clearTestSession();
+      setUser(null);
+      setRole(null);
+      setProfile(null);
+      setLoading(false);
+    }
+  }, [clearTestSession]);
 
   const value = useMemo(
     () => ({
-      role,
       user,
-      userData,
-      login,
+      role,
+      profile,
+      loading,
+      isTestSession,
+      loginWithEmail,
+      refreshProfile,
+      setTestSession,
       logout,
-      updateUserData,
     }),
-    [role, user, userData]
+    [
+      user,
+      role,
+      profile,
+      loading,
+      isTestSession,
+      loginWithEmail,
+      refreshProfile,
+      setTestSession,
+      logout,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

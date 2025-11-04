@@ -1,18 +1,40 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC721FuVfUazrMyq0AJDo9E2TBGL-Q8kuk",
-    authDomain: "wice-ebdc7.firebaseapp.com",
-    projectId: "wice-ebdc7",
-    storageBucket: "wice-ebdc7.firebasestorage.app",
-    messagingSenderId: "819082040419",
-    appId: "1:819082040419:web:c6971070aa053e6c0e1456",
-    measurementId: "G-DP91GGX92L",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+if (import.meta.env.DEV) {
+  const missingKeys = Object.entries(firebaseConfig)
+    .filter(([key, value]) => !value && key !== "measurementId")
+    .map(([key]) => key);
+
+  if (missingKeys.length) {
+    console.warn(
+      "Missing Firebase environment variables:",
+      missingKeys.join(", ")
+    );
+  }
+}
+
 const app = initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
+// Ensure auth sessions persist across tabs until the user signs out.
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  if (import.meta.env.DEV) {
+    console.warn("Unable to set Firebase auth persistence:", error);
+  }
+});
+
 export const db = getFirestore(app);
+export default app;

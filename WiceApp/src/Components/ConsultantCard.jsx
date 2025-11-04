@@ -1,14 +1,29 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Bookmark, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bookmark, MessageCircle, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useChat } from "../context/ChatContext.jsx";
+import { findUserByEmail, findUserByFullName } from "../services/chat.js";
+import {
+  addItemToSavedFolder,
+  ensureSavedCollectionsDoc,
+  listSavedFolders,
+} from "../services/saved.js";
 
 export default function ConsultantCard({ consultant, viewerRole = "client" }) {
-  const { id, name, headline, image, sectors } = consultant;
+  const { id, name, headline, image, sectors, email } = consultant;
   const { user, role } = useAuth();
+  const { startDirectChat } = useChat();
+  const navigate = useNavigate();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [folders, setFolders] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState("");
+  const [messaging, setMessaging] = useState(false);
+  const [messageError, setMessageError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [savingConsultant, setSavingConsultant] = useState(false);
+  const [loadingFolders, setLoadingFolders] = useState(false);
+  const [modalSaveError, setModalSaveError] = useState("");
 
   const avatar =
     image ||
@@ -23,54 +38,101 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       ? `Highlighted sectors: ${sectors}`
       : null;
 
-  // Load client folders
-  const loadFolders = () => {
-    if (!user) return;
-    const key = `savedFolders_${role}_${user.email}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setFolders(parsed.consultantCollections || []);
+  const loadFolders = async () => {
+    if (!user?.uid) return;
+    await ensureSavedCollectionsDoc(user.uid, role);
+    const savedFolders = await listSavedFolders(user.uid, "consultantCollections");
+    setFolders(savedFolders);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      setSaveError("Please sign in to save consultants.");
+      return;
+    }
+    setSaveError("");
+    setModalSaveError("");
+    setSelectedFolder("");
+    setLoadingFolders(true);
+    try {
+      await loadFolders();
+      setShowSaveModal(true);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to load saved folders:", err);
+      }
+      setSaveError("Unable to load your collections right now.");
+    } finally {
+      setLoadingFolders(false);
     }
   };
 
-  const handleSave = () => {
-    loadFolders();
-    setShowSaveModal(true);
+  const handleMessage = async () => {
+    if (!user) {
+      setMessageError("Please sign in to start a conversation.");
+      return;
+    }
+    setMessageError("");
+    setMessaging(true);
+    try {
+      const target =
+        (email && (await findUserByEmail(email))) ||
+        (await findUserByFullName(name, "consultant")) ||
+        null;
+
+      if (!target?.uid) {
+        setMessageError("This consultant is not available for messaging yet.");
+        return;
+      }
+
+      await startDirectChat({
+        uid: target.uid,
+        fullName: target.fullName || name,
+        email: target.email || email,
+        role: target.accountType || "consultant",
+      });
+      navigate("/chat");
+    } catch (err) {
+      console.error("Failed to start chat:", err);
+      setMessageError("Unable to start chat right now. Please try again.");
+    } finally {
+      setMessaging(false);
+    }
   };
 
-  const addConsultantToFolder = () => {
-    if (!selectedFolder || !user) return;
-    const key = `savedFolders_${role}_${user.email}`;
-    const stored = localStorage.getItem(key);
-    let data = stored ? JSON.parse(stored) : {};
-    const section = "consultantCollections";
-
-    // Ensure structure exists
-    if (!data[section]) data[section] = [];
-
-    let target = data[section].find((f) => f.name === selectedFolder);
-    if (!target) {
-      target = { name: selectedFolder, items: [] };
-      data[section].push(target);
-    }
-
-    // Prevent duplicates
-    const alreadySaved = target.items.some(
-      (i) => i.title === name && i.link === `/consultant/${id}`
-    );
-
-    if (!alreadySaved) {
-      target.items.push({
+  const addConsultantToFolder = async () => {
+    if (!selectedFolder || !user?.uid) return;
+    setModalSaveError("");
+    setSavingConsultant(true);
+    try {
+      await addItemToSavedFolder(user.uid, "consultantCollections", selectedFolder, {
         title: name,
         description: headline || "Consultant profile",
         link: `/consultant/${id}`,
+        metadata: {
+          consultantId: id,
+          consultantEmail: email,
+        },
       });
+      setShowSaveModal(false);
+      setSelectedFolder("");
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to save consultant:", err);
+      }
+      setModalSaveError(
+        err?.message || "Unable to save this consultant right now."
+      );
+    } finally {
+      setSavingConsultant(false);
     }
+  };
 
-    localStorage.setItem(key, JSON.stringify(data));
-    window.dispatchEvent(new Event("storage")); // trigger Saved.jsx reload
+  const closeSaveModal = () => {
+    if (savingConsultant) return;
     setShowSaveModal(false);
+    setSelectedFolder("");
+    setModalSaveError("");
   };
 
   return (
@@ -98,25 +160,42 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       </Link>
 
       {role === "client" && (
-        <button
-          className="save-btn"
-          onClick={handleSave}
-          title="Save consultant"
-        >
-          <Bookmark size={18} />
-        </button>
+        <div className="card-actions">
+          <button
+            className="message-btn"
+            onClick={handleMessage}
+            disabled={messaging}
+            title="Message consultant"
+            type="button"
+          >
+            <MessageCircle size={18} />
+            <span>{messaging ? "Starting…" : "Message"}</span>
+          </button>
+          <button
+            className="card-save-btn"
+            onClick={handleSave}
+            title="Save consultant"
+            type="button"
+            disabled={loadingFolders}
+          >
+            <Bookmark size={18} />
+          </button>
+        </div>
       )}
+
+      {messageError ? <p className="card-error">{messageError}</p> : null}
+      {saveError ? <p className="card-error">{saveError}</p> : null}
 
       {/* Save Modal */}
       {showSaveModal && (
-        <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
+        <div className="modal-overlay" onClick={closeSaveModal}>
           <div
             className="modal-card"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
               <h3>Save Consultant</h3>
-              <X className="close-icon" size={20} onClick={() => setShowSaveModal(false)} />
+              <X className="close-icon" size={20} onClick={closeSaveModal} />
             </div>
 
             {folders.length > 0 ? (
@@ -129,16 +208,22 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
                   onChange={(e) => setSelectedFolder(e.target.value)}
                 >
                   <option value="">Select folder</option>
-                  {folders.map((f, i) => (
-                    <option key={i} value={f.name}>{f.name}</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
                   ))}
                 </select>
+                {modalSaveError ? (
+                  <p style={{ marginTop: "8px", color: "#dc2626" }}>
+                    {modalSaveError}
+                  </p>
+                ) : null}
                 <button
                   className="create-btn"
                   style={{ marginTop: "10px" }}
                   onClick={addConsultantToFolder}
+                  disabled={savingConsultant || !selectedFolder}
                 >
-                  Save to Collection
+                  {savingConsultant ? "Saving…" : "Save to Collection"}
                 </button>
               </>
             ) : (
