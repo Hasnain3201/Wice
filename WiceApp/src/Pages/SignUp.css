@@ -72,15 +72,14 @@
 .account-type {
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+  gap: 18px;
   margin-bottom: 4px;
 }
 .account-label {
   font-size: 0.95rem;
   color: #334155;
   font-weight: 700;
-  margin-right: 2px;
+  margin-right: 8px;
 }
 .radio {
   display: inline-flex;
@@ -105,6 +104,14 @@
 .signup-form input:focus {
   outline: none;
   border-color: var(--gold);
+}
+
+.signup-password-hint {
+  margin-top: -4px;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: #475569;
+  text-align: left;
 }
 
 .signup-btn {

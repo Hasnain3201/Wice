@@ -1,0 +1,69 @@
+.settings-card {
+  padding: 32px;
+}
+
+.settings-section {
+  border-top: 1px solid #ececec;
+  padding-top: 16px;
+  margin-top: 24px;
+}
+
+.settings-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.settings-section__header {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+}
+
+.settings-section__header:hover {
+  color: #0b69ff;
+}
+
+.settings-section__desc {
+  font-size: 0.94rem;
+  color: #6b7280;
+  margin: 6px 0 10px 0;
+  max-width: 80ch;
+  line-height: 1.45;
+}
+
+.settings-section__body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+  display: grid;
+  gap: 10px;
+  padding-left: 4px;
+}
+
+.settings-section__body.is-open {
+  max-height: 620px;
+}
+
+.settings-section__body label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.settings-section__body input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}

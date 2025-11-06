@@ -1,0 +1,230 @@
+.project-card {
+  background: #fff;
+  border-radius: 16px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* HEADER */
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 42px;
+}
+
+.project-card.open .project-header {
+  background-color: #eef2ff;
+}
+
+.project-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* --- TIMELINE --- */
+.timeline-container {
+  position: relative;
+  width: 100%;
+  margin-top: 55px; /* 🔹 Increased spacing between header and milestone titles */
+  margin-bottom: 40px;
+  padding: 0 50px;
+  height: 120px;
+  box-sizing: border-box;
+}
+
+
+.timeline-line {
+  position: absolute;
+  top: 50%;
+  left: 50px;
+  right: 50px;
+  height: 4px;
+  background-color: #3b82f6;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.timeline-points {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  height: 100%;
+}
+
+/* Dots centered on the blue line */
+.milestone-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  background-color: #fff;
+  margin: 0 auto;
+  position: relative;
+  top: calc(50% - 9px);
+  z-index: 3;
+}
+
+.milestone-dot.filled {
+  background-color: #3b82f6;
+}
+
+/* Alternate milestone labels */
+.milestone-item {
+  text-align: center;
+  position: relative;
+  flex: 1;
+}
+
+.milestone-item.top .milestone-info {
+  position: absolute;
+  bottom: 58px;
+}
+
+.milestone-item.bottom .milestone-info {
+  position: absolute;
+  top: 58px;
+}
+
+/* Labels + dates */
+.milestone-label {
+  font-size: 0.9rem;
+  color: #111827;
+  white-space: nowrap;
+  font-weight: 500;
+  margin: 0;
+}
+
+.milestone-date {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ADD MILESTONE */
+.add-btn {
+  margin: 10px 30px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.add-milestone-form {
+  margin: 20px 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.add-milestone-form input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.add-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-actions .cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* FILE UPLOAD */
+.file-upload {
+  margin-top: 30px;
+  padding: 0 30px;
+}
+
+.file-upload ul {
+  margin-top: 10px;
+  list-style: none;
+  padding-left: 0;
+}
+
+/* CHAT TITLE */
+.project-members {
+  margin-top: 30px;
+  padding: 0 30px;
+}
+
+.chat-title {
+  font-size: 1.1rem;
+  color: #1e40af;
+  margin-bottom: 10px;
+}
+
+.members {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* CHAT SECTION */
+.chat-section {
+  margin: 10px 30px 30px;
+}
+
+.chat-box {
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  padding: 8px 10px;
+  margin: 5px 0;
+  border-radius: 10px;
+  max-width: 75%;
+}
+
+.message.sent {
+  background-color: #3b82f6;
+  color: white;
+  margin-left: auto;
+}
+
+.message.received {
+  background-color: #dbeafe;
+  color: #111827;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.chat-input button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+}

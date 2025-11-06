@@ -1,0 +1,19 @@
+.notifications-page {
+  background: #f5f7fa;
+  min-height: calc(100vh - 64px);
+  margin-top: 0px;
+  box-sizing: border-box;
+}
+
+.notifications-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  padding-top: 10px;
+  margin-bottom: 24px;
+}
+
+.notifications-list {
+  width: 100%;
+  max-width: none;
+}

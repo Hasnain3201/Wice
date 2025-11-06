@@ -1,0 +1,83 @@
+.c-home-container {
+  gap: 32px;
+}
+
+.c-home-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.c-home-card {
+  flex: 1;
+  min-width: 280px;
+  text-align: center;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.c-home-icon {
+  margin: 0 auto 0.75rem auto;
+  height: 36px;
+  width: 36px;
+  color: #0a2342;
+}
+
+.c-home-btn {
+  margin-top: 1rem;
+  background-color: #0a2342;
+  color: white;
+  border-radius: 0.5rem;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.c-home-section {
+  margin-top: 2.5rem;
+}
+
+.c-home-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #0a2342;
+}
+
+.c-home-table {
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.c-home-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+
+.c-home-row.header {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+.c-home-list {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+  list-style: none;
+}
+
+.c-home-list li {
+  margin-bottom: 0.5rem;
+}
+
+.c-home-btn:hover {
+  background-color: #142d5b;
+}
