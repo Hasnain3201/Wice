@@ -105,7 +105,7 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
           </div>
         </div>
 
-        {/* 🔖 Save icon for consultants */}
+        {/* Save icon for consultants */}
         {isConsultant && (
           <button
             className="save-btn"
@@ -155,7 +155,7 @@ export default function GrantCard({ grant, viewerRole = "client" }) {
         </div>
       )}
 
-      {/* 💾 Save modal */}
+      {/* Save modal */}
       {showSaveModal && (
         <div className="modal-overlay" onClick={closeSaveModal}>
           <div

@@ -36,7 +36,7 @@
 .timeline-container {
   position: relative;
   width: 100%;
-  margin-top: 55px; /* 🔹 Increased spacing between header and milestone titles */
+  margin-top: 55px; /* Increased spacing between header and milestone titles */
   margin-bottom: 40px;
   padding: 0 50px;
   height: 120px;
