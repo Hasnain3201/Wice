@@ -233,7 +233,7 @@
 
 .dashboard-main {
   margin-left: 200px;
-  padding: 80px 56px 56px;
+  padding: 110px 56px 56px;
   min-height: 100vh;
   background: #f7f9fc;
 }
@@ -241,7 +241,7 @@
 @media (max-width: 900px) {
   .dashboard-main {
     margin-left: 0;
-    padding: 96px 24px 36px;
+    padding: 130px 24px 36px;
   }
 }
 

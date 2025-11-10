@@ -1,0 +1,198 @@
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--card-bg, #f9fafb);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.admin-stat__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f46e5;
+}
+
+.admin-stat__label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.admin-stat__value {
+  margin: 2px 0 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.admin-card {
+  margin-top: 32px;
+}
+
+.admin-card:first-of-type {
+  margin-top: 0;
+}
+
+.admin-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-search,
+.admin-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table td.admin-actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.admin-insight {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.admin-insight__label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.admin-insight__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 4px 0;
+  color: #111827;
+}
+
+.admin-insight__hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.admin-log-action {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.admin-table th {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pill.active {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.status-pill.revoked {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.admin-btn.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.admin-btn.ghost {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.admin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-loading {
+  color: #6b7280;
+}
+
+.admin-error {
+  color: #dc2626;
+  margin-bottom: 12px;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-link {
+  color: #2563eb;
+  font-weight: 600;
+}

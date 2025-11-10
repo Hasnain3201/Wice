@@ -197,7 +197,9 @@ export default function Saved() {
     );
   }
 
-  const allItems = role === "consultant" ? consultantAllItems : [];
+  const isConsultant = role === "consultant";
+  const isClientView = role === "client" || role === "admin";
+  const allItems = isConsultant ? consultantAllItems : [];
 
   return (
     <div className="dashboard-page">
@@ -219,7 +221,7 @@ export default function Saved() {
         ) : null}
 
         {/* CLIENT VIEW */}
-        {role === "client" && (
+        {isClientView && (
           <>
             <div className="saved-section">
               <button
@@ -287,7 +289,7 @@ export default function Saved() {
         )}
 
         {/* CONSULTANT VIEW */}
-        {role === "consultant" && (
+        {isConsultant && (
           <>
             <div className="saved-section">
               <button

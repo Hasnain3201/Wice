@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.accountType == 'admin';
+    }
+
+    function isExistingChatParticipant() {
+      return request.auth != null &&
+        resource.data.participantIds.hasAny([request.auth.uid]);
+    }
+
+    function isCreatingChat() {
+      return request.auth != null &&
+        request.resource.data.participantIds.hasAny([request.auth.uid]);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update, delete: if isAdmin();
+      allow create: if isSignedIn();
+    }
+
+    match /grants/{grantId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /adminActions/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /savedCollections/{userId} {
+      allow read: if isSignedIn() &&
+        (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /chats/{chatId} {
+      allow create: if isCreatingChat() || isAdmin();
+      allow read: if isExistingChatParticipant() || isAdmin();
+      allow update, delete: if isExistingChatParticipant() || isAdmin();
+
+      match /messages/{messageId} {
+        allow read, write: if isExistingChatParticipant() || isAdmin();
+      }
+    }
+  }
+}

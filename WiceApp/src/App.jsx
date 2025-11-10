@@ -95,7 +95,7 @@ function DashboardLayout({ children }) {
 }
 
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
-  const { role, user, loading } = useAuth();
+  const { role, user, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -108,6 +108,15 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
 
   if (!user) {
     return <Navigate to={fallback} replace />;
+  }
+
+  if (profile?.status === "revoked") {
+    return (
+      <div style={{ padding: 24 }}>
+        <h2>Account access revoked</h2>
+        <p>Your WICE account has been disabled. Contact support for help.</p>
+      </div>
+    );
   }
 
   const isAllowed =
@@ -154,20 +163,20 @@ export default function App() {
 
               {/* Shared pages */}
               {[
-                { path: "/marketplace", element: <Marketplace /> },
-                { path: "/notifications", element: <Notifications /> },
-                { path: "/saved", element: <Saved /> },
-                { path: "/chat", element: <Chat /> },
-                { path: "/projects", element: <ProjectsHome /> },
-                { path: "/calendar", element: <CalendarPage /> },
-                { path: "/settings", element: <Settings /> },
-              ].map(({ path, element }) => (
+                { path: "/marketplace", element: <Marketplace />, roles: ["client", "consultant", "admin"] },
+                { path: "/notifications", element: <Notifications />, roles: ["client", "consultant"] },
+                { path: "/saved", element: <Saved />, roles: ["client", "consultant", "admin"] },
+                { path: "/chat", element: <Chat />, roles: ["client", "consultant", "admin"] },
+                { path: "/projects", element: <ProjectsHome />, roles: ["client", "consultant"] },
+                { path: "/calendar", element: <CalendarPage />, roles: ["client", "consultant"] },
+                { path: "/settings", element: <Settings />, roles: ["client", "consultant", "admin"] },
+              ].map(({ path, element, roles }) => (
                 <Route
                   key={path}
                   path={path}
                   element={
                     <ProtectedRoute
-                      allowedRoles={["client", "consultant"]}
+                      allowedRoles={roles}
                       fallback="/client/login"
                       element={<DashboardLayout>{element}</DashboardLayout>}
                     />
@@ -180,8 +189,8 @@ export default function App() {
                 path="/granthunt"
                 element={
                   <ProtectedRoute
-                    allowedRoles={["consultant"]}
-                    fallback="/consultant/login"
+                    allowedRoles={["admin"]}
+                    fallback="/admin/login"
                     element={
                       <DashboardLayout>
                         <ConsultantGrantHunt />

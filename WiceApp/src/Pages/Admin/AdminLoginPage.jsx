@@ -6,12 +6,9 @@ import { ArrowLeft } from "lucide-react";
 import WiceLogo from "../../assets/Wice_logo.jpg";
 import LoginCard from "../../Components/login_card.jsx";
 
-const TEST_ADMIN_EMAIL = import.meta.env.VITE_TEST_ADMIN_EMAIL;
-const TEST_ADMIN_PASSWORD = import.meta.env.VITE_TEST_ADMIN_PASSWORD;
-
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const { loginWithEmail, logout, setTestSession } = useAuth();
+  const { loginWithEmail, logout } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,27 +22,6 @@ export default function AdminLoginPage() {
     if (!username || !password) {
       setErrorMessage("Username and password are required.");
       return;
-    }
-
-    const matchesTestCredentials =
-      TEST_ADMIN_EMAIL &&
-      TEST_ADMIN_PASSWORD &&
-      username === TEST_ADMIN_EMAIL &&
-      password === TEST_ADMIN_PASSWORD;
-
-    if (matchesTestCredentials) {
-      setSubmitting(true);
-      try {
-        setTestSession({
-          email: username,
-          fullName: "Test Admin",
-        });
-        setErrorMessage("");
-        navigate("/admin/dashboard");
-        return;
-      } finally {
-        setSubmitting(false);
-      }
     }
 
     setSubmitting(true);
@@ -99,7 +75,7 @@ export default function AdminLoginPage() {
           identifierLabel="Email"
           identifierType="email"
           identifierName="username"
-          placeholderIdentifier={TEST_ADMIN_EMAIL || "admin@example.com"}
+          placeholderIdentifier="admin@example.com"
           errorMessage={errorMessage}
           loading={submitting}
         />

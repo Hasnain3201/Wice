@@ -35,7 +35,6 @@ export default function SideNav() {
         { to: "/consultant/portal", label: "Home", icon: Home },
         { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
-        { to: "/granthunt", label: "GrantHunt", icon: Search },
         { to: "/saved", label: "Saved", icon: Bookmark },
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
@@ -63,12 +62,10 @@ export default function SideNav() {
     if (role === "admin") {
       return [
         { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { to: "/admin/earnings", label: "Earnings", icon: DollarSign },
-        { to: "/admin/consultants", label: "Consultant Directory", icon: Users },
-        { to: "/admin/open-projects", label: "Open Projects", icon: FolderOpen },
-        { to: "/admin/approve-consultants", label: "Approve Consultants", icon: UserCheck },
-        { to: "/admin/pending-issues", label: "Pending Issues", icon: AlertTriangle },
-        { to: "/admin/settings", label: "Settings", icon: Settings },
+        { to: "/granthunt", label: "GrantHunt", icon: Search },
+        { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
+        { to: "/chat", label: "Chat", icon: MessageSquare },
+        { to: "/saved", label: "Saved", icon: Bookmark },
       ];
     }
 
@@ -108,26 +105,23 @@ export default function SideNav() {
         })}
 
         {/* Help icon link */}
-        <NavLink
-          to="/help"
-          className={({ isActive }) =>
-            isActive ? "nav-item active" : "nav-item"
-          }
-        >
-          <HelpCircle size={18} className="nav-icon" />
-          <span>Help</span>
-        </NavLink>
+        {role !== "admin" && (
+          <NavLink
+            to="/help"
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
+          >
+            <HelpCircle size={18} className="nav-icon" />
+            <span>Help</span>
+          </NavLink>
+        )}
 
         {/* Logout pinned to bottom */}
         <button
           onClick={handleLogout}
           className="nav-item logout-btn"
-          style={{
-            marginTop: "auto",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-          }}
+          type="button"
         >
           <LogOut size={18} className="nav-icon" />
           <span>Logout</span>

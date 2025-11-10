@@ -135,6 +135,8 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
     setModalSaveError("");
   };
 
+  const canManageConsultants = role === "client" || role === "admin";
+
   return (
     <article className="card-profile">
       <img src={avatar} className="avatar" alt={`${name} avatar`} />
@@ -159,7 +161,7 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
         </svg>
       </Link>
 
-      {role === "client" && (
+      {canManageConsultants && (
         <div className="card-actions">
           <button
             className="message-btn"
