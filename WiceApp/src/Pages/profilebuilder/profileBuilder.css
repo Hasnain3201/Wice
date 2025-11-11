@@ -183,7 +183,7 @@ button.link:hover {
 }
 
 .start-btn {
-  background-color: #bfa34b;
+  background-color: #e9d48e;
   color: #001f3f;
   border: none;
   padding: 12px 28px;
@@ -218,3 +218,234 @@ button.back {
 button.back:hover {
   background-color: #f2f2f2;
 }
+
+.description {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 6px;
+}
+
+.error-message {
+  color: #d93025;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.warning-text {
+  color: #d93025;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.selected-info {
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.label-light {
+  color: #777;
+  font-weight: 500;
+}
+
+
+/* Availability Placeholder */
+.availability-placeholder {
+  height: 60px; /* leave visual space */
+  background: transparent;
+}
+
+/* Inline Radio for "Open to Travel" */
+.inline-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.2rem 0;
+}
+
+.inline-field label {
+  margin-right: 1rem;
+  font-weight: 500;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* DAILY RATE SECTION */
+.daily-rate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.2rem;
+}
+
+.currency-select {
+  width: 90px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  flex-shrink: 0;
+}
+
+.rate-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* AVAILABILITY PLACEHOLDER */
+.availability-placeholder {
+  height: 50px;
+  background: transparent;
+}
+
+/* OPEN TO TRAVEL INLINE */
+.travel-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.travel-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.radio-inline {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.radio-inline label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* DAILY RATE ROW FIX */
+.daily-rate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+
+.currency-select {
+  width: 50px; /* smaller width */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  background-color: #fff;
+}
+
+.rate-input {
+  flex: 1; /* takes up remaining space */
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* AVAILABILITY PLACEHOLDER */
+.availability-placeholder {
+  height: 50px;
+}
+
+/* OPEN TO TRAVEL INLINE FIX */
+.travel-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1rem 0;
+}
+
+.travel-label {
+  font-weight: 500;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.radio-inline {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.radio-inline label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- FIX: Ensure currency selector stays small --- */
+.daily-rate-row select.currency-select {
+  width: 80px !important; /* force smaller width */
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ensure input appears next to it */
+.daily-rate-row input.rate-input {
+  flex: 1;
+  display: inline-block;
+}
+
+/* Action Buttons - Global */
+.section-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+/* Primary Next Button */
+button.next {
+  background-color: #001f3f;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+button.next:hover {
+  background-color: #0d2f5d;
+}
+
+/* Back + Skip unified style */
+button.back {
+  background: none;
+  border: 1px solid #ccc;
+  color: #001f3f;
+  border-radius: 8px;
+  padding: 10px 22px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+button.back:hover {
+  background-color: #f2f2f2;
+}
+

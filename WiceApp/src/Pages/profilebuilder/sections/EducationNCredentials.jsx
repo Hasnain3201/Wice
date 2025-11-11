@@ -30,6 +30,7 @@ export default function EducationNCredentials({ onBack, onNext }) {
 
       <div className="section-actions">
         <button className="back" onClick={onBack}>Back</button>
+        <button type="button" className="back">Skip</button>
         <button className="next" disabled={!valid} onClick={() => onNext(valid)}>
           Next
         </button>

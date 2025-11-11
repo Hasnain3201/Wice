@@ -1,41 +1,52 @@
 import { useState } from "react";
+import Select from "react-select";
+import skillsData from "../../../data/skillsData"; // adjust path if needed
+import "../ProfileBuilder.css";
 
-export default function ProfessionalCapabilities({ onBack, onNext }) {
-  const [skills, setSkills] = useState([]);
-  const [valid, setValid] = useState(false);
+export default function ProfessionalCapabilities({ onNext, onBack }) {
+  const [selectedSkills, setSelectedSkills] = useState([]);
 
-  const toggleSkill = (s) => {
-    setSkills((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-    setValid(true);
+  // Convert skill list into React-Select options
+  const skillOptions = skillsData.map((skill) => ({
+    value: skill,
+    label: skill,
+  }));
+
+  const handleNext = () => {
+    onNext();
   };
-
-  const nextHandler = () => onNext(valid);
 
   return (
     <div className="section">
       <h2>Professional Capabilities</h2>
-      <p>Select the professional skills that describe your core capabilities.</p>
+      <p>
+        Select the professional skills that describe your core capabilities.
+        You can search and select multiple.
+      </p>
 
-      <div className="multi-select">
-        {["Project Management", "Data Analysis", "Policy Design", "Financial Planning"].map(
-          (s) => (
-            <label key={s}>
-              <input
-                type="checkbox"
-                checked={skills.includes(s)}
-                onChange={() => toggleSkill(s)}
-              />
-              {s}
-            </label>
-          )
-        )}
+      <Select
+        isMulti
+        options={skillOptions}
+        value={selectedSkills}
+        onChange={setSelectedSkills}
+        placeholder="Search or select skills..."
+      />
+
+      <div className="selected-info">
+        <span className="label-light">Selected Skills:</span>{" "}
+        {selectedSkills.length > 0
+          ? selectedSkills.map((s) => s.label).join(", ")
+          : "None"}
       </div>
 
       <div className="section-actions">
-        <button className="back" onClick={onBack}>Back</button>
-        <button className="next" disabled={!valid} onClick={nextHandler}>Next</button>
+        <button type="button" className="back" onClick={onBack}>
+          Back
+        </button>
+        <button type="button" className="back">Skip</button>
+        <button type="button" className="next" onClick={handleNext}>
+          Next
+        </button>
       </div>
     </div>
   );

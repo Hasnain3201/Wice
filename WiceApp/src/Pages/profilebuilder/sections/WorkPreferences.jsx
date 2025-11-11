@@ -1,78 +1,80 @@
 import { useState } from "react";
+import "../ProfileBuilder.css";
 
 export default function WorkPreferences({ onNext }) {
-  const [availability, setAvailability] = useState("");
-  const [travel, setTravel] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [dailyRate, setDailyRate] = useState("");
+  const [openToTravel, setOpenToTravel] = useState("");
+
+  const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "JPY"];
 
   return (
     <div className="section">
       <h2>Work Preferences</h2>
       <p>You can update your preferences at any time.</p>
 
-      <form>
-        <label>Daily Rate (USD) *</label>
-        <input type="number" placeholder="Enter your daily rate" required />
+      {/* DAILY RATE */}
+      <label>Daily Rate *</label>
+      <div className="daily-rate-row">
+        <select
+          className="currency-select"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+        >
+          {currencies.map((curr) => (
+            <option key={curr} value={curr}>
+              {curr}
+            </option>
+          ))}
+        </select>
 
-        <label>Availability Status *</label>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="availability"
-              value="Available now"
-              checked={availability === "Available now"}
-              onChange={() => setAvailability("Available now")}
-            />{" "}
-            Available now
-          </label>
+        <input
+          type="number"
+          className="rate-input"
+          placeholder="Enter rate"
+          value={dailyRate}
+          onChange={(e) => setDailyRate(e.target.value)}
+          required
+        />
+      </div>
 
-          <label>
-            <input
-              type="radio"
-              name="availability"
-              value="Not currently available"
-              checked={availability === "Not currently available"}
-              onChange={() => setAvailability("Not currently available")}
-            />{" "}
-            Not currently available
-          </label>
+      {/* AVAILABILITY (placeholder) */}
+      <label>Availability Status *</label>
+      <div className="availability-placeholder"></div>
 
-          {availability === "Not currently available" && (
-            <input type="text" placeholder="Not available until..." />
-          )}
-        </div>
-
-        <label>Open to Travel *</label>
-        <div className="radio-group">
+      {/* OPEN TO TRAVEL */}
+      <div className="travel-inline">
+        <label className="travel-label">Open to Travel *</label>
+        <div className="radio-inline">
           <label>
             <input
               type="radio"
               name="travel"
               value="Yes"
-              checked={travel === "Yes"}
-              onChange={() => setTravel("Yes")}
-            />{" "}
+              checked={openToTravel === "Yes"}
+              onChange={(e) => setOpenToTravel(e.target.value)}
+            />
             Yes
           </label>
-
           <label>
             <input
               type="radio"
               name="travel"
               value="No"
-              checked={travel === "No"}
-              onChange={() => setTravel("No")}
-            />{" "}
+              checked={openToTravel === "No"}
+              onChange={(e) => setOpenToTravel(e.target.value)}
+            />
             No
           </label>
         </div>
+      </div>
 
-        <div className="section-actions">
-          <button type="button" className="skip">Skip</button>
-          <button type="button" className="link">Already have a profile</button>
-          <button type="button" className="next" onClick={onNext}>Next</button>
-        </div>
-      </form>
+      {/* ACTIONS */}
+      <div className="section-actions">
+        <button type="button" className="back">Back</button>
+        
+        <button type="button" className="next" onClick={onNext}>Next</button>
+      </div>
     </div>
   );
 }

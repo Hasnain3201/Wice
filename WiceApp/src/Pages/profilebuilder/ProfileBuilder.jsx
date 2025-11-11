@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProgressSidebar from "./componentsPB/ProgressSidebar";
+import SectionWrapper from "./componentsPB/SectionWrapper";
 
 // Light Profile Sections
 import IntroPage from "./sections/IntroPage";
@@ -16,7 +17,6 @@ import ProfessionalCapabilities from "./sections/ProfessionalCapabilities";
 import EducationNCredentials from "./sections/EducationNCredentials";
 import PortfolioNPow from "./sections/PortfolioNPow";
 import CompletionConfirmation from "./sections/CompletionConfirmation";
-import WholeCompletion from "./sections/WholeCompletion";
 
 import "./profileBuilder.css";
 
@@ -38,7 +38,6 @@ export default function ProfileBuilder() {
     "Education and Credentials",
     "Portfolio and Proof of Work",
     "Completion Confirmation",
-    "Full Completion",
   ];
 
   const [currentSection, setCurrentSection] = useState(sections[0]);
@@ -55,7 +54,9 @@ export default function ProfileBuilder() {
   const handleNext = (section, valid = true) => {
     if (valid) canProgress(section, valid);
     const nextIndex = sections.indexOf(section) + 1;
-    if (nextIndex < sections.length) setCurrentSection(sections[nextIndex]);
+    if (nextIndex < sections.length) {
+      setCurrentSection(sections[nextIndex]);
+    }
   };
 
   const handleBack = (section) => {
@@ -66,87 +67,112 @@ export default function ProfileBuilder() {
     }
   };
 
+  const handleSkip = (section) => {
+    const nextIndex = sections.indexOf(section) + 1;
+    if (nextIndex < sections.length) {
+      setCurrentSection(sections[nextIndex]);
+    }
+  };
+
   const handleSaveAndReturn = () => navigate("/consultant/login");
 
+  // Helper to identify Full Profile sections
+  const isFullProfileSection = (sectionName) =>
+    [
+      "Experience Snapshot",
+      "Professional Capabilities",
+      "Education and Credentials",
+      "Portfolio and Proof of Work",
+      "Completion Confirmation",
+    ].includes(sectionName);
+
   const renderSection = () => {
+    const props = {
+      onBack: () => handleBack(currentSection),
+      onSkip: () => handleSkip(currentSection),
+      onNext: () => handleNext(currentSection),
+      showSkip: isFullProfileSection(currentSection),
+    };
+
     switch (currentSection) {
-      // Light Profile
+      // ---------- Light Profile ----------
       case "Intro Page":
         return <IntroPage onStart={() => handleNext("Intro Page")} />;
+
       case "Identity Basics":
         return (
-          <IdentityBasics
-            onNext={() => handleNext("Identity Basics")}
-            onBack={() => handleBack("Identity Basics")}
-          />
-        );
-      case "Professional Identity":
-        return (
-          <ProfessionalIdentity
-            onNext={() => handleNext("Professional Identity")}
-            onBack={() => handleBack("Professional Identity")}
-          />
-        );
-      case "Expertise Snapshot":
-        return (
-          <ExpertiseSnapshot
-            onNext={() => handleNext("Expertise Snapshot")}
-            onBack={() => handleBack("Expertise Snapshot")}
-          />
-        );
-      case "Work Preferences":
-        return (
-          <WorkPreferences
-            onNext={() => handleNext("Work Preferences")}
-            onBack={() => handleBack("Work Preferences")}
-          />
-        );
-      case "Light Completion":
-        return (
-          <CompletionPage
-            onSave={handleSaveAndReturn}
-            onNextFull={() => handleNext("Light Completion")}
-          />
+          <SectionWrapper {...props}>
+            <IdentityBasics />
+          </SectionWrapper>
         );
 
-      // Full Profile
+      case "Professional Identity":
+        return (
+          <SectionWrapper {...props}>
+            <ProfessionalIdentity />
+          </SectionWrapper>
+        );
+
+      case "Expertise Snapshot":
+        return (
+          <SectionWrapper {...props}>
+            <ExpertiseSnapshot />
+          </SectionWrapper>
+        );
+
+      case "Work Preferences":
+        return (
+          <SectionWrapper {...props}>
+            <WorkPreferences />
+          </SectionWrapper>
+        );
+
+      case "Light Completion":
+        return (
+          <SectionWrapper {...props} showSkip={false}>
+            <CompletionPage
+              onSave={handleSaveAndReturn}
+              onNextFull={() => handleNext("Light Completion")}
+            />
+          </SectionWrapper>
+        );
+
+      // ---------- Full Profile ----------
       case "Experience Snapshot":
         return (
-          <ExperienceSnapshot
-            onNext={(valid) => handleNext("Experience Snapshot", valid)}
-            onBack={() => handleBack("Experience Snapshot")}
-          />
+          <SectionWrapper {...props}>
+            <ExperienceSnapshot />
+          </SectionWrapper>
         );
+
       case "Professional Capabilities":
         return (
-          <ProfessionalCapabilities
-            onNext={(valid) => handleNext("Professional Capabilities", valid)}
-            onBack={() => handleBack("Professional Capabilities")}
-          />
+          <SectionWrapper {...props}>
+            <ProfessionalCapabilities />
+          </SectionWrapper>
         );
+
       case "Education and Credentials":
         return (
-          <EducationNCredentials
-            onNext={(valid) => handleNext("Education and Credentials", valid)}
-            onBack={() => handleBack("Education and Credentials")}
-          />
+          <SectionWrapper {...props}>
+            <EducationNCredentials />
+          </SectionWrapper>
         );
+
       case "Portfolio and Proof of Work":
         return (
-          <PortfolioNPow
-            onNext={(valid) => handleNext("Portfolio and Proof of Work", valid)}
-            onBack={() => handleBack("Portfolio and Proof of Work")}
-          />
+          <SectionWrapper {...props}>
+            <PortfolioNPow />
+          </SectionWrapper>
         );
+
       case "Completion Confirmation":
         return (
-          <CompletionConfirmation
-            onNext={(valid) => handleNext("Completion Confirmation", valid)}
-            onBack={() => handleBack("Completion Confirmation")}
-          />
+          <SectionWrapper {...props}>
+            <CompletionConfirmation />
+          </SectionWrapper>
         );
-      case "Full Completion":
-        return <WholeCompletion onHome={handleSaveAndReturn} />;
+
       default:
         return null;
     }
@@ -163,7 +189,7 @@ export default function ProfileBuilder() {
           onNavigate={setCurrentSection}
         />
       )}
-      <div className="form-section">{renderSection()}</div>
+      {renderSection()}
     </div>
   );
 }

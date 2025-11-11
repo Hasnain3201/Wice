@@ -1,66 +1,115 @@
 import { useState } from "react";
+import Select from "react-select";
+import ISO6391 from "iso-639-1";
+import "../ProfileBuilder.css";
 
 export default function ExpertiseSnapshot({ onNext }) {
-  const [industries, setIndustries] = useState([]);
-  const [sectors, setSectors] = useState([]);
+  const [selectedIndustries, setSelectedIndustries] = useState([]);
+  const [selectedSectors, setSelectedSectors] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
 
-  const toggle = (list, setList, item) => {
-    setList((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
+  const industries = [
+    { value: "healthcare", label: "Healthcare" },
+    { value: "finance", label: "Finance" },
+    { value: "technology", label: "Technology" },
+    { value: "education", label: "Education" },
+  ];
+
+  const sectorsByIndustry = {
+    healthcare: [
+      { value: "public_health", label: "Public Health" },
+      { value: "pharma", label: "Pharmaceuticals" },
+      { value: "medical_devices", label: "Medical Devices" },
+    ],
+    finance: [
+      { value: "banking", label: "Banking" },
+      { value: "investment", label: "Investment Management" },
+      { value: "insurance", label: "Insurance" },
+    ],
+    technology: [
+      { value: "software", label: "Software Development" },
+      { value: "cybersecurity", label: "Cybersecurity" },
+      { value: "ai", label: "Artificial Intelligence" },
+    ],
+    education: [
+      { value: "higher_ed", label: "Higher Education" },
+      { value: "edtech", label: "EdTech" },
+    ],
   };
+
+  // Get all known languages
+  const allLanguages = ISO6391.getAllNames().map((name) => ({
+    value: name.toLowerCase(),
+    label: name,
+  }));
+
+  // Handle industry selection limit
+  const handleIndustryChange = (selectedOptions) => {
+    if (selectedOptions.length <= 3) {
+      setSelectedIndustries(selectedOptions);
+      setSelectedSectors([]);
+    }
+  };
+
+  const currentSectors = selectedIndustries.flatMap(
+    (ind) => sectorsByIndustry[ind.value] || []
+  );
 
   return (
     <div className="section">
       <h2>Expertise Snapshot</h2>
-      <p>
-        Select at least one Industry and one related Sector to begin. You may add more
-        later or expand your profile.
+      <p>Define your core industries, sectors, and languages of expertise.</p>
+
+      {/* INDUSTRIES */}
+      <label>Industries (max 3) *</label>
+      <Select
+        isMulti
+        options={industries}
+        value={selectedIndustries}
+        onChange={handleIndustryChange}
+        placeholder="Select up to 3 industries"
+      />
+      {selectedIndustries.length >= 3 && (
+        <p className="warning-text">You can select up to 3 industries only.</p>
+      )}
+
+      {/* SECTORS */}
+      {selectedIndustries.length > 0 && (
+        <>
+          <label>Sectors *</label>
+          <Select
+            isMulti
+            options={currentSectors}
+            value={selectedSectors}
+            onChange={setSelectedSectors}
+            placeholder="Select sectors relevant to chosen industries"
+          />
+        </>
+      )}
+
+      {/* LANGUAGES */}
+      <label>Languages *</label>
+      <Select
+        isMulti
+        isSearchable
+        options={allLanguages}
+        value={selectedLanguages}
+        onChange={setSelectedLanguages}
+        placeholder="Select languages"
+      />
+
+      <p className="selected-info">
+        <span className="label-light">Languages selected:</span>{" "}
+        {selectedLanguages.length > 0
+          ? `${selectedLanguages.map((l) => l.label).join(", ")}  (${selectedLanguages.length})`
+          : "None"}
       </p>
 
-      <form>
-        <label>Industries *</label>
-        <div className="multi-select">
-          {["Health", "Finance", "Agriculture", "Education"].map((i) => (
-            <label key={i}>
-              <input
-                type="checkbox"
-                checked={industries.includes(i)}
-                onChange={() => toggle(industries, setIndustries, i)}
-              />{" "}
-              {i}
-            </label>
-          ))}
-        </div>
-
-        <label>Sectors *</label>
-        <div className="multi-select">
-          {["Policy", "Operations", "Research", "Technology"].map((s) => (
-            <label key={s}>
-              <input
-                type="checkbox"
-                checked={sectors.includes(s)}
-                onChange={() => toggle(sectors, setSectors, s)}
-              />{" "}
-              {s}
-            </label>
-          ))}
-        </div>
-
-        <label>Languages</label>
-        <select multiple>
-          <option>English</option>
-          <option>Spanish</option>
-          <option>French</option>
-          <option>Arabic</option>
-        </select>
-
-        <div className="section-actions">
-          <button type="button" className="skip">Skip</button>
-          <button type="button" className="link">Already have a profile</button>
-          <button type="button" className="next" onClick={onNext}>Next</button>
-        </div>
-      </form>
+      {/* NAV BUTTONS */}
+      <div className="section-actions">
+        <button type="button" className="back">Back</button>
+        <button type="button" className="next" onClick={onNext}>Next</button>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
    =========================== */
 .sidebar {
   width: 280px;
-  background-color: #fafafa;
+  background-color: #ecdf9f;
   border-right: 1px solid #e5e7eb;
   padding: 2rem;
   position: sticky;
@@ -26,14 +26,14 @@
 .progress-bar {
   width: 100%;
   height: 6px;
-  background: #e2e2e2;
+  background: white;
   border-radius: 4px;
   margin-bottom: 1.25rem;
 }
 
 .progress-fill {
   height: 100%;
-  background: #bfa34b;
+  background: #001f3f;
   border-radius: 4px;
   transition: width 0.3s ease-in-out;
 }
@@ -65,7 +65,7 @@
 }
 
 .sidebar-item.done {
-  color: #bfa34b;
+  color: #001f3f;
 }
 
 .sidebar-item:hover {

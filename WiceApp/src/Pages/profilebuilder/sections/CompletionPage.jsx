@@ -15,7 +15,7 @@ export default function CompletionPage() {
 
         <div className="completion-actions">
           <button className="next">Complete Full Profile Now</button>
-          <button className="skip">Save and Return to Home Page</button>
+          <button className="back">Save and Return to Home Page</button>
         </div>
       </div>
     </div>
