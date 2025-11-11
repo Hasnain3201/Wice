@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import "./SignUp.css";
 import WiceLogo from "../assets/Wice_logo.jpg";
 import { ArrowLeft } from "lucide-react";
@@ -8,6 +8,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildDefaultUserData } from "../services/userProfile.js";
+import termsText from "../data/terms"; // ✅ Importing your formatted terms.js file
 
 export default function SignUp() {
   const [error, setError] = useState("");
@@ -215,7 +216,7 @@ export default function SignUp() {
         </p>
       </div>
 
-      {/* Terms Popup */}
+      {/* ✅ Terms Popup */}
       {showTerms && (
         <div className="terms-overlay">
           <div className="terms-container">
@@ -225,15 +226,8 @@ export default function SignUp() {
               className="terms-content grey-box"
               ref={termsRef}
               onScroll={handleTermsScroll}
-            >
-              {/* full terms inserted from PDF */}
-              <p className="terms-text">
-                {/* paste full word-for-word text from your PDF here */}
-                WICE Terms of Use and Privacy Policy (Effective Nov 6, 2025)
-                {"\n\n"}
-                [Insert all terms and privacy text from your provided document exactly as in the PDF.]
-              </p>
-            </div>
+              dangerouslySetInnerHTML={{ __html: termsText }} // ✅ render terms.js content as HTML
+            />
 
             <div className="terms-buttons">
               <button
@@ -241,7 +235,9 @@ export default function SignUp() {
                 disabled={!canAccept}
                 onClick={handleTermsAccept}
               >
-                {canAccept ? "I have read and agree" : "Scroll to the bottom to enable"}
+                {canAccept
+                  ? "I have read and agree"
+                  : "Scroll to the bottom to enable"}
               </button>
               <button className="signup-cancel" onClick={handleTermsDecline}>
                 Cancel

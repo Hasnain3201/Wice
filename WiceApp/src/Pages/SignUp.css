@@ -251,3 +251,28 @@
   background-color: #9ca3af;
   cursor: not-allowed;
 }
+
+.grey-box {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  overflow-y: auto;
+  max-height: 55vh;
+  border: 1px solid #d1d5db;
+}
+
+.terms-content h3, .terms-content h4 {
+  margin-top: 1rem;
+  color: #001f3f;
+}
+
+.terms-content p, .terms-content li {
+  font-size: 0.85rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+.terms-content ul {
+  margin-left: 1.5rem;
+  list-style-type: disc;
+}
