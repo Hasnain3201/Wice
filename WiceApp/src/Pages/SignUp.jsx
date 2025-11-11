@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./SignUp.css";
 import WiceLogo from "../assets/Wice_logo.jpg";
+import { ArrowLeft } from "lucide-react";
 import { auth, db } from "../firebase";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -14,6 +12,11 @@ import { buildDefaultUserData } from "../services/userProfile.js";
 export default function SignUp() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [canAccept, setCanAccept] = useState(false);
+  const termsRef = useRef(null);
+
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
 
@@ -27,8 +30,13 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
+    if (!termsAccepted) {
+      setError("You must accept the Terms and Conditions before signing up.");
+      return;
+    }
+
+    setLoading(true);
     const form = new FormData(e.currentTarget);
     const accountType = form.get("accountType");
     const fullName = form.get("fullName");
@@ -81,18 +89,46 @@ export default function SignUp() {
     }
   };
 
-  return (
-    <div className="signup-page">
-      <div className="signup-card">
-        <div className="signup-left">
-          <img src={WiceLogo} alt="WICE logo" className="signup-logo" />
-          <h1 className="signup-title">Create Your WICE Account</h1>
-          <p className="signup-subtitle">Join the community today</p>
+  const handleTermsClick = () => {
+    setShowTerms(true);
+    setCanAccept(false);
+  };
 
-          <form className="signup-form" onSubmit={handleSubmit}>
-            <div className="account-type">
-              <span className="account-label">Account type</span>
-              <label className="radio">
+  const handleTermsScroll = () => {
+    const div = termsRef.current;
+    if (div && div.scrollTop + div.clientHeight >= div.scrollHeight - 5) {
+      setCanAccept(true);
+    }
+  };
+
+  const handleTermsAccept = () => {
+    setShowTerms(false);
+    setTermsAccepted(true);
+  };
+
+  const handleTermsDecline = () => {
+    setShowTerms(false);
+    setTermsAccepted(false);
+  };
+
+  return (
+    <div className="signup-container">
+      <div className="signup-card">
+        <button className="signup-back-btn" onClick={() => navigate("/")}>
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
+
+        <img src={WiceLogo} alt="WICE logo" className="signup-logo" />
+        <h1 className="signup-title">Create Your WICE Account</h1>
+        <p className="signup-subtitle">Join the WICE community today</p>
+
+        <form onSubmit={handleSubmit} className="signup-form">
+          {/* Account Type */}
+          <div className="account-type">
+            <label className="account-label">Account type</label>
+            <div className="radio-row">
+              <label className="radio-option">
                 <input
                   type="radio"
                   name="accountType"
@@ -100,60 +136,120 @@ export default function SignUp() {
                   defaultChecked
                   required
                 />
-                <span>Client</span>
+                <span className="radio-circle"></span>
+                <span className="radio-text">Client</span>
               </label>
-              <label className="radio">
+              <label className="radio-option">
                 <input
                   type="radio"
                   name="accountType"
                   value="consultant"
                   required
                 />
-                <span>Consultant</span>
+                <span className="radio-circle"></span>
+                <span className="radio-text">Consultant</span>
               </label>
             </div>
+          </div>
 
-            <input name="fullName" type="text" placeholder="Full Name" required />
-            <input name="email" type="email" placeholder="Email Address" required />
-            <input name="password" type="password" placeholder="Password" required />
-            <p className="signup-password-hint">
-              Password must be at least 6 characters and include letters and numbers.
-            </p>
-            <input
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm Password"
-              required
-            />
-
-            <button type="submit" className="signup-btn" disabled={loading}>
-              {loading ? "Creating..." : "Sign Up"}
-            </button>
-          </form>
-
-          {error && <p className="error">{error}</p>}
-
-          <p className="signup-login">
-            Already have an account?{" "}
-            <a href="/" className="link">
-              Log In
-            </a>
+          <input
+            name="fullName"
+            type="text"
+            placeholder="Full Name"
+            required
+            className="signup-input"
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="Email Address"
+            required
+            className="signup-input"
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            required
+            className="signup-input"
+          />
+          <p className="signup-hint">
+            Password must include at least one letter and one number.
           </p>
+          <input
+            name="confirmPassword"
+            type="password"
+            placeholder="Confirm Password"
+            required
+            className="signup-input"
+          />
 
-          {/* 🧪 Temporary Dev/Test Button */}
-          <button
-            className="signup-btn"
-            style={{
-              marginTop: "1.5rem",
-              backgroundColor: "#bfa34b",
-              color: "#001f3f",
-            }}
-            onClick={() => navigate("/test/profile-builder")}
-          >
-            🧪 Test Profile Builder
+          {/* Terms */}
+          <div className="signup-checkbox">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={termsAccepted}
+              onChange={handleTermsClick}
+            />
+            <label htmlFor="terms">
+              I agree to the{" "}
+              <span className="terms-link" onClick={handleTermsClick}>
+                Terms and Conditions
+              </span>
+            </label>
+          </div>
+
+          {error && <p className="signup-error">{error}</p>}
+
+          <button type="submit" className="signup-btn" disabled={loading}>
+            {loading ? "Creating..." : "Sign Up"}
           </button>
-        </div>
+        </form>
+
+        <p className="signup-footer">
+          Already have an account?{" "}
+          <a href="/" className="signup-link">
+            Log In
+          </a>
+        </p>
       </div>
+
+      {/* Terms Popup */}
+      {showTerms && (
+        <div className="terms-overlay">
+          <div className="terms-container">
+            <h3>WICE Terms of Use and Privacy Policy</h3>
+
+            <div
+              className="terms-content grey-box"
+              ref={termsRef}
+              onScroll={handleTermsScroll}
+            >
+              {/* full terms inserted from PDF */}
+              <p className="terms-text">
+                {/* paste full word-for-word text from your PDF here */}
+                WICE Terms of Use and Privacy Policy (Effective Nov 6, 2025)
+                {"\n\n"}
+                [Insert all terms and privacy text from your provided document exactly as in the PDF.]
+              </p>
+            </div>
+
+            <div className="terms-buttons">
+              <button
+                className="signup-btn"
+                disabled={!canAccept}
+                onClick={handleTermsAccept}
+              >
+                {canAccept ? "I have read and agree" : "Scroll to the bottom to enable"}
+              </button>
+              <button className="signup-cancel" onClick={handleTermsDecline}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
