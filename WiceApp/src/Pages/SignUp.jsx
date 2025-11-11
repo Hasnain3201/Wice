@@ -214,6 +214,17 @@ export default function SignUp() {
             Log In
           </a>
         </p>
+        {/* 🔧 Developer Test Button (for local dev only) */}
+        <div style={{ marginTop: "1.5rem" }}>
+          <button
+            type="button"
+            className="signup-btn"
+            onClick={() => navigate("/consultant/profile-builder")}
+          >
+            Developer Test: Go to Profile Builder
+          </button>
+        </div>
+
       </div>
 
       {/* ✅ Terms Popup */}
