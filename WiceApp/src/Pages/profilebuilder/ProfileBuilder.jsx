@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProgressSidebar from "./componentsPB/ProgressSidebar";
 
-// Section imports (match your folder structure)
+// Light Profile Sections
 import IntroPage from "./sections/IntroPage";
 import IdentityBasics from "./sections/IdentityBasics";
 import ProfessionalIdentity from "./sections/ProfessionalIdentity";
@@ -9,55 +10,69 @@ import ExpertiseSnapshot from "./sections/ExpertiseSnapshot";
 import WorkPreferences from "./sections/WorkPreferences";
 import CompletionPage from "./sections/CompletionPage";
 
+// Full Profile Sections
+import ExperienceSnapshot from "./sections/ExperienceSnapshot";
+import ProfessionalCapabilities from "./sections/ProfessionalCapabilities";
+import EducationNCredentials from "./sections/EducationNCredentials";
+import PortfolioNPow from "./sections/PortfolioNPow";
+import CompletionConfirmation from "./sections/CompletionConfirmation";
+import WholeCompletion from "./sections/WholeCompletion";
+
 import "./profileBuilder.css";
 
 export default function ProfileBuilder() {
-  // All Light Profile stages (per WICE outline)
+  const navigate = useNavigate();
+
   const sections = [
+    // Light Profile
     "Intro Page",
     "Identity Basics",
     "Professional Identity",
     "Expertise Snapshot",
     "Work Preferences",
-    "Completion",
+    "Light Completion",
+
+    // Full Profile
+    "Experience Snapshot",
+    "Professional Capabilities",
+    "Education and Credentials",
+    "Portfolio and Proof of Work",
+    "Completion Confirmation",
+    "Full Completion",
   ];
 
   const [currentSection, setCurrentSection] = useState(sections[0]);
   const [completed, setCompleted] = useState([]);
 
-  // Calculate progress (exclude Completion screen)
   const progress = (completed.length / (sections.length - 1)) * 100;
 
-  // Move forward to the next section
-  const handleNext = (section) => {
-    if (!completed.includes(section)) {
+  const canProgress = (section, valid) => {
+    if (valid && !completed.includes(section)) {
       setCompleted((prev) => [...prev, section]);
-    }
-
-    const nextIndex = sections.indexOf(section) + 1;
-    if (nextIndex < sections.length) {
-      setCurrentSection(sections[nextIndex]);
     }
   };
 
-  // Move backward to the previous section
-  const handleBack = (section) => {
-    const currentIndex = sections.indexOf(section);
-    if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-      setCurrentSection(sections[prevIndex]);
+  const handleNext = (section, valid = true) => {
+    if (valid) canProgress(section, valid);
+    const nextIndex = sections.indexOf(section) + 1;
+    if (nextIndex < sections.length) setCurrentSection(sections[nextIndex]);
+  };
 
-      // Update progress backward logically
+  const handleBack = (section) => {
+    const idx = sections.indexOf(section);
+    if (idx > 0) {
+      setCurrentSection(sections[idx - 1]);
       setCompleted((prev) => prev.filter((s) => s !== section));
     }
   };
 
-  // Render appropriate section content
+  const handleSaveAndReturn = () => navigate("/consultant/login");
+
   const renderSection = () => {
     switch (currentSection) {
+      // Light Profile
       case "Intro Page":
         return <IntroPage onStart={() => handleNext("Intro Page")} />;
-
       case "Identity Basics":
         return (
           <IdentityBasics
@@ -65,7 +80,6 @@ export default function ProfileBuilder() {
             onBack={() => handleBack("Identity Basics")}
           />
         );
-
       case "Professional Identity":
         return (
           <ProfessionalIdentity
@@ -73,7 +87,6 @@ export default function ProfileBuilder() {
             onBack={() => handleBack("Professional Identity")}
           />
         );
-
       case "Expertise Snapshot":
         return (
           <ExpertiseSnapshot
@@ -81,7 +94,6 @@ export default function ProfileBuilder() {
             onBack={() => handleBack("Expertise Snapshot")}
           />
         );
-
       case "Work Preferences":
         return (
           <WorkPreferences
@@ -89,10 +101,52 @@ export default function ProfileBuilder() {
             onBack={() => handleBack("Work Preferences")}
           />
         );
+      case "Light Completion":
+        return (
+          <CompletionPage
+            onSave={handleSaveAndReturn}
+            onNextFull={() => handleNext("Light Completion")}
+          />
+        );
 
-      case "Completion":
-        return <CompletionPage />;
-
+      // Full Profile
+      case "Experience Snapshot":
+        return (
+          <ExperienceSnapshot
+            onNext={(valid) => handleNext("Experience Snapshot", valid)}
+            onBack={() => handleBack("Experience Snapshot")}
+          />
+        );
+      case "Professional Capabilities":
+        return (
+          <ProfessionalCapabilities
+            onNext={(valid) => handleNext("Professional Capabilities", valid)}
+            onBack={() => handleBack("Professional Capabilities")}
+          />
+        );
+      case "Education and Credentials":
+        return (
+          <EducationNCredentials
+            onNext={(valid) => handleNext("Education and Credentials", valid)}
+            onBack={() => handleBack("Education and Credentials")}
+          />
+        );
+      case "Portfolio and Proof of Work":
+        return (
+          <PortfolioNPow
+            onNext={(valid) => handleNext("Portfolio and Proof of Work", valid)}
+            onBack={() => handleBack("Portfolio and Proof of Work")}
+          />
+        );
+      case "Completion Confirmation":
+        return (
+          <CompletionConfirmation
+            onNext={(valid) => handleNext("Completion Confirmation", valid)}
+            onBack={() => handleBack("Completion Confirmation")}
+          />
+        );
+      case "Full Completion":
+        return <WholeCompletion onHome={handleSaveAndReturn} />;
       default:
         return null;
     }
@@ -100,7 +154,6 @@ export default function ProfileBuilder() {
 
   return (
     <div className="profile-builder-container">
-      {/* Sidebar hidden only on Intro Page */}
       {currentSection !== "Intro Page" && (
         <ProgressSidebar
           sections={sections}
@@ -110,8 +163,6 @@ export default function ProfileBuilder() {
           onNavigate={setCurrentSection}
         />
       )}
-
-      {/* Right column dynamic form area */}
       <div className="form-section">{renderSection()}</div>
     </div>
   );

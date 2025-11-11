@@ -35,7 +35,7 @@ import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
 
-// ✅ Consultant Profile Builder
+// ✅ Consultant Profile Builder (Light + Full Profile integrated)
 import ProfileBuilder from "./Pages/profilebuilder/ProfileBuilder.jsx";
 
 // Contexts
@@ -144,10 +144,10 @@ export default function App() {
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
 
-              {/* ✅ Temporary unprotected route for dev/test */}
+              {/* 🧪 Developer Test Route (unprotected) */}
               <Route path="/test/profile-builder" element={<ProfileBuilder />} />
 
-              {/* Protected Consultant Builder */}
+              {/* ✅ Protected Consultant Profile Builder (Light + Full Profile) */}
               <Route
                 path="/consultant/profile-builder"
                 element={
@@ -159,7 +159,7 @@ export default function App() {
                 }
               />
 
-              {/* ... existing client/admin routes (unchanged) ... */}
+              {/* Client Home */}
               <Route
                 path="/client/home"
                 element={
@@ -175,6 +175,7 @@ export default function App() {
                 }
               />
 
+              {/* Admin Dashboard */}
               <Route
                 path="/admin/dashboard"
                 element={
