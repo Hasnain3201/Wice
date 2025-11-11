@@ -449,3 +449,176 @@ button.back:hover {
   background-color: #f2f2f2;
 }
 
+/* ================================
+   Intro Page Styling
+   ================================ */
+
+.intro-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #fff;
+}
+
+.intro-content {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.intro-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #001f3f;
+  margin-bottom: 1rem;
+}
+
+.intro-subtext {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+}
+
+.intro-description {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+.intro-signin {
+  margin-top: 1.5rem;
+  color: #4a5568;
+}
+
+.signin-link {
+  color: #c69c2e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin-link:hover {
+  text-decoration: underline;
+}
+
+/* ================================
+   Intro Page Layout Fix
+   ================================ */
+
+.intro-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #fff;
+}
+
+.intro-inner {
+  text-align: center;
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.intro-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #001f3f;
+  margin-bottom: 1rem;
+}
+
+.intro-subtext,
+.intro-description {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.intro-description {
+  margin-bottom: 2.5rem;
+}
+
+.intro-signin {
+  margin-top: 1.5rem;
+  color: #4a5568;
+}
+
+.signin-link {
+  color: #c69c2e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin-link:hover {
+  text-decoration: underline;
+}
+
+.confirm-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.confirm-center input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.confirm-center label {
+  font-size: 1rem;
+  color: #001f3f;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Modal layout */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-container {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 450px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

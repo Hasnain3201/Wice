@@ -40,13 +40,7 @@ export default function ProfessionalCapabilities({ onNext, onBack }) {
       </div>
 
       <div className="section-actions">
-        <button type="button" className="back" onClick={onBack}>
-          Back
-        </button>
-        <button type="button" className="back">Skip</button>
-        <button type="button" className="next" onClick={handleNext}>
-          Next
-        </button>
+        
       </div>
     </div>
   );

@@ -1,25 +1,34 @@
+import React from "react";
+import "../profileBuilder.css";
+
 export default function IntroPage({ onStart }) {
   return (
-    <div className="intro-section">
-      <h1>Build your essential profile</h1>
-      <p>
-        This first step takes about seven to ten minutes. You can update your
-        profile at any time. 
-      </p>
+    <div className="intro-wrapper">
+      <div className="intro-inner">
+        <h1 className="intro-title">Build your essential profile</h1>
 
-      <p>You will have the option of quickly creating a profile with basic information called a Light profile or taking the time to complete your entire profile.</p>
-      
+        <p className="intro-subtext">
+          This first step takes about seven to ten minutes. You can update your
+          profile at any time.
+        </p>
 
-      <button className="start-btn" onClick={onStart}>
-        Start
-      </button>
+        <p className="intro-description">
+          You will have the option of quickly creating a profile with basic
+          information called a <strong>Light profile</strong> or taking the time
+          to complete your entire profile.
+        </p>
 
-      <p className="small-link">
-        Already have a profile?{" "}
-        <a href="/login" style={{ color: "#bfa34b", fontWeight: "600" }}>
-          Sign in
-        </a>
-      </p>
+        <button type="button" className="next" onClick={onStart}>
+          Start
+        </button>
+
+        <p className="intro-signin">
+          Already have a profile?{" "}
+          <a href="/consultant/login" className="signin-link">
+            Sign in
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

@@ -89,9 +89,7 @@ export default function ProfessionalIdentity({ onNext }) {
 
         {/* Actions */}
         <div className="section-actions">
-          <button type="button" className="back">Back</button>
-          
-          <button type="button" className="next" onClick={onNext}>Next</button>
+         
         </div>
       </form>
     </div>

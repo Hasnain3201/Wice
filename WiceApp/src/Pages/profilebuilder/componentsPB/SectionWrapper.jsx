@@ -1,5 +1,5 @@
 import React from "react";
-import "../../ProfileBuilder.css";
+import "../profileBuilder.css";
 
 /**
  * SectionWrapper handles all navigation buttons globally.

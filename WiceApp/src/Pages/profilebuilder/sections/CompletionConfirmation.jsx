@@ -1,10 +1,11 @@
 import { useState } from "react";
-import "../ProfileBuilder.css";
+import "../profileBuilder.css"; // ensure lowercase p in path
 
 export default function CompletionConfirmation({ onBack }) {
   const [isChecked, setIsChecked] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  // Handle submit
   const handleSubmit = () => {
     if (!isChecked) {
       alert("Please confirm that your information is accurate before submitting.");
@@ -13,22 +14,25 @@ export default function CompletionConfirmation({ onBack }) {
     setShowModal(true);
   };
 
+  // Close modal and allow return to editing
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
+  // Navigate to homepage
   const goToHome = () => {
-    window.location.href = "/home"; // adjust route as needed
+    window.location.href = "/home"; // change if your homepage route differs
   };
 
   return (
     <div className="section">
       <h2>Final Review and Confirmation</h2>
       <p>
-        Review your full profile and confirm submission. Once submitted, your full profile becomes visible to clients.
+        Review your full profile and confirm submission. Once submitted, your
+        full profile becomes visible to clients.
       </p>
 
-      {/* Centered inline checkbox */}
+      {/* Confirmation checkbox inline */}
       <div className="confirm-center">
         <input
           type="checkbox"
@@ -41,7 +45,7 @@ export default function CompletionConfirmation({ onBack }) {
         </label>
       </div>
 
-      {/* Actions */}
+      {/* Page action buttons */}
       <div className="section-actions">
         <button type="button" className="back" onClick={onBack}>
           Back
@@ -51,16 +55,19 @@ export default function CompletionConfirmation({ onBack }) {
         </button>
       </div>
 
-      {/* TRUE POPUP MODAL */}
+      {/* Popup modal after submit */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-container">
             <h3>Your Full Profile is Complete</h3>
             <p>
-              Congratulations! You’ve completed your WICE Full Profile. Your profile is now visible to clients.
+              🎉 Congratulations! You’ve completed your WICE Full Profile.
+              <br />
+              Your profile is now visible to clients.
               <br />
               You can edit or update your profile anytime.
             </p>
+
             <div className="modal-buttons">
               <button className="back" onClick={handleCloseModal}>
                 Go Back to Edit

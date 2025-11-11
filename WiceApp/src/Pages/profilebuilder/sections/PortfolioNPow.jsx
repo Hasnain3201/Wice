@@ -16,11 +16,7 @@ export default function PortfolioNPow({ onBack, onNext }) {
       <input type="file" accept=".pdf,.doc,.ppt,.pptx" multiple />
 
       <div className="section-actions">
-        <button className="back" onClick={onBack}>Back</button>
-        <button type="button" className="back">Skip</button>
-        <button className="next" disabled={!valid} onClick={() => onNext(valid)}>
-          Next
-        </button>
+        
       </div>
     </div>
   );

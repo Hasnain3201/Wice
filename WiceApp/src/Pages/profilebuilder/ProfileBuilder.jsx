@@ -83,7 +83,6 @@ export default function ProfileBuilder() {
       "Professional Capabilities",
       "Education and Credentials",
       "Portfolio and Proof of Work",
-      "Completion Confirmation",
     ].includes(sectionName);
 
   const renderSection = () => {
@@ -101,28 +100,28 @@ export default function ProfileBuilder() {
 
       case "Identity Basics":
         return (
-          <SectionWrapper {...props}>
+          <SectionWrapper {...props} showSkip={false}>
             <IdentityBasics />
           </SectionWrapper>
         );
 
       case "Professional Identity":
         return (
-          <SectionWrapper {...props}>
+          <SectionWrapper {...props} showSkip={false}>
             <ProfessionalIdentity />
           </SectionWrapper>
         );
 
       case "Expertise Snapshot":
         return (
-          <SectionWrapper {...props}>
+          <SectionWrapper {...props} showSkip={false}>
             <ExpertiseSnapshot />
           </SectionWrapper>
         );
 
       case "Work Preferences":
         return (
-          <SectionWrapper {...props}>
+          <SectionWrapper {...props} showSkip={false}>
             <WorkPreferences />
           </SectionWrapper>
         );
@@ -166,11 +165,14 @@ export default function ProfileBuilder() {
           </SectionWrapper>
         );
 
+      // ✅ FINAL PAGE — no SectionWrapper, only content
       case "Completion Confirmation":
         return (
-          <SectionWrapper {...props}>
-            <CompletionConfirmation />
-          </SectionWrapper>
+          <div className="form-section">
+            <CompletionConfirmation
+              onNext={() => handleNext("Completion Confirmation")}
+            />
+          </div>
         );
 
       default:

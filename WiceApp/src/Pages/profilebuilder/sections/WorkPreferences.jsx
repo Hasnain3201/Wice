@@ -70,11 +70,7 @@ export default function WorkPreferences({ onNext }) {
       </div>
 
       {/* ACTIONS */}
-      <div className="section-actions">
-        <button type="button" className="back">Back</button>
-        
-        <button type="button" className="next" onClick={onNext}>Next</button>
-      </div>
+      
     </div>
   );
 }

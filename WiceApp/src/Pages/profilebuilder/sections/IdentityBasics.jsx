@@ -29,9 +29,8 @@ export default function IdentityBasics({ onNext }) {
         </select>
 
         <div className="section-actions">
-          <button type="button" className="back">Back</button>
           
-          <button type="button" className="next" onClick={onNext}>Next</button>
+          
         </div>
       </form>
     </div>
