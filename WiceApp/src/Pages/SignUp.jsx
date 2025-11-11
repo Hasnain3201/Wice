@@ -51,16 +51,9 @@ export default function SignUp() {
     }
 
     try {
-      // Create Firebase user
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(user, { displayName: fullName });
 
-      // Save user data in Firestore
       const baseDoc = {
         uid: user.uid,
         fullName,
@@ -71,12 +64,9 @@ export default function SignUp() {
       };
 
       const defaults = buildDefaultUserData(accountType);
-
       await setDoc(doc(db, "users", user.uid), { ...baseDoc, ...defaults });
-
       await refreshProfile();
 
-      // ✅ Redirect consultants to Profile Builder intro page
       const destination =
         accountType === "consultant"
           ? "/consultant/profile-builder"
@@ -94,14 +84,12 @@ export default function SignUp() {
   return (
     <div className="signup-page">
       <div className="signup-card">
-        {/* LEFT */}
         <div className="signup-left">
           <img src={WiceLogo} alt="WICE logo" className="signup-logo" />
           <h1 className="signup-title">Create Your WICE Account</h1>
           <p className="signup-subtitle">Join the community today</p>
 
           <form className="signup-form" onSubmit={handleSubmit}>
-            {/* Account type selector */}
             <div className="account-type">
               <span className="account-label">Account type</span>
               <label className="radio">
@@ -151,6 +139,19 @@ export default function SignUp() {
               Log In
             </a>
           </p>
+
+          {/* 🧪 Temporary Dev/Test Button */}
+          <button
+            className="signup-btn"
+            style={{
+              marginTop: "1.5rem",
+              backgroundColor: "#bfa34b",
+              color: "#001f3f",
+            }}
+            onClick={() => navigate("/test/profile-builder")}
+          >
+            🧪 Test Profile Builder
+          </button>
         </div>
       </div>
     </div>
