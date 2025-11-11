@@ -13,7 +13,7 @@ import "./App.css";
 import WiceLogo from "./assets/Wice_logo.jpg";
 import hero from "./assets/hero.jpg";
 
-// Lazy + pages (use current-main paths)
+// Lazy + pages
 const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
 import Marketplace from "./Pages/Client/Marketplace.jsx";
 import ClientConsultantProfile from "./Pages/Client/ClientConsultantProfile.jsx";
@@ -34,6 +34,9 @@ import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 // Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
+
+// ✅ New Import: Consultant Profile Builder
+import ProfileBuilder from "./Pages/profilebuilder/ProfileBuilder.jsx";
 
 // Contexts
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
@@ -138,10 +141,10 @@ export default function App() {
               {/* Landing */}
               <Route path="/" element={<HomePage />} />
 
-              {/* Logins (keep main) + alias Vansh's employee route */}
+              {/* Logins */}
               <Route path="/client/login" element={<ClientLogin />} />
               <Route path="/consultant/login" element={<ConsultantLogin />} />
-              <Route path="/employee/login" element={<ConsultantLogin />} /> {/* alias */}
+              <Route path="/employee/login" element={<ConsultantLogin />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
 
@@ -161,7 +164,7 @@ export default function App() {
                 }
               />
 
-              {/* Shared pages */}
+              {/* Shared Pages */}
               {[
                 { path: "/marketplace", element: <Marketplace />, roles: ["client", "consultant", "admin"] },
                 { path: "/notifications", element: <Notifications />, roles: ["client", "consultant"] },
@@ -199,6 +202,7 @@ export default function App() {
                   />
                 }
               />
+
               <Route
                 path="/consultant/profile"
                 element={
@@ -213,6 +217,7 @@ export default function App() {
                   />
                 }
               />
+
               <Route
                 path="/consultant/portal"
                 element={
@@ -228,7 +233,19 @@ export default function App() {
                 }
               />
 
-              {/* Consultant detail page (from Vansh) */}
+              {/* ✅ New: Consultant Profile Builder */}
+              <Route
+                path="/consultant/profile-builder"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={<ProfileBuilder />}
+                  />
+                }
+              />
+
+              {/* Consultant Detail Page */}
               <Route
                 path="/consultant/:id"
                 element={
@@ -244,7 +261,7 @@ export default function App() {
                 }
               />
 
-              {/* Client profile & billing */}
+              {/* Client Profile & Billing */}
               <Route
                 path="/profile"
                 element={
@@ -259,6 +276,7 @@ export default function App() {
                   />
                 }
               />
+
               <Route
                 path="/client/billing"
                 element={

@@ -76,8 +76,11 @@ export default function SignUp() {
 
       await refreshProfile();
 
+      // ✅ Redirect consultants to Profile Builder intro page
       const destination =
-        accountType === "consultant" ? "/consultant/portal" : "/client/home";
+        accountType === "consultant"
+          ? "/consultant/profile-builder"
+          : "/client/home";
 
       navigate(destination);
     } catch (err) {
@@ -112,7 +115,12 @@ export default function SignUp() {
                 <span>Client</span>
               </label>
               <label className="radio">
-                <input type="radio" name="accountType" value="consultant" required />
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="consultant"
+                  required
+                />
                 <span>Consultant</span>
               </label>
             </div>
