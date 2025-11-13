@@ -1,11 +1,11 @@
 .settings-card {
-  padding: 32px;
+  padding: 20px;
 }
 
 .settings-section {
   border-top: 1px solid #ececec;
   padding-top: 16px;
-  margin-top: 24px;
+  margin-top: 5px;
 }
 
 .settings-section:first-of-type {
@@ -25,7 +25,7 @@
   font-weight: 600;
   color: #111827;
   cursor: pointer;
-  padding: 8px 0;
+  padding:0;
   transition: color 0.2s ease;
 }
 
@@ -36,7 +36,7 @@
 .settings-section__desc {
   font-size: 0.94rem;
   color: #6b7280;
-  margin: 6px 0 10px 0;
+  margin: 6px 0 6px 0;
   max-width: 80ch;
   line-height: 1.45;
 }
@@ -46,7 +46,7 @@
   max-height: 0;
   transition: max-height 0.25s ease;
   display: grid;
-  gap: 10px;
+  gap: 5px;
   padding-left: 4px;
 }
 

@@ -79,7 +79,7 @@ export default function ConsultantPortal() {
   return (
     <div className="dashboard-page consultant-portal">
       <header className="dashboard-header consultant-header">
-        <h2>Consultant Workspace</h2>
+        <h1 className="dashboard-title">Consultant Workspace</h1>
         <p>Track your engagements, opportunities, and workflow in one place.</p>
       </header>
 

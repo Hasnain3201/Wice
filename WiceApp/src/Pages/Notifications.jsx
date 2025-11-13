@@ -71,7 +71,7 @@ export default function Notifications() {
 
   return (
     <div className="notifications-page">
-      <h1 className="notifications-title">Notifications</h1>
+      <h1 className="dashboard-title">Notifications</h1>
       <div className="notifications-list">
         {notifications.map((n) => (
           <NotificationCard

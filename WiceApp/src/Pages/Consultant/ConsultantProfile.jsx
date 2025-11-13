@@ -127,9 +127,9 @@ export default function ConsultantProfile() {
   if ((!user || !isConsultant) && !loading) {
     return (
       <main className="shell">
-        <h2 className="title" style={{ margin: 0 }}>
+        <h1 className="dashboard-title">
           Consultant Profile
-        </h2>
+        </h1>
         <p className="subtitle" style={{ marginTop: 8 }}>
           Sign in with a consultant account to manage your profile.
         </p>
@@ -141,9 +141,9 @@ export default function ConsultantProfile() {
 
   return (
     <main className="shell">
-      <h2 className="title" style={{ margin: 0 }}>
+      <h1 className="dashboard-title">
         Consultant Profile
-      </h2>
+      </h1>
       <p className="subtitle" style={{ marginTop: 8 }}>
         Manage your WICE consultant profile so clients understand your expertise.
       </p>

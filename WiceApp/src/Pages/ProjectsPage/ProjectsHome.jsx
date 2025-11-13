@@ -38,10 +38,8 @@ export default function ProjectsHome() {
 
   return (
     <div className="projects-page">
-      <header className="projects-header">
-        <h1>Projects</h1>
-        <p>Collaborate with your team and track progress easily.</p>
-      </header>
+        <h1 className="dashboard-title">Projects</h1>
+        <h3>Collaborate with your team and track progress easily.</h3>
 
       <div className="projects-container">
         {projects.map((p) => (
