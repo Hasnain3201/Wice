@@ -19,6 +19,7 @@ export default function ProfessionalCapabilities({ onNext, onBack }) {
   return (
     <div className="section">
       <h2>Professional Capabilities</h2>
+      <p> <label>Skills</label></p>
       <p>
         Select the professional skills that describe your core capabilities.
         You can search and select multiple.
