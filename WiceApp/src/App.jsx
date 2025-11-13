@@ -35,7 +35,7 @@ import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
 
-// ✅ Consultant Profile Builder (Light + Full Profile integrated)
+// Consultant Profile Builder
 import ProfileBuilder from "./Pages/profilebuilder/ProfileBuilder.jsx";
 
 // Contexts
@@ -46,9 +46,7 @@ import { ChatProvider } from "./context/ChatContext.jsx";
 import Heading from "./Components/Heading.jsx";
 import SideNav from "./Components/SideNav.jsx";
 
-// -------------------------
 // Landing Page
-// -------------------------
 function HomePage() {
   const navigate = useNavigate();
   return (
@@ -84,9 +82,7 @@ function HomePage() {
   );
 }
 
-// -------------------------
-// Layout & Protected Route
-// -------------------------
+// Layout + Protected Route
 function DashboardLayout({ children }) {
   return (
     <div className="dashboard-container">
@@ -124,9 +120,7 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   return isAllowed ? element : <Navigate to={fallback} replace />;
 }
 
-// -------------------------
 // Main App Router
-// -------------------------
 export default function App() {
   return (
     <AuthProvider>
@@ -144,10 +138,10 @@ export default function App() {
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
 
-              {/* 🧪 Developer Test Route (unprotected) */}
+              {/* ➕ DEVELOPER TEST ROUTE (UNPROTECTED) */}
               <Route path="/test/profile-builder" element={<ProfileBuilder />} />
 
-              {/* ✅ Protected Consultant Profile Builder (Light + Full Profile) */}
+              {/* Consultant Profile Builder */}
               <Route
                 path="/consultant/profile-builder"
                 element={
@@ -159,7 +153,7 @@ export default function App() {
                 }
               />
 
-              {/* Client Home */}
+              {/* Client Dashboard */}
               <Route
                 path="/client/home"
                 element={
@@ -169,6 +163,121 @@ export default function App() {
                     element={
                       <DashboardLayout>
                         <ClientHome />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              {/* Shared Pages */}
+              {[
+                { path: "/marketplace", element: <Marketplace />, roles: ["client", "consultant", "admin"] },
+                { path: "/notifications", element: <Notifications />, roles: ["client", "consultant"] },
+                { path: "/saved", element: <Saved />, roles: ["client", "consultant", "admin"] },
+                { path: "/chat", element: <Chat />, roles: ["client", "consultant", "admin"] },
+                { path: "/projects", element: <ProjectsHome />, roles: ["client", "consultant"] },
+                { path: "/calendar", element: <CalendarPage />, roles: ["client", "consultant"] },
+                { path: "/settings", element: <Settings />, roles: ["client", "consultant", "admin"] },
+              ].map(({ path, element, roles }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={roles}
+                      fallback="/client/login"
+                      element={<DashboardLayout>{element}</DashboardLayout>}
+                    />
+                  }
+                />
+              ))}
+
+              {/* Consultant Pages */}
+              <Route
+                path="/consultant/portal"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantPortal />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path="/consultant/profile"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantProfileEditor />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path="/granthunt"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant", "admin"]}
+                    fallback="/consultant/login"
+                    element={
+                      <DashboardLayout>
+                        <ConsultantGrantHunt />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path="/consultant/:id"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client", "consultant"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <ClientConsultantProfile />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              {/* Client Profile + Billing */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <Profile />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path="/client/billing"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={
+                      <DashboardLayout>
+                        <BillingClientSide />
                       </DashboardLayout>
                     }
                   />
@@ -191,15 +300,13 @@ export default function App() {
                 }
               />
 
-              {/* 404 fallback */}
+              {/* 404 */}
               <Route
                 path="*"
                 element={
                   <div style={{ padding: 24 }}>
                     <h2>Page not found</h2>
-                    <p>
-                      Go back <Link to="/">home</Link>.
-                    </p>
+                    <p>Go back <Link to="/">home</Link>.</p>
                   </div>
                 }
               />

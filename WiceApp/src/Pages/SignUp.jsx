@@ -219,7 +219,7 @@ export default function SignUp() {
           <button
             type="button"
             className="signup-btn"
-            onClick={() => navigate("/consultant/profile-builder")}
+            onClick={() => navigate("/test/profile-builder")}
           >
             Developer Test: Go to Profile Builder
           </button>
