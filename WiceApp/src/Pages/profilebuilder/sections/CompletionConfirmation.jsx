@@ -1,38 +1,45 @@
 import { useState } from "react";
-import "../profileBuilder.css"; // ensure lowercase p in path
+import SectionDropdown from "../componentsPB/SectionDropdown";
 
-export default function CompletionConfirmation({ onBack }) {
+export default function CompletionConfirmation({ profileData = {}, onBack, onSubmit }) {
   const [isChecked, setIsChecked] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
-  // Handle submit
-  const handleSubmit = () => {
-    if (!isChecked) {
-      alert("Please confirm that your information is accurate before submitting.");
-      return;
-    }
-    setShowModal(true);
-  };
+  const {
+    identityBasics = {},
+    professionalIdentity = {},
+    expertiseSnapshot = {},
+    workPreferences = {},
 
-  // Close modal and allow return to editing
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  // Navigate to homepage
-  const goToHome = () => {
-    window.location.href = "/home"; // change if your homepage route differs
-  };
+    experienceSnapshot = {},
+    professionalCapabilities = {},
+    educationAndCredentials = {},
+    portfolio = {},
+  } = profileData;
 
   return (
     <div className="section">
-      <h2>Final Review and Confirmation</h2>
-      <p>
-        Review your full profile and confirm submission. Once submitted, your
-        full profile becomes visible to clients.
-      </p>
+      <h2>Final Review & Confirmation</h2>
+      <div className="summary-card">
+      <h3>Review your full profile before submitting.</h3>
+      {/* Combined ALL SECTIONS */}
+      <SectionDropdown title="Identity Basics" data={identityBasics} />
+      <SectionDropdown title="Professional Identity" data={professionalIdentity} />
+      <SectionDropdown title="Expertise Snapshot" data={expertiseSnapshot} />
+      <SectionDropdown title="Work Preferences" data={workPreferences} />
 
-      {/* Confirmation checkbox inline */}
+      <SectionDropdown title="Experience Snapshot" data={experienceSnapshot} />
+      <SectionDropdown
+        title="Professional Capabilities"
+        data={professionalCapabilities}
+      />
+      <SectionDropdown
+        title="Education & Credentials"
+        data={educationAndCredentials}
+      />
+      <SectionDropdown title="Portfolio / Proof of Work" data={portfolio} />
+      </div>
+
+      {/* Confirmation Checkbox */}
       <div className="confirm-center">
         <input
           type="checkbox"
@@ -45,40 +52,18 @@ export default function CompletionConfirmation({ onBack }) {
         </label>
       </div>
 
-      {/* Page action buttons */}
       <div className="section-actions">
-        <button type="button" className="back" onClick={onBack}>
+        <button className="back" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="next" onClick={handleSubmit}>
+        <button
+          className="next"
+          disabled={!isChecked}
+          onClick={() => isChecked && onSubmit()}
+        >
           Submit Full Profile
         </button>
       </div>
-
-      {/* Popup modal after submit */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <h3>Your Full Profile is Complete</h3>
-            <p>
-              🎉 Congratulations! You’ve completed your WICE Full Profile.
-              <br />
-              Your profile is now visible to clients.
-              <br />
-              You can edit or update your profile anytime.
-            </p>
-
-            <div className="modal-buttons">
-              <button className="back" onClick={handleCloseModal}>
-                Go Back to Edit
-              </button>
-              <button className="next" onClick={goToHome}>
-                Go to Home Page
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@
    =========================== */
 .form-section {
   flex: 1;
-  padding: 3rem 4rem;
+  padding: 0.75rem 4rem;
   background-color: #fff;
   overflow-y: auto;
 }
@@ -22,7 +22,6 @@
 .section h2 {
   font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
   color: #001f3f;
 }
 
@@ -119,9 +118,12 @@ button.link:hover {
 .summary-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 2rem;
+  padding: 0.2rem 1rem 1rem 1rem;
   background-color: #fafafa;
-  margin-top: 1.5rem;
+}
+
+.summary-card h3{
+  font-weight: 500;
 }
 
 .completion-actions {
@@ -189,7 +191,7 @@ button.link:hover {
   padding: 12px 28px;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 650;
   font-size: 1rem;
   transition: background 0.3s ease;
 }
@@ -621,4 +623,59 @@ button.back:hover {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Updated Dropdown Styles */
+.pb-dropdown-container {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.pb-dropdown-header {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: 300;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.pb-dropdown-header:hover {
+  background: #eef2f7;
+}
+
+.pb-dropdown-icon {
+  font-size: 18px;
+}
+
+.pb-dropdown-body {
+  padding: 20px 22px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pb-empty-text {
+  color: #6b7280;
+  font-size: 15px;
+  margin: 0;
+}
+
+.pb-data-block {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  white-space: pre-wrap;
+  font-family: "Inter", sans-serif;
 }
