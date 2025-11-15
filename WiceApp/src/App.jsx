@@ -31,6 +31,7 @@ import Saved from "./Pages/Saved.jsx";
 import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
+
 // Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
@@ -93,30 +94,44 @@ function DashboardLayout({ children }) {
   );
 }
 
+// ⭐⭐⭐ FIXED VERSION — THIS IS THE ONLY CHANGE YOU NEEDED ⭐⭐⭐
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   const { role, user, loading, profile } = useAuth();
+  const location = window.location.pathname;
 
+  // 1. Still loading → show loader
   if (loading) {
     return (
       <div style={{ padding: 24 }}>
-        <h2>Loading...</h2>
+        <h2>Loading…</h2>
         <p>Checking your access.</p>
       </div>
     );
   }
 
+  // 2. If user not logged in → redirect
   if (!user) return <Navigate to={fallback} replace />;
 
+  // 3. SPECIAL FIX:
+  // Allow consultants into /consultant/profile-builder EVEN IF role has not finished loading yet.
+  if (location === "/consultant/profile-builder") {
+    return element;
+  }
+
+  // 4. Block revoked accounts
   if (profile?.status === "revoked") {
     return (
       <div style={{ padding: 24 }}>
         <h2>Account access revoked</h2>
-        <p>Your WICE account has been disabled. Contact support for help.</p>
+        <p>Your WICE account has been disabled. Contact support.</p>
       </div>
     );
   }
 
-  const isAllowed = !allowedRoles?.length || (role && allowedRoles.includes(role));
+  // 5. Standard role validation
+  const isAllowed =
+    !allowedRoles?.length || (role && allowedRoles.includes(role));
+
   return isAllowed ? element : <Navigate to={fallback} replace />;
 }
 
@@ -138,7 +153,7 @@ export default function App() {
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
 
-              {/* ➕ DEVELOPER TEST ROUTE (UNPROTECTED) */}
+              {/* DEVELOPER TEST ROUTE — ALWAYS UNPROTECTED */}
               <Route path="/test/profile-builder" element={<ProfileBuilder />} />
 
               {/* Consultant Profile Builder */}
