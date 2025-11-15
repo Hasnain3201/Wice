@@ -1,120 +1,144 @@
+// src/data/userProfile.js
+
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
+/* ---------------------------------------------
+   REFERENCE
+--------------------------------------------- */
 export function userDocRef(uid) {
   return doc(db, "users", uid);
 }
 
+/* ---------------------------------------------
+   FETCH USER PROFILE
+--------------------------------------------- */
 export async function fetchUserProfile(uid) {
-  const ref = userDocRef(uid);
-  const snapshot = await getDoc(ref);
-  return snapshot.exists() ? snapshot.data() : null;
+  const snap = await getDoc(userDocRef(uid));
+  return snap.exists() ? snap.data() : null;
 }
 
+/* ---------------------------------------------
+   SAVE USER PROFILE (MERGE-SAFE)
+--------------------------------------------- */
 export async function saveUserProfile(uid, data) {
   if (!uid) throw new Error("Missing uid for profile update");
-  const payload = {
-    ...data,
-    profileUpdatedAt: serverTimestamp(),
-  };
-  await setDoc(userDocRef(uid), payload, { merge: true });
+
+  await setDoc(
+    userDocRef(uid),
+    {
+      ...data,
+      profileUpdatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
-const defaultClientDashboard = {
-  upcoming: [
-    {
-      id: "client-1",
-      date: "10/20/2025",
-      consultant: "Jeremy Foster",
-      topic: "Community Energy",
-    },
-    {
-      id: "client-2",
-      date: "10/24/2025",
-      consultant: "Sara Calvert",
-      topic: "Environmental Policy",
-    },
-  ],
+/* ---------------------------------------------
+   DASHBOARD DATA (STATIC)
+--------------------------------------------- */
+export const defaultClientDashboard = {
   recentUpdates: [
     { id: "update-1", icon: "🔔", text: "New consultant added: Schala Battle" },
     { id: "update-2", icon: "📅", text: "Consultation with Robert Layng confirmed." },
-    { id: "update-3", icon: "💬", text: "You have 2 unread messages in chat." },
+    { id: "update-3", icon: "💬", text: "You have 2 unread messages in chat." }
   ],
-};
-
-const defaultConsultantDashboard = {
-  metrics: {
-    engagements: 4,
-    upcomingSessions: 3,
-    openProposals: 5,
-    unreadMessages: 2,
-  },
   upcoming: [
     {
-      id: "consultant-1",
-      date: "Oct 20",
-      client: "Coastal Resilience Org",
-      topic: "Energy Transition Strategy",
+      id: "client-1",
+      consultant: "Jeremy Foster",
+      topic: "Community Energy",
+      date: "10/20/2025"
     },
     {
-      id: "consultant-2",
-      date: "Oct 24",
-      client: "Global Health Alliance",
-      topic: "Climate & Health Workshop",
-    },
-  ],
+      id: "client-2",
+      consultant: "Sara Calvert",
+      topic: "Environmental Policy",
+      date: "10/24/2025"
+    }
+  ]
+};
+
+export const defaultConsultantDashboard = {
+  metrics: {
+    engagements: 4,
+    openProposals: 5,
+    unreadMessages: 2,
+    upcomingSessions: 3
+  },
   pipeline: [
     {
       id: "pipeline-1",
       title: "Infrastructure Resilience RFP",
       status: "Proposal due 11/02",
-      value: "$120k",
+      value: "$120k"
     },
     {
       id: "pipeline-2",
       title: "Community Solar Deployment",
       status: "Intro call scheduled",
-      value: "$45k",
-    },
+      value: "$45k"
+    }
   ],
+  upcoming: [
+    {
+      id: "consultant-1",
+      client: "Coastal Resilience Org",
+      topic: "Energy Transition Strategy",
+      date: "Oct 20"
+    },
+    {
+      id: "consultant-2",
+      client: "Global Health Alliance",
+      topic: "Climate & Health Workshop",
+      date: "Oct 24"
+    }
+  ]
 };
 
+/* ---------------------------------------------
+   BASE PROFILE (CLEAN + UNIFIED)
+--------------------------------------------- */
+const baseProfile = {
+  pronouns: "",
+  timeZone: "",
+  oneLinerBio: "",
+  about: "",
+  totalYearsExperience: "",
+  linkedinUrl: "",
+  industries: [],
+  languages: [],
+  dailyRate: "",
+  availability: "",
+  openToTravel: false,
+  regions: [],
+  donorExperience: [],
+  skills: [],
+  highestDegree: "",
+  institution: "",
+  resumeFile: null,
+  additionalFiles: []
+};
+
+/* ---------------------------------------------
+   DEFAULT USER DATA BUILDER
+--------------------------------------------- */
 export function buildDefaultUserData(accountType) {
+  // ORDER MATTERS → First profile, then dashboard, then hiddenChats
+  const data = {
+    profile: { ...baseProfile },
+  };
+
   if (accountType === "client") {
-    return {
-      organization: "",
-      location: "",
-      sectors: [],
-      languages: "",
-      about: "",
-      photoUrl: "",
-      dashboardClient: {
-        upcoming: [...defaultClientDashboard.upcoming],
-        recentUpdates: [...defaultClientDashboard.recentUpdates],
-      },
-      hiddenChats: {},
-    };
+    data.dashboardClient = JSON.parse(JSON.stringify(defaultClientDashboard));
   }
 
   if (accountType === "consultant") {
-    return {
-      title: "",
-      location: "",
-      focusAreas: [],
-      regions: "",
-      about: "",
-      photoUrl: "",
-      languages: "",
-      dashboardConsultant: {
-        metrics: { ...defaultConsultantDashboard.metrics },
-        upcoming: [...defaultConsultantDashboard.upcoming],
-        pipeline: [...defaultConsultantDashboard.pipeline],
-      },
-      hiddenChats: {},
-    };
+    data.dashboardConsultant = JSON.parse(JSON.stringify(defaultConsultantDashboard));
   }
 
-  return {};
-}
+  // Always last field
+  data.hiddenChats = {};
 
-export { defaultClientDashboard, defaultConsultantDashboard };
+  return data;
+}

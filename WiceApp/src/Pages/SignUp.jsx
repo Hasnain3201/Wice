@@ -64,11 +64,11 @@ export default function SignUp() {
       await updateProfile(user, { displayName: fullName });
 
       const baseDoc = {
-        uid: user.uid,
         fullName,
         email,
-        accountType,
         role: accountType,
+        accountType,
+        uid: user.uid,
         createdAt: serverTimestamp(),
       };
 
