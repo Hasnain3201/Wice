@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
+import { getStorage } from "firebase/storage";   // <-- ADDED
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -30,7 +31,6 @@ if (import.meta.env.DEV) {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-// Ensure auth sessions persist across tabs until the user signs out.
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   if (import.meta.env.DEV) {
     console.warn("Unable to set Firebase auth persistence:", error);
@@ -39,4 +39,6 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
+export const storage = getStorage(app);   // <-- ADDED EXPORT
+
 export default app;
