@@ -39,6 +39,10 @@ import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
 // Consultant Profile Builder
 import ProfileBuilder from "./Pages/profilebuilder/ProfileBuilder.jsx";
 
+//Client Profile Builder
+import ClientIntroPage from "./Pages/profilebuilder/sections/ClientIntroPage.jsx";
+import ClientProfileBuilder from "./Pages/profilebuilder/sections/ClientProfileBuilder.jsx";
+
 // Contexts
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import { ChatProvider } from "./context/ChatContext.jsx";
@@ -166,6 +170,17 @@ export default function App() {
                     element={<ProfileBuilder />}
                   />
                 }
+              />
+
+              {/* CLIENT PROFILE BUILDER */}
+              <Route
+                path="/client/profile-builder/intro"
+                element={<ClientIntroPage />}
+              />
+
+              <Route
+                path="/client/profile-builder"
+                element={<ClientProfileBuilder />}
               />
 
               {/* Client Dashboard */}

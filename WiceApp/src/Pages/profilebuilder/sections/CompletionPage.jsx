@@ -1,6 +1,6 @@
 import SectionDropdown from "../componentsPB/SectionDropdown";
 
-export default function CompletionPage({ profileData = {}, onContinue, onSave }) {
+export default function CompletionPage({ profileData = {}, onNextFull, onSave }) {
   const {
     identityBasics = {},
     professionalIdentity = {},
@@ -23,13 +23,12 @@ export default function CompletionPage({ profileData = {}, onContinue, onSave })
 
       <div className="summary-card">
         <h3>Light Profile Inputted Information</h3>
-        {/* Combined ALL SECTIONS */}
+
         <SectionDropdown title="Identity Basics" data={identityBasics} />
         <SectionDropdown title="Professional Identity" data={professionalIdentity} />
         <SectionDropdown title="Expertise Snapshot" data={expertiseSnapshot} />
         <SectionDropdown title="Work Preferences" data={workPreferences} />
 
-        {/* Full Profile Sections (empty if not filled yet) */}
         <SectionDropdown title="Experience Snapshot" data={experienceSnapshot} />
         <SectionDropdown
           title="Professional Capabilities"
@@ -42,9 +41,11 @@ export default function CompletionPage({ profileData = {}, onContinue, onSave })
         <SectionDropdown title="Portfolio / Proof of Work" data={portfolio} />
 
         <div className="completion-actions">
-          <button className="next" onClick={onContinue}>
+          {/* IMPORTANT: FIXED BUTTON */}
+          <button className="next" onClick={onNextFull}>
             Complete Full Profile Now
           </button>
+
           <button className="back" onClick={onSave}>
             Save and Return to Home Page
           </button>

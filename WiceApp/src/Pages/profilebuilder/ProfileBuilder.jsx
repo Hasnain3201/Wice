@@ -43,6 +43,9 @@ export default function ProfileBuilder() {
   const [currentSection, setCurrentSection] = useState(sections[0]);
   const [completed, setCompleted] = useState([]);
 
+  // ⭐ NEW: manage full profile mode
+  const [isFullProfileMode, setIsFullProfileMode] = useState(false);
+
   const progress = (completed.length / (sections.length - 1)) * 100;
 
   const canProgress = (section, valid) => {
@@ -76,7 +79,6 @@ export default function ProfileBuilder() {
 
   const handleSaveAndReturn = () => navigate("/consultant/login");
 
-  // Helper to identify Full Profile sections
   const isFullProfileSection = (sectionName) =>
     [
       "Experience Snapshot",
@@ -126,12 +128,16 @@ export default function ProfileBuilder() {
           </SectionWrapper>
         );
 
+      // ⭐ UPDATED COMPLETION PAGE
       case "Light Completion":
         return (
           <SectionWrapper {...props} showSkip={false}>
             <CompletionPage
               onSave={handleSaveAndReturn}
-              onNextFull={() => handleNext("Light Completion")}
+              onNextFull={() => {
+                setIsFullProfileMode(true); // ⭐ turn on full mode
+                handleNext("Light Completion");
+              }}
             />
           </SectionWrapper>
         );
@@ -165,7 +171,6 @@ export default function ProfileBuilder() {
           </SectionWrapper>
         );
 
-      // ✅ FINAL PAGE — no SectionWrapper, only content
       case "Completion Confirmation":
         return (
           <div className="form-section">
@@ -189,6 +194,7 @@ export default function ProfileBuilder() {
           completed={completed}
           progress={progress}
           onNavigate={setCurrentSection}
+          isFullProfileMode={isFullProfileMode}   // ⭐ REQUIRED
         />
       )}
       {renderSection()}

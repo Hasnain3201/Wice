@@ -78,8 +78,8 @@ export default function SignUp() {
 
       const destination =
         accountType === "consultant"
-          ? "/consultant/profile-builder"
-          : "/client/home";
+          ? "/consultant/profile-builder/intro"
+          : "/client/profile-builder/intro";
 
       navigate(destination);
     } catch (err) {
