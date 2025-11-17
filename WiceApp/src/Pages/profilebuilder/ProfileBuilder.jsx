@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import ProgressSidebar from "./componentsPB/ProgressSidebar";
 import SectionWrapper from "./componentsPB/SectionWrapper";
 
-// Light Profile Sections
 import IntroPage from "./sections/IntroPage";
 import IdentityBasics from "./sections/IdentityBasics";
 import ProfessionalIdentity from "./sections/ProfessionalIdentity";
@@ -11,7 +10,6 @@ import ExpertiseSnapshot from "./sections/ExpertiseSnapshot";
 import WorkPreferences from "./sections/WorkPreferences";
 import CompletionPage from "./sections/CompletionPage";
 
-// Full Profile Sections
 import ExperienceSnapshot from "./sections/ExperienceSnapshot";
 import ProfessionalCapabilities from "./sections/ProfessionalCapabilities";
 import EducationNCredentials from "./sections/EducationNCredentials";
@@ -24,15 +22,12 @@ export default function ProfileBuilder() {
   const navigate = useNavigate();
 
   const sections = [
-    // Light Profile
     "Intro Page",
     "Identity Basics",
     "Professional Identity",
     "Expertise Snapshot",
     "Work Preferences",
     "Light Completion",
-
-    // Full Profile
     "Experience Snapshot",
     "Professional Capabilities",
     "Education and Credentials",
@@ -43,10 +38,13 @@ export default function ProfileBuilder() {
   const [currentSection, setCurrentSection] = useState(sections[0]);
   const [completed, setCompleted] = useState([]);
 
-  // ⭐ NEW: manage full profile mode
+  // ⭐ GLOBAL PROFILE DATA FOR ALL PAGES
+  const [profileData, setProfileData] = useState({});
+
   const [isFullProfileMode, setIsFullProfileMode] = useState(false);
 
-  const progress = (completed.length / (sections.length - 1)) * 100;
+  const progress =
+    (completed.length / (sections.length - (isFullProfileMode ? 0 : 4))) * 100;
 
   const canProgress = (section, valid) => {
     if (valid && !completed.includes(section)) {
@@ -90,84 +88,100 @@ export default function ProfileBuilder() {
   const renderSection = () => {
     const props = {
       onBack: () => handleBack(currentSection),
-      onSkip: () => handleSkip(currentSection),
       onNext: () => handleNext(currentSection),
+      onSkip: () => handleSkip(currentSection),
+      profileData,
+      setProfileData,
       showSkip: isFullProfileSection(currentSection),
     };
 
     switch (currentSection) {
-      // ---------- Light Profile ----------
       case "Intro Page":
         return <IntroPage onStart={() => handleNext("Intro Page")} />;
 
       case "Identity Basics":
         return (
           <SectionWrapper {...props} showSkip={false}>
-            <IdentityBasics />
+            <IdentityBasics profileData={profileData} setProfileData={setProfileData} />
           </SectionWrapper>
         );
 
       case "Professional Identity":
         return (
           <SectionWrapper {...props} showSkip={false}>
-            <ProfessionalIdentity />
+            <ProfessionalIdentity
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </SectionWrapper>
         );
 
       case "Expertise Snapshot":
         return (
           <SectionWrapper {...props} showSkip={false}>
-            <ExpertiseSnapshot />
+            <ExpertiseSnapshot
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </SectionWrapper>
         );
 
       case "Work Preferences":
         return (
           <SectionWrapper {...props} showSkip={false}>
-            <WorkPreferences />
+            <WorkPreferences profileData={profileData} setProfileData={setProfileData} />
           </SectionWrapper>
         );
 
-      // ⭐ UPDATED COMPLETION PAGE
       case "Light Completion":
         return (
           <SectionWrapper {...props} showSkip={false}>
             <CompletionPage
+              profileData={profileData}
               onSave={handleSaveAndReturn}
               onNextFull={() => {
-                setIsFullProfileMode(true); // ⭐ turn on full mode
+                setIsFullProfileMode(true);
                 handleNext("Light Completion");
               }}
             />
           </SectionWrapper>
         );
 
-      // ---------- Full Profile ----------
+      // ⭐ FULL PROFILE PAGES
       case "Experience Snapshot":
         return (
           <SectionWrapper {...props}>
-            <ExperienceSnapshot />
+            <ExperienceSnapshot
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </SectionWrapper>
         );
 
       case "Professional Capabilities":
         return (
           <SectionWrapper {...props}>
-            <ProfessionalCapabilities />
+            <ProfessionalCapabilities
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </SectionWrapper>
         );
 
       case "Education and Credentials":
         return (
           <SectionWrapper {...props}>
-            <EducationNCredentials />
+            <EducationNCredentials
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </SectionWrapper>
         );
 
       case "Portfolio and Proof of Work":
         return (
           <SectionWrapper {...props}>
-            <PortfolioNPow />
+            <PortfolioNPow profileData={profileData} setProfileData={setProfileData} />
           </SectionWrapper>
         );
 
@@ -175,7 +189,9 @@ export default function ProfileBuilder() {
         return (
           <div className="form-section">
             <CompletionConfirmation
-              onNext={() => handleNext("Completion Confirmation")}
+              profileData={profileData}
+              onBack={() => handleBack("Completion Confirmation")}
+              onSubmit={() => handleNext("Completion Confirmation")}
             />
           </div>
         );
@@ -194,7 +210,7 @@ export default function ProfileBuilder() {
           completed={completed}
           progress={progress}
           onNavigate={setCurrentSection}
-          isFullProfileMode={isFullProfileMode}   // ⭐ REQUIRED
+          isFullProfileMode={isFullProfileMode}
         />
       )}
       {renderSection()}

@@ -1,19 +1,31 @@
-import { useState } from "react";
-import "../profileBuilder.css";
+import { useState, useEffect } from "react";
+import "../ProfileBuilder.css";
 
-export default function WorkPreferences() {
-  const [currency, setCurrency] = useState("USD");
-  const [dailyRate, setDailyRate] = useState("");
-  const [openToTravel, setOpenToTravel] = useState("");
+export default function WorkPreferences({ profileData, setProfileData, onNext }) {
+  const [currency, setCurrency] = useState(profileData.currency || "USD");
+  const [dailyRate, setDailyRate] = useState(profileData.dailyRate || "");
+  const [openToTravel, setOpenToTravel] = useState(
+    profileData.openToTravel || ""
+  );
 
   const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "JPY"];
+
+  // ⭐ Sync into parent profileData
+  useEffect(() => {
+    setProfileData({
+      ...profileData,
+      currency,
+      dailyRate,
+      openToTravel,
+    });
+  }, [currency, dailyRate, openToTravel]);
 
   return (
     <div className="section">
       <h2>Work Preferences</h2>
       <p>You can update your preferences at any time.</p>
 
-      {/* DAILY RATE */}
+      {/* Daily Rate */}
       <label>Daily Rate *</label>
       <div className="daily-rate-row">
         <select
@@ -38,36 +50,31 @@ export default function WorkPreferences() {
         />
       </div>
 
-      {/* AVAILABILITY (placeholder) */}
-      <label>Availability Status *</label>
-      <div className="availability-placeholder"></div>
-
-      {/* OPEN TO TRAVEL */}
-      <div className="travel-inline">
-        <label className="travel-label">Open to Travel *</label>
-        <div className="radio-inline">
-          <label>
-            <input
-              type="radio"
-              name="travel"
-              value="Yes"
-              checked={openToTravel === "Yes"}
-              onChange={(e) => setOpenToTravel(e.target.value)}
-            />
-            Yes
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="travel"
-              value="No"
-              checked={openToTravel === "No"}
-              onChange={(e) => setOpenToTravel(e.target.value)}
-            />
-            No
-          </label>
-        </div>
+      {/* Travel Preference */}
+      <label>Open to Travel *</label>
+      <div className="radio-inline">
+        <label>
+          <input
+            type="radio"
+            name="travel"
+            value="Yes"
+            checked={openToTravel === "Yes"}
+            onChange={(e) => setOpenToTravel(e.target.value)}
+          />
+          Yes
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="travel"
+            value="No"
+            checked={openToTravel === "No"}
+            onChange={(e) => setOpenToTravel(e.target.value)}
+          />
+          No
+        </label>
       </div>
+
     </div>
   );
 }

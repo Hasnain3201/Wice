@@ -2,33 +2,43 @@ import React from "react";
 import "../profileBuilder.css";
 
 /**
- * SectionWrapper handles all navigation buttons globally.
- * 
- * Props:
- *  - children: section content (form/UI)
- *  - onBack, onSkip, onNext: navigation handlers from ProfileBuilder
- *  - showSkip: boolean (true only for full profile pages)
+ * SectionWrapper controls navigation buttons ONLY if showNav=true.
+ * For pages that have their own Next/Back buttons, set showNav={false}
  */
-export default function SectionWrapper({ children, onBack, onSkip, onNext, showSkip = false }) {
+export default function SectionWrapper({
+  children,
+  onBack,
+  onSkip,
+  onNext,
+  showSkip = false,
+  showNav = true,
+}) {
   return (
     <div className="form-section">
       {children}
 
-      <div className="section-actions">
-        <button type="button" className="back" onClick={onBack}>
-          Back
-        </button>
+      {/* Render navigation buttons only when enabled */}
+      {showNav && (
+        <div className="section-actions">
+          {onBack && (
+            <button type="button" className="back" onClick={onBack}>
+              Back
+            </button>
+          )}
 
-        {showSkip && (
-          <button type="button" className="back" onClick={onSkip}>
-            Skip
-          </button>
-        )}
+          {showSkip && (
+            <button type="button" className="back" onClick={onSkip}>
+              Skip
+            </button>
+          )}
 
-        <button type="button" className="next" onClick={onNext}>
-          Next
-        </button>
-      </div>
+          {onNext && (
+            <button type="button" className="next" onClick={onNext}>
+              Next
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

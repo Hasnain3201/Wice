@@ -1,54 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
 import ISO6391 from "iso-639-1";
-import "../profileBuilder.css";
+import "../ProfileBuilder.css";
 
-export default function ExpertiseSnapshot() {
-  const [selectedIndustries, setSelectedIndustries] = useState([]);
-  const [selectedSectors, setSelectedSectors] = useState([]);
-  const [selectedLanguages, setSelectedLanguages] = useState([]);
+export default function ExpertiseSnapshot({ profileData, setProfileData, onNext }) {
+  const [selectedIndustries, setSelectedIndustries] = useState(
+    profileData.industries?.map((i) => ({ value: i, label: i })) || []
+  );
+  const [selectedSectors, setSelectedSectors] = useState(
+    profileData.sectors?.map((s) => ({ value: s, label: s })) || []
+  );
+  const [selectedLanguages, setSelectedLanguages] = useState(
+    profileData.languages?.map((l) => ({ value: l, label: l })) || []
+  );
 
   const industries = [
-    { value: "healthcare", label: "Healthcare" },
-    { value: "finance", label: "Finance" },
-    { value: "technology", label: "Technology" },
-    { value: "education", label: "Education" },
+    { value: "Healthcare", label: "Healthcare" },
+    { value: "Finance", label: "Finance" },
+    { value: "Technology", label: "Technology" },
+    { value: "Education", label: "Education" },
   ];
 
   const sectorsByIndustry = {
-    healthcare: [
-      { value: "public_health", label: "Public Health" },
-      { value: "pharma", label: "Pharmaceuticals" },
-      { value: "medical_devices", label: "Medical Devices" },
+    Healthcare: [
+      { value: "Public Health", label: "Public Health" },
+      { value: "Pharmaceuticals", label: "Pharmaceuticals" },
+      { value: "Medical Devices", label: "Medical Devices" },
     ],
-    finance: [
-      { value: "banking", label: "Banking" },
-      { value: "investment", label: "Investment Management" },
-      { value: "insurance", label: "Insurance" },
+    Finance: [
+      { value: "Banking", label: "Banking" },
+      { value: "Investment Management", label: "Investment Management" },
+      { value: "Insurance", label: "Insurance" },
     ],
-    technology: [
-      { value: "software", label: "Software Development" },
-      { value: "cybersecurity", label: "Cybersecurity" },
-      { value: "ai", label: "Artificial Intelligence" },
+    Technology: [
+      { value: "Software", label: "Software" },
+      { value: "Cybersecurity", label: "Cybersecurity" },
+      { value: "Artificial Intelligence", label: "Artificial Intelligence" },
     ],
-    education: [
-      { value: "higher_ed", label: "Higher Education" },
-      { value: "edtech", label: "EdTech" },
+    Education: [
+      { value: "Higher Education", label: "Higher Education" },
+      { value: "EdTech", label: "EdTech" },
     ],
   };
 
-  // Get all known languages
   const allLanguages = ISO6391.getAllNames().map((name) => ({
-    value: name.toLowerCase(),
+    value: name,
     label: name,
   }));
 
-  // Handle industry selection limit
+  // ⭐ Sync into parent profileData
+  useEffect(() => {
+    setProfileData({
+      ...profileData,
+      industries: selectedIndustries.map((i) => i.value),
+      sectors: selectedSectors.map((s) => s.value),
+      languages: selectedLanguages.map((l) => l.value),
+    });
+  }, [selectedIndustries, selectedSectors, selectedLanguages]);
+
   const handleIndustryChange = (selectedOptions) => {
-    if (selectedOptions.length <= 3) {
-      setSelectedIndustries(selectedOptions);
-      setSelectedSectors([]);
-    }
+    setSelectedIndustries(selectedOptions || []);
+    setSelectedSectors([]); // reset sectors when industries change
   };
 
   const currentSectors = selectedIndustries.flatMap(
@@ -60,7 +72,7 @@ export default function ExpertiseSnapshot() {
       <h2>Expertise Snapshot</h2>
       <p>Define your core industries, sectors, and languages of expertise.</p>
 
-      {/* INDUSTRIES */}
+      {/* Industries */}
       <label>Industries (max 3) *</label>
       <Select
         isMulti
@@ -69,11 +81,12 @@ export default function ExpertiseSnapshot() {
         onChange={handleIndustryChange}
         placeholder="Select up to 3 industries"
       />
+
       {selectedIndustries.length >= 3 && (
         <p className="warning-text">You can select up to 3 industries only.</p>
       )}
 
-      {/* SECTORS */}
+      {/* Sectors */}
       {selectedIndustries.length > 0 && (
         <>
           <label>Sectors *</label>
@@ -87,7 +100,7 @@ export default function ExpertiseSnapshot() {
         </>
       )}
 
-      {/* LANGUAGES */}
+      {/* Languages */}
       <label>Languages *</label>
       <Select
         isMulti
@@ -101,9 +114,13 @@ export default function ExpertiseSnapshot() {
       <p className="selected-info">
         <span className="label-light">Languages selected:</span>{" "}
         {selectedLanguages.length > 0
-          ? `${selectedLanguages.map((l) => l.label).join(", ")}  (${selectedLanguages.length})`
+          ? `${selectedLanguages.map((l) => l.label).join(", ")} (${
+              selectedLanguages.length
+            })`
           : "None"}
       </p>
+
+      
     </div>
   );
 }
