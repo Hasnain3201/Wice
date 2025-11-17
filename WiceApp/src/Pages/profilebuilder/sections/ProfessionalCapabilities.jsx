@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Select from "react-select";
-import skillsData from "../../../data/skillsData"; // adjust path if needed
-import "../ProfileBuilder.css";
+import skillsData from "../../../data/skillsData";
+import "../profileBuilder.css";
 
-export default function ProfessionalCapabilities({ onNext, onBack }) {
+export default function ProfessionalCapabilities() {
   const [selectedSkills, setSelectedSkills] = useState([]);
 
   // Convert skill list into React-Select options
@@ -11,10 +11,6 @@ export default function ProfessionalCapabilities({ onNext, onBack }) {
     value: skill,
     label: skill,
   }));
-
-  const handleNext = () => {
-    onNext();
-  };
 
   return (
     <div className="section">
@@ -38,10 +34,6 @@ export default function ProfessionalCapabilities({ onNext, onBack }) {
         {selectedSkills.length > 0
           ? selectedSkills.map((s) => s.label).join(", ")
           : "None"}
-      </div>
-
-      <div className="section-actions">
-        
       </div>
     </div>
   );

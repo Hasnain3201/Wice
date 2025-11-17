@@ -1,13 +1,12 @@
 import { useState } from "react";
 import Select from "react-select";
-import { Country, State } from "country-state-city";
-import "../ProfileBuilder.css";
+import { Country } from "country-state-city";
+import "../profileBuilder.css";
 
-export default function ExperienceSnapshot({ onNext, onBack }) {
+export default function ExperienceSnapshot() {
   const [selectedRegions, setSelectedRegions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedDonors, setSelectedDonors] = useState([]);
-  const [error, setError] = useState("");
 
   // Region options (based on continents)
   const regionOptions = [
@@ -66,16 +65,6 @@ export default function ExperienceSnapshot({ onNext, onBack }) {
       region: region.value,
     }));
   });
-
-  // Validation
-  const handleNext = () => {
-    if (selectedRegions.length === 0) {
-      setError("Please select at least one region before continuing.");
-      return;
-    }
-    setError("");
-    onNext();
-  };
 
   return (
     <div className="section">
@@ -147,13 +136,6 @@ export default function ExperienceSnapshot({ onNext, onBack }) {
         </div>
       )}
 
-      {/* ERROR */}
-      {error && <p className="error-message">{error}</p>}
-
-      {/* NAVIGATION */}
-      <div className="section-actions">
-        
-      </div>
     </div>
   );
 }

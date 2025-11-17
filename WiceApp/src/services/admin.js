@@ -35,20 +35,25 @@ export function subscribeToAllUsers(callback, onError) {
 export async function setUserAccountStatus(uid, status, metadata = {}) {
   if (!uid) throw new Error("Missing uid for status update");
   const ref = doc(db, "users", uid);
-  const payload =
-    status === "revoked"
-      ? {
-          status: "revoked",
-          revokedAt: serverTimestamp(),
-          revokedBy: metadata.revokedBy || null,
-          revokedReason: metadata.reason || "",
-        }
-      : {
-          status: null,
-          revokedAt: null,
-          revokedBy: null,
-          revokedReason: "",
-        };
+  const isRevoked = status === "revoked";
+  const payload = isRevoked
+    ? {
+        status: "revoked",
+        revokedAt: serverTimestamp(),
+        revokedBy: metadata.revokedBy || null,
+        revokedReason: metadata.reason || "",
+      }
+    : {
+        status: null,
+        revokedAt: null,
+        revokedBy: null,
+        revokedReason: "",
+      };
+
+  // Keep nested profile data in sync with the top-level status flags
+  payload["profile.status"] = isRevoked ? "revoked" : null;
+  payload["profile.revokedAt"] = isRevoked ? serverTimestamp() : null;
+  payload["profile.revokedBy"] = isRevoked ? metadata.revokedBy || null : null;
   await updateDoc(ref, payload);
 }
 
@@ -56,11 +61,16 @@ export async function updateUserRole(uid, nextRole) {
   if (!uid) throw new Error("Missing uid for role update");
   if (!nextRole) throw new Error("Role is required");
   const ref = doc(db, "users", uid);
-  await updateDoc(ref, {
+  const payload = {
     accountType: nextRole,
     role: nextRole,
     updatedAt: serverTimestamp(),
-  });
+  };
+
+  // Mirror the role change under the profile object for consistency with builder data
+  payload["profile.accountType"] = nextRole;
+  payload["profile.role"] = nextRole;
+  await updateDoc(ref, payload);
 }
 
 export async function logAdminAction(payload) {

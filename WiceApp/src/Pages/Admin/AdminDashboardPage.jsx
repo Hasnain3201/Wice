@@ -22,6 +22,30 @@ const ROLE_LABELS = {
 const PROTECTED_ADMIN_EMAIL =
   import.meta.env.VITE_PROTECTED_ADMIN_EMAIL?.toLowerCase() || null;
 
+function getAccountType(entry) {
+  return (
+    entry?.accountType ||
+    entry?.role ||
+    entry?.profile?.accountType ||
+    entry?.profile?.role ||
+    null
+  );
+}
+
+function getDisplayName(entry) {
+  return (
+    entry?.fullName ||
+    entry?.profile?.fullName ||
+    entry?.displayName ||
+    entry?.email ||
+    "—"
+  );
+}
+
+function getStatus(entry) {
+  return entry?.status || entry?.profile?.status || null;
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
@@ -113,7 +137,7 @@ export default function AdminDashboard() {
   const stats = useMemo(() => {
     const total = users.length;
     const adminCount = users.filter(
-      (entry) => entry.accountType === "admin"
+      (entry) => getAccountType(entry) === "admin"
     ).length;
     const admins = adminCount;
     const newUsers7d = users.filter((entry) => {
@@ -125,23 +149,25 @@ export default function AdminDashboard() {
       return Date.now() - createdAt < 1000 * 60 * 60 * 24 * 7;
     }).length;
     const consultants = users.filter(
-      (entry) => entry.accountType === "consultant"
+      (entry) => getAccountType(entry) === "consultant"
     ).length;
-    const clients = users.filter((entry) => entry.accountType === "client").length;
-    const revoked = users.filter((entry) => entry.status === "revoked").length;
+    const clients = users.filter(
+      (entry) => getAccountType(entry) === "client"
+    ).length;
+    const revoked = users.filter((entry) => getStatus(entry) === "revoked").length;
     return { total, admins, consultants, clients, revoked, newUsers7d };
   }, [users]);
 
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
     return users.filter((entry) => {
+      const accountType = getAccountType(entry);
       const matchesRole =
-        roleFilter === "all" ? true : entry.accountType === roleFilter;
+        roleFilter === "all" ? true : accountType === roleFilter;
+      const displayName = getDisplayName(entry);
       const matchesQuery =
         !query ||
-        `${entry.fullName || ""} ${entry.email || ""}`
-          .toLowerCase()
-          .includes(query);
+        `${displayName} ${entry.email || ""}`.toLowerCase().includes(query);
       return matchesRole && matchesQuery;
     });
   }, [users, search, roleFilter]);
@@ -343,80 +369,86 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((entry) => (
-                  <tr key={entry.uid}>
-                    <td>{entry.fullName || "—"}</td>
-                    <td>{entry.email || "—"}</td>
-                    <td>{ROLE_LABELS[entry.accountType] || entry.accountType || "—"}</td>
-                    <td>
-                      <span
-                        className={`status-pill ${
-                          entry.status === "revoked" ? "revoked" : "active"
-                        }`}
-                      >
-                        {entry.status === "revoked" ? "Revoked" : "Active"}
-                      </span>
-                    </td>
-                    <td className="admin-actions-cell">
-                      {entry.accountType !== "admin" && (
-                        <button
-                          type="button"
-                          className="admin-btn ghost"
-                          onClick={() => handlePromote(entry)}
-                          disabled={
-                            actionByUser[entry.uid] === "promoting" ||
-                            entry.status === "revoked"
-                          }
+                {filteredUsers.map((entry) => {
+                  const accountType = getAccountType(entry);
+                  const status = getStatus(entry);
+                  const displayName = getDisplayName(entry);
+                  const roleLabel = ROLE_LABELS[accountType] || accountType || "—";
+                  return (
+                    <tr key={entry.uid}>
+                      <td>{displayName}</td>
+                      <td>{entry.email || "—"}</td>
+                      <td>{roleLabel}</td>
+                      <td>
+                        <span
+                          className={`status-pill ${
+                            status === "revoked" ? "revoked" : "active"
+                          }`}
                         >
-                          {actionByUser[entry.uid] === "promoting"
-                            ? "Promoting…"
-                            : "Promote to Admin"}
-                        </button>
-                      )}
-                      {entry.accountType === "admin" &&
-                        !isProtectedAdmin(entry) &&
-                        !isActingOnSelf(entry.uid) && (
+                          {status === "revoked" ? "Revoked" : "Active"}
+                        </span>
+                      </td>
+                      <td className="admin-actions-cell">
+                        {accountType !== "admin" && (
                           <button
                             type="button"
                             className="admin-btn ghost"
-                            onClick={() => handleDemote(entry, "consultant")}
-                            disabled={actionByUser[entry.uid] === "demoting"}
+                            onClick={() => handlePromote(entry)}
+                            disabled={
+                              actionByUser[entry.uid] === "promoting" ||
+                              status === "revoked"
+                            }
                           >
-                            {actionByUser[entry.uid] === "demoting"
-                              ? "Updating…"
-                              : "Demote to Consultant"}
+                            {actionByUser[entry.uid] === "promoting"
+                              ? "Promoting…"
+                              : "Promote to Admin"}
                           </button>
                         )}
-                      {entry.status === "revoked" ? (
-                        <button
-                          type="button"
-                          className="admin-btn ghost"
-                          onClick={() => handleRestore(entry)}
-                          disabled={actionByUser[entry.uid] === "restoring"}
-                        >
-                          {actionByUser[entry.uid] === "restoring"
-                            ? "Restoring…"
-                            : "Restore"}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="admin-btn danger"
-                          onClick={() => handleRevoke(entry)}
-                          disabled={
-                            actionByUser[entry.uid] === "revoking" ||
-                            entry.accountType === "admin" ||
-                            isActingOnSelf(entry.uid)
-                          }
-                        >
-                          {actionByUser[entry.uid] === "revoking"
-                            ? "Revoking…"
-                            : "Revoke"}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        {accountType === "admin" &&
+                          !isProtectedAdmin(entry) &&
+                          !isActingOnSelf(entry.uid) && (
+                            <button
+                              type="button"
+                              className="admin-btn ghost"
+                              onClick={() => handleDemote(entry, "consultant")}
+                              disabled={actionByUser[entry.uid] === "demoting"}
+                            >
+                              {actionByUser[entry.uid] === "demoting"
+                                ? "Updating…"
+                                : "Demote to Consultant"}
+                            </button>
+                          )}
+                        {status === "revoked" ? (
+                          <button
+                            type="button"
+                            className="admin-btn ghost"
+                            onClick={() => handleRestore(entry)}
+                            disabled={actionByUser[entry.uid] === "restoring"}
+                          >
+                            {actionByUser[entry.uid] === "restoring"
+                              ? "Restoring…"
+                              : "Restore"}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="admin-btn danger"
+                            onClick={() => handleRevoke(entry)}
+                            disabled={
+                              actionByUser[entry.uid] === "revoking" ||
+                              accountType === "admin" ||
+                              isActingOnSelf(entry.uid)
+                            }
+                          >
+                            {actionByUser[entry.uid] === "revoking"
+                              ? "Revoking…"
+                              : "Revoke"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan={5} style={{ textAlign: "center" }}>

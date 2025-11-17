@@ -1,7 +1,7 @@
 import { useState } from "react";
-import "../ProfileBuilder.css";
+import "../profileBuilder.css";
 
-export default function WorkPreferences({ onNext }) {
+export default function WorkPreferences() {
   const [currency, setCurrency] = useState("USD");
   const [dailyRate, setDailyRate] = useState("");
   const [openToTravel, setOpenToTravel] = useState("");
@@ -68,9 +68,6 @@ export default function WorkPreferences({ onNext }) {
           </label>
         </div>
       </div>
-
-      {/* ACTIONS */}
-      
     </div>
   );
 }

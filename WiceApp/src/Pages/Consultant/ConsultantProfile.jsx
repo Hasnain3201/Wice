@@ -88,17 +88,6 @@ const DEGREE_OPTIONS = [
   { value: "phd", label: "PhD" },
 ];
 
-/* ----------------- helpers ----------------- */
-
-function arrayFromCsv(value) {
-  return (value || "")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
-/* ------------------------------------------- */
-
 export default function ConsultantProfile() {
   const { user, profile, refreshProfile, loading } = useAuth();
 

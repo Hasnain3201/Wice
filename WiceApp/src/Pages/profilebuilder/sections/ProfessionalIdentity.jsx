@@ -1,7 +1,7 @@
 import { useState } from "react";
-import "../ProfileBuilder.css"
+import "../profileBuilder.css";
 
-export default function ProfessionalIdentity({ onNext }) {
+export default function ProfessionalIdentity() {
   const [oneLiner, setOneLiner] = useState("");
   const [about, setAbout] = useState("");
   const [oneLinerError, setOneLinerError] = useState("");
@@ -82,15 +82,8 @@ export default function ProfessionalIdentity({ onNext }) {
           <option>15-20</option>
           <option>20+</option>
         </select>
-
-        {/* LinkedIn URL */}
         <label>LinkedIn URL</label>
         <input type="url" placeholder="https://www.linkedin.com/in/yourname" />
-
-        {/* Actions */}
-        <div className="section-actions">
-         
-        </div>
       </form>
     </div>
   );

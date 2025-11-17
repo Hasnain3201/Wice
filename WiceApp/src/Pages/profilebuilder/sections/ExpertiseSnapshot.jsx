@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Select from "react-select";
 import ISO6391 from "iso-639-1";
-import "../ProfileBuilder.css";
+import "../profileBuilder.css";
 
-export default function ExpertiseSnapshot({ onNext }) {
+export default function ExpertiseSnapshot() {
   const [selectedIndustries, setSelectedIndustries] = useState([]);
   const [selectedSectors, setSelectedSectors] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState([]);
@@ -104,9 +104,6 @@ export default function ExpertiseSnapshot({ onNext }) {
           ? `${selectedLanguages.map((l) => l.label).join(", ")}  (${selectedLanguages.length})`
           : "None"}
       </p>
-
-      {/* NAV BUTTONS */}
-      
     </div>
   );
 }

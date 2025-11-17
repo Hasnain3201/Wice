@@ -1,4 +1,4 @@
-export default function IdentityBasics({ onNext }) {
+export default function IdentityBasics() {
   return (
     <div className="section">
       <h2>Identity Basics</h2>
@@ -27,11 +27,6 @@ export default function IdentityBasics({ onNext }) {
           <option>CST</option>
           <option>MST</option>
         </select>
-
-        <div className="section-actions">
-          
-          
-        </div>
       </form>
     </div>
   );

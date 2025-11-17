@@ -1,10 +1,8 @@
 import { useState } from "react";
 
-export default function EducationNCredentials({ onBack, onNext }) {
+export default function EducationNCredentials() {
   const [degree, setDegree] = useState("");
   const [institution, setInstitution] = useState("");
-
-  const valid = degree && institution;
 
   return (
     <div className="section">
@@ -27,10 +25,6 @@ export default function EducationNCredentials({ onBack, onNext }) {
         onChange={(e) => setInstitution(e.target.value)}
         required
       />
-
-      <div className="section-actions">
-        
-      </div>
     </div>
   );
 }
