@@ -55,6 +55,7 @@
 .industry-tag-block,
 .sector-tag-group {
   display: flex;
+  align-items: right;
   flex-direction: column;
   gap: 6px;
 }
@@ -111,7 +112,7 @@
 }
 
 .tag-search-input {
-  width: 100%;
+  width: 25%;
   border-radius: 999px;
   border: 1px solid #d1d5db;
   padding: 8px 12px;
@@ -200,7 +201,7 @@
 .filter-tags-column,
 .filter-tags-row {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
 }
 
@@ -305,7 +306,7 @@
 }
 
 .primary-button {
-  background: #1d4ed8;
+  background: #071b53;
   color: #fff;
   border: none;
 }
@@ -331,4 +332,16 @@
 
 .delete-button:hover {
   background: #b91c1c;
+}
+
+/* Sector tags – dark grey */
+.sector-tag-group > .filter-tag-pill {
+  background: #d1d5db !important;
+  color: #111827 !important;
+}
+
+/* Subsector tags – light grey */
+.filter-tag-subsector {
+  background: #e5e7eb !important;
+  color: #374151 !important;
 }

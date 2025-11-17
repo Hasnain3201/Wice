@@ -1,11 +1,11 @@
 // src/Pages/Marketplace/Marketplace.jsx
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ConsultantCard from "../../Components/ConsultantCard.jsx";
 import { consultants } from "../../data/consultants.js";
 import { useAuth } from "../../context/AuthContext.jsx";
-import "./Marketplace.css"
+import "./Marketplace.css";
 
 import {
   INDUSTRY_SECTORS,
@@ -75,10 +75,10 @@ function MiniTag({ label, onRemove }) {
   );
 }
 
-/**
- * Generic searchable checkbox filter with tags.
- * For: languages, software, donors, certifications, degrees, clearances
- */
+/* --------------------------------------------------------------
+   SEARCHABLE CHECKBOX FILTER — FIXED WITH CLICK-OUTSIDE
+-------------------------------------------------------------- */
+
 function SearchableCheckboxFilter({
   label,
   options,
@@ -88,6 +88,18 @@ function SearchableCheckboxFilter({
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const sortedOptions = useMemo(
     () => [...options].sort((a, b) => a.localeCompare(b)),
@@ -107,7 +119,7 @@ function SearchableCheckboxFilter({
   };
 
   return (
-    <div className="filters-field filter-with-tags">
+    <div ref={wrapperRef} className="filters-field filter-with-tags">
       <div className="filter-label-row">
         <span>{label}</span>
         <div className="filter-tags-row">
@@ -152,18 +164,29 @@ function SearchableCheckboxFilter({
   );
 }
 
-/**
- * Industry filter:
- * - industries (tags to the right)
- * - sectors in industry tag dropdown (checkboxes)
- * - subsectors in sector tag dropdown (checkboxes)
- * - subsector tags appear below appropriate sector
- */
+/* --------------------------------------------------------------
+   INDUSTRY FILTER — FIXED CLICK-OUTSIDE
+-------------------------------------------------------------- */
+
 function IndustryFilter({ filters, setFilters }) {
   const [industrySearch, setIndustrySearch] = useState("");
   const [industryDropdownOpen, setIndustryDropdownOpen] = useState(false);
   const [openIndustryTag, setOpenIndustryTag] = useState(null);
   const [openSectorTag, setOpenSectorTag] = useState(null);
+
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIndustryDropdownOpen(false);
+        setOpenIndustryTag(null);
+        setOpenSectorTag(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const industries = useMemo(
     () => Object.keys(INDUSTRY_SECTORS).sort((a, b) => a.localeCompare(b)),
@@ -180,49 +203,34 @@ function IndustryFilter({ filters, setFilters }) {
       if (already) {
         const sectorMap = INDUSTRY_SECTORS[industry] || {};
         const sectorsForIndustry = Object.keys(sectorMap);
-        const subsectorsForIndustry = sectorsForIndustry.flatMap(
+        const subsForIndustry = sectorsForIndustry.flatMap(
           (s) => sectorMap[s] || []
         );
 
         return {
           ...prev,
           industries: prev.industries.filter((i) => i !== industry),
-          sectors: prev.sectors.filter(
-            (s) => !sectorsForIndustry.includes(s)
-          ),
-          subsectors: prev.subsectors.filter(
-            (sub) => !subsectorsForIndustry.includes(sub)
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          industries: [...prev.industries, industry],
+          sectors: prev.sectors.filter((s) => !sectorsForIndustry.includes(s)),
+          subsectors: prev.subsectors.filter((sub) => !subsForIndustry.includes(sub)),
         };
       }
+      return { ...prev, industries: [...prev.industries, industry] };
     });
   };
 
   const toggleSector = (industry, sector) => {
     setFilters((prev) => {
       const hasSector = prev.sectors.includes(sector);
-      const subsForSector =
-        (INDUSTRY_SECTORS[industry] || {})[sector] || [];
+      const subs = (INDUSTRY_SECTORS[industry] || {})[sector] || [];
 
       if (hasSector) {
         return {
           ...prev,
           sectors: prev.sectors.filter((s) => s !== sector),
-          subsectors: prev.subsectors.filter(
-            (sub) => !subsForSector.includes(sub)
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          sectors: [...prev.sectors, sector],
+          subsectors: prev.subsectors.filter((s) => !subs.includes(s)),
         };
       }
+      return { ...prev, sectors: [...prev.sectors, sector] };
     });
   };
 
@@ -234,30 +242,25 @@ function IndustryFilter({ filters, setFilters }) {
           ...prev,
           subsectors: prev.subsectors.filter((s) => s !== subsector),
         };
-      } else {
-        // ensure sector + industry are selected when subsector is chosen
-        const sectorSelected = prev.sectors.includes(sector);
-        const industrySelected = prev.industries.includes(industry);
-        return {
-          ...prev,
-          industries: industrySelected
-            ? prev.industries
-            : [...prev.industries, industry],
-          sectors: sectorSelected
-            ? prev.sectors
-            : [...prev.sectors, sector],
-          subsectors: [...prev.subsectors, subsector],
-        };
       }
+      return {
+        ...prev,
+        industries: prev.industries.includes(industry)
+          ? prev.industries
+          : [...prev.industries, industry],
+        sectors: prev.sectors.includes(sector)
+          ? prev.sectors
+          : [...prev.sectors, sector],
+        subsectors: [...prev.subsectors, subsector],
+      };
     });
   };
 
   return (
-    <div className="filters-field filter-with-tags">
+    <div ref={wrapperRef} className="filters-field filter-with-tags">
       <div className="filter-label-row">
         <span>Industry</span>
 
-        {/* Industry tags to the right */}
         <div className="filter-tags-column">
           {filters.industries.map((industry) => {
             const sectorMap = INDUSTRY_SECTORS[industry] || {};
@@ -288,16 +291,11 @@ function IndustryFilter({ filters, setFilters }) {
                       </p>
                     ) : (
                       sectorsForIndustry.map((sector) => (
-                        <label
-                          key={sector}
-                          className="multi-option"
-                        >
+                        <label key={sector} className="multi-option">
                           <input
                             type="checkbox"
                             checked={filters.sectors.includes(sector)}
-                            onChange={() =>
-                              toggleSector(industry, sector)
-                            }
+                            onChange={() => toggleSector(industry, sector)}
                           />
                           <span>{sector}</span>
                         </label>
@@ -306,7 +304,6 @@ function IndustryFilter({ filters, setFilters }) {
                   </div>
                 )}
 
-                {/* Sector tags (to the right) with their subsector tags below */}
                 {selectedSectors.length > 0 && (
                   <div className="sector-tags">
                     {selectedSectors.map((sector) => {
@@ -319,10 +316,7 @@ function IndustryFilter({ filters, setFilters }) {
                       );
 
                       return (
-                        <div
-                          key={sector}
-                          className="sector-tag-group"
-                        >
+                        <div key={sector} className="sector-tag-group">
                           <TagPill
                             label={sector}
                             onClick={() =>
@@ -330,9 +324,7 @@ function IndustryFilter({ filters, setFilters }) {
                                 openSectorTag === sector ? null : sector
                               )
                             }
-                            onRemove={() =>
-                              toggleSector(industry, sector)
-                            }
+                            onRemove={() => toggleSector(industry, sector)}
                           >
                             {subs.length > 0 && (
                               <span className="tag-caret">▾</span>
@@ -342,21 +334,12 @@ function IndustryFilter({ filters, setFilters }) {
                           {openSectorTag === sector && subs.length > 0 && (
                             <div className="tag-dropdown">
                               {subs.map((sub) => (
-                                <label
-                                  key={sub}
-                                  className="multi-option"
-                                >
+                                <label key={sub} className="multi-option">
                                   <input
                                     type="checkbox"
-                                    checked={filters.subsectors.includes(
-                                      sub
-                                    )}
+                                    checked={filters.subsectors.includes(sub)}
                                     onChange={() =>
-                                      toggleSubsector(
-                                        industry,
-                                        sector,
-                                        sub
-                                      )
+                                      toggleSubsector(industry, sector, sub)
                                     }
                                   />
                                   <span>{sub}</span>
@@ -372,11 +355,7 @@ function IndustryFilter({ filters, setFilters }) {
                                   key={sub}
                                   label={sub}
                                   onRemove={() =>
-                                    toggleSubsector(
-                                      industry,
-                                      sector,
-                                      sub
-                                    )
+                                    toggleSubsector(industry, sector, sub)
                                   }
                                 />
                               ))}
@@ -425,16 +404,27 @@ function IndustryFilter({ filters, setFilters }) {
   );
 }
 
-/**
- * Functional Expertise filter:
- * - Functional areas (tags)
- * - Each tag dropdown shows sub-skills (checkboxes)
- * - Sub-skills show as grey mini-tags below
- */
+/* --------------------------------------------------------------
+   FUNCTIONAL FILTER — FIXED CLICK-OUTSIDE
+-------------------------------------------------------------- */
+
 function FunctionalFilter({ filters, setFilters }) {
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [openFuncTag, setOpenFuncTag] = useState(null);
+
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+        setOpenFuncTag(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const areas = useMemo(
     () => Object.keys(FUNCTIONAL_SKILLS).sort((a, b) => a.localeCompare(b)),
@@ -449,22 +439,16 @@ function FunctionalFilter({ filters, setFilters }) {
     setFilters((prev) => {
       const already = prev.functionalAreas.includes(area);
       if (already) {
-        const skillsForArea = FUNCTIONAL_SKILLS[area] || [];
+        const skills = FUNCTIONAL_SKILLS[area] || [];
         return {
           ...prev,
-          functionalAreas: prev.functionalAreas.filter(
-            (a) => a !== area
-          ),
+          functionalAreas: prev.functionalAreas.filter((a) => a !== area),
           functionalSkills: prev.functionalSkills.filter(
-            (s) => !skillsForArea.includes(s)
+            (s) => !skills.includes(s)
           ),
-        };
-      } else {
-        return {
-          ...prev,
-          functionalAreas: [...prev.functionalAreas, area],
         };
       }
+      return { ...prev, functionalAreas: [...prev.functionalAreas, area] };
     });
   };
 
@@ -474,25 +458,21 @@ function FunctionalFilter({ filters, setFilters }) {
       if (already) {
         return {
           ...prev,
-          functionalSkills: prev.functionalSkills.filter(
-            (s) => s !== skill
-          ),
-        };
-      } else {
-        const areaSelected = prev.functionalAreas.includes(area);
-        return {
-          ...prev,
-          functionalAreas: areaSelected
-            ? prev.functionalAreas
-            : [...prev.functionalAreas, area],
-          functionalSkills: [...prev.functionalSkills, skill],
+          functionalSkills: prev.functionalSkills.filter((s) => s !== skill),
         };
       }
+      return {
+        ...prev,
+        functionalAreas: prev.functionalAreas.includes(area)
+          ? prev.functionalAreas
+          : [...prev.functionalAreas, area],
+        functionalSkills: [...prev.functionalSkills, skill],
+      };
     });
   };
 
   return (
-    <div className="filters-field filter-with-tags">
+    <div ref={wrapperRef} className="filters-field filter-with-tags">
       <div className="filter-label-row">
         <span>Functional Expertise</span>
 
@@ -501,6 +481,7 @@ function FunctionalFilter({ filters, setFilters }) {
             const skills = (FUNCTIONAL_SKILLS[area] || []).sort((a, b) =>
               a.localeCompare(b)
             );
+
             const selectedSkills = skills.filter((s) =>
               filters.functionalSkills.includes(s)
             );
@@ -510,29 +491,20 @@ function FunctionalFilter({ filters, setFilters }) {
                 <TagPill
                   label={area}
                   onClick={() =>
-                    setOpenFuncTag(
-                      openFuncTag === area ? null : area
-                    )
+                    setOpenFuncTag(openFuncTag === area ? null : area)
                   }
                   onRemove={() => toggleArea(area)}
                 >
-                  {skills.length > 0 && (
-                    <span className="tag-caret">▾</span>
-                  )}
+                  {skills.length > 0 && <span className="tag-caret">▾</span>}
                 </TagPill>
 
                 {openFuncTag === area && skills.length > 0 && (
                   <div className="tag-dropdown">
                     {skills.map((skill) => (
-                      <label
-                        key={skill}
-                        className="multi-option"
-                      >
+                      <label key={skill} className="multi-option">
                         <input
                           type="checkbox"
-                          checked={filters.functionalSkills.includes(
-                            skill
-                          )}
+                          checked={filters.functionalSkills.includes(skill)}
                           onChange={() => toggleSkill(area, skill)}
                         />
                         <span>{skill}</span>
@@ -588,7 +560,6 @@ function FunctionalFilter({ filters, setFilters }) {
     </div>
   );
 }
-
 /* ------------------------ MAIN COMPONENT ------------------------ */
 
 export default function Marketplace() {
@@ -622,29 +593,6 @@ export default function Marketplace() {
   const [savedFilters, setSavedFilters] = useState([]);
   const [editingFilterId, setEditingFilterId] = useState(null);
   const [editingFilterName, setEditingFilterName] = useState("");
-
-  // ---- CLOSE ALL DROPDOWNS WHEN CLICKING OUTSIDE ----
-React.useEffect(() => {
-  const handleOutside = (e) => {
-    // Ignore clicks inside dropdowns and tag-pill buttons
-    if (
-      e.target.closest(".tag-dropdown") ||
-      e.target.closest(".tag-suggestions") ||
-      e.target.closest(".tag-search-wrapper") ||
-      e.target.closest(".filter-tag-pill")
-    ) {
-      return;
-    }
-
-    // Trigger close event for all filters
-    window.dispatchEvent(new Event("closeAllDropdowns"));
-  };
-
-  document.addEventListener("click", handleOutside);
-  return () => document.removeEventListener("click", handleOutside);
-}, []);
-
-
 
   /* ---------- Saved filters helpers ---------- */
 
@@ -721,140 +669,105 @@ React.useEffect(() => {
     const query = q.trim().toLowerCase();
 
     return consultants.filter((c) => {
-      // text search: name + headline
       const name = c.name || "";
       const headline = c.headline || c.professionalHeadline || "";
       const text = `${name} ${headline}`.toLowerCase();
+
       if (query && !text.includes(query)) return false;
 
       const industries = c.industries || (c.industry ? [c.industry] : []);
       const sectors = c.sectors || [];
       const subsectors = c.subsectors || [];
       const langs = c.languages || [];
-      const funcAreas =
-        c.functionalAreas || c.functionalExpertise || [];
+      const funcAreas = c.functionalAreas || c.functionalExpertise || [];
       const funcSkills = c.functionalSkills || [];
       const tools = c.softwareTools || c.tools || [];
       const donors = c.donorExperience || c.donors || [];
       const certs = c.certifications || [];
       const degrees = c.degrees || c.educationDegrees || [];
-      const clearances =
-        c.securityClearances || c.clearances || [];
+      const clearances = c.securityClearances || c.clearances || [];
 
-      // industry
       if (filters.industries.length > 0) {
-        const match = filters.industries.some((ind) =>
-          industries.includes(ind)
-        );
-        if (!match) return false;
+        if (!filters.industries.some((ind) => industries.includes(ind)))
+          return false;
       }
 
-      // sector
       if (filters.sectors.length > 0) {
-        const match = filters.sectors.some((s) => sectors.includes(s));
-        if (!match) return false;
+        if (!filters.sectors.some((s) => sectors.includes(s))) return false;
       }
 
-      // subsector
       if (filters.subsectors.length > 0) {
-        const match = filters.subsectors.some((s) =>
-          subsectors.includes(s)
-        );
-        if (!match) return false;
+        if (!filters.subsectors.some((s) => subsectors.includes(s)))
+          return false;
       }
 
-      // functional areas
       if (filters.functionalAreas.length > 0) {
-        const match = filters.functionalAreas.some((fa) =>
-          funcAreas.includes(fa)
-        );
-        if (!match) return false;
+        if (!filters.functionalAreas.some((a) => funcAreas.includes(a)))
+          return false;
       }
 
-      // functional skills
       if (filters.functionalSkills.length > 0) {
-        const match = filters.functionalSkills.some((fs) =>
-          funcSkills.includes(fs)
-        );
-        if (!match) return false;
+        if (!filters.functionalSkills.some((s) => funcSkills.includes(s)))
+          return false;
       }
 
-      // languages
       if (filters.languages.length > 0) {
-        const match = filters.languages.some((l) => langs.includes(l));
-        if (!match) return false;
+        if (!filters.languages.some((l) => langs.includes(l))) return false;
       }
 
-      // software tools
       if (filters.softwareTools.length > 0) {
-        const match = filters.softwareTools.some((t) =>
-          tools.includes(t)
-        );
-        if (!match) return false;
+        if (!filters.softwareTools.some((t) => tools.includes(t))) return false;
       }
 
-      // donors
       if (filters.donors.length > 0) {
-        const match = filters.donors.some((d) => donors.includes(d));
-        if (!match) return false;
+        if (!filters.donors.some((d) => donors.includes(d))) return false;
       }
 
-      // certifications
       if (filters.certifications.length > 0) {
-        const match = filters.certifications.some((cert) =>
-          certs.includes(cert)
-        );
-        if (!match) return false;
+        if (!filters.certifications.some((cert) => certs.includes(cert)))
+          return false;
       }
 
-      // degrees
       if (filters.degrees.length > 0) {
-        const match = filters.degrees.some((deg) =>
-          degrees.includes(deg)
-        );
-        if (!match) return false;
+        if (!filters.degrees.some((deg) => degrees.includes(deg)))
+          return false;
       }
 
-      // security clearances
       if (filters.securityClearances.length > 0) {
-        const match = filters.securityClearances.some((sc) =>
-          clearances.includes(sc)
-        );
-        if (!match) return false;
+        if (!filters.securityClearances.some((sc) => clearances.includes(sc)))
+          return false;
       }
 
-      // experience
       const years =
         c.experienceYears ??
         c.yearsOfExperience ??
         c.years_experience ??
         0;
+
       if (filters.minExperience && years < Number(filters.minExperience))
         return false;
+
       if (filters.maxExperience && years > Number(filters.maxExperience))
         return false;
 
-      // timezone (exact string match)
       if (filters.timeZone) {
         const tz = c.timeZone || c.timezone || "";
-        if (!tz || tz !== filters.timeZone) return false;
+        if (tz !== filters.timeZone) return false;
       }
 
-      // daily rate
       const rate = c.dailyRate ?? c.dayRate ?? c.daily_rate ?? 0;
+
       if (filters.minDailyRate && rate < Number(filters.minDailyRate))
         return false;
+
       if (filters.maxDailyRate && rate > Number(filters.maxDailyRate))
         return false;
 
-      // availability
       if (filters.availability) {
         const avail =
           c.availabilityStatus || c.availability || c.status || "";
         if (
-          !avail
-            .toLowerCase()
-            .includes(filters.availability.toLowerCase())
+          !avail.toLowerCase().includes(filters.availability.toLowerCase())
         )
           return false;
       }
@@ -867,7 +780,6 @@ React.useEffect(() => {
 
   return (
     <div className="dashboard-page marketplace-shell">
-      {/* Header */}
       <header className="dashboard-header">
         <h1 className="dashboard-title">
           {isConsultant ? "Marketplace Preview" : "Consultant Marketplace"}
@@ -879,7 +791,6 @@ React.useEffect(() => {
         </p>
       </header>
 
-      {/* Consultant banner */}
       {isConsultant && (
         <div className="marketplace-consultant-banner">
           <div>
@@ -892,7 +803,6 @@ React.useEffect(() => {
         </div>
       )}
 
-      {/* Search + buttons */}
       <div style={{ margin: "16px 0 22px" }}>
         <div style={{ display: "flex", gap: 8 }}>
           <input
@@ -901,6 +811,7 @@ React.useEffect(() => {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+
           <button
             type="button"
             className="primary-button"
@@ -908,6 +819,7 @@ React.useEffect(() => {
           >
             Filters
           </button>
+
           <button
             type="button"
             className="primary-button"
@@ -940,13 +852,10 @@ React.useEffect(() => {
             </div>
 
             <div className="filters-body">
-              {/* Industry hierarchy */}
               <IndustryFilter filters={filters} setFilters={setFilters} />
 
-              {/* Functional Expertise hierarchy */}
               <FunctionalFilter filters={filters} setFilters={setFilters} />
 
-              {/* Languages */}
               <SearchableCheckboxFilter
                 label="Languages"
                 options={LANGUAGES}
@@ -954,10 +863,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, languages: vals }))
                 }
-                placeholder="Type to search languages…"
               />
 
-              {/* Software & Tools */}
               <SearchableCheckboxFilter
                 label="Software & Tools"
                 options={SOFTWARE_TOOLS}
@@ -965,10 +872,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, softwareTools: vals }))
                 }
-                placeholder="Type to search software & tools…"
               />
 
-              {/* Donor Experience */}
               <SearchableCheckboxFilter
                 label="Donor Experience"
                 options={DONOR_EXPERIENCE}
@@ -976,10 +881,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, donors: vals }))
                 }
-                placeholder="Type to search donors…"
               />
 
-              {/* Certifications */}
               <SearchableCheckboxFilter
                 label="Certifications"
                 options={CERTIFICATIONS}
@@ -987,10 +890,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, certifications: vals }))
                 }
-                placeholder="Type to search certifications…"
               />
 
-              {/* Degrees */}
               <SearchableCheckboxFilter
                 label="Degrees Earned"
                 options={DEGREES}
@@ -998,10 +899,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, degrees: vals }))
                 }
-                placeholder="Type to search degrees…"
               />
 
-              {/* Security Clearances */}
               <SearchableCheckboxFilter
                 label="Security Clearances"
                 options={SECURITY_CLEARANCES}
@@ -1009,10 +908,8 @@ React.useEffect(() => {
                 onChange={(vals) =>
                   setFilters((f) => ({ ...f, securityClearances: vals }))
                 }
-                placeholder="Type to search clearances…"
               />
 
-              {/* Experience */}
               <div className="filters-field">
                 <span>Years of Professional Experience</span>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -1043,7 +940,6 @@ React.useEffect(() => {
                 </div>
               </div>
 
-              {/* Time zone (preset) */}
               <div className="filters-field">
                 <span>Time Zone</span>
                 <select
@@ -1061,7 +957,6 @@ React.useEffect(() => {
                 </select>
               </div>
 
-              {/* Daily rate */}
               <div className="filters-field">
                 <span>Daily Rate (USD)</span>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -1092,7 +987,6 @@ React.useEffect(() => {
                 </div>
               </div>
 
-              {/* Availability */}
               <div className="filters-field">
                 <span>Availability</span>
                 <input
@@ -1117,6 +1011,7 @@ React.useEffect(() => {
               >
                 Clear
               </button>
+
               <button
                 type="button"
                 className="primary-button"
@@ -1124,6 +1019,7 @@ React.useEffect(() => {
               >
                 Save
               </button>
+
               <button
                 type="button"
                 className="primary-button"
@@ -1159,8 +1055,7 @@ React.useEffect(() => {
 
             {savedFilters.length === 0 ? (
               <p style={{ marginTop: 8, color: "#6b7280" }}>
-                You don’t have any saved filters yet. Open Filters, set your
-                preferences, and click <strong>Save</strong>.
+                You don’t have any saved filters yet.
               </p>
             ) : (
               <ul className="saved-filters-list">
@@ -1176,6 +1071,7 @@ React.useEffect(() => {
                               setEditingFilterName(e.target.value)
                             }
                           />
+
                           <div className="saved-filters-rename-actions">
                             <button
                               type="button"
@@ -1184,6 +1080,7 @@ React.useEffect(() => {
                             >
                               Save name
                             </button>
+
                             <button
                               type="button"
                               className="outline-button"
@@ -1198,6 +1095,7 @@ React.useEffect(() => {
                           <span className="saved-filter-name">
                             {preset.name}
                           </span>
+
                           <div className="saved-filter-summary">
                             {Object.entries(preset.values)
                               .filter(([_, v]) =>
@@ -1213,6 +1111,7 @@ React.useEffect(() => {
                         </>
                       )}
                     </div>
+
                     <div className="saved-filters-actions">
                       {editingFilterId !== preset.id && (
                         <button
@@ -1223,6 +1122,7 @@ React.useEffect(() => {
                           Rename
                         </button>
                       )}
+
                       <button
                         type="button"
                         className="primary-button"
@@ -1230,6 +1130,7 @@ React.useEffect(() => {
                       >
                         Apply
                       </button>
+
                       <button
                         type="button"
                         className="delete-button"
@@ -1246,7 +1147,7 @@ React.useEffect(() => {
         </div>
       )}
 
-      {/* ---------------- RESULTS GRID ---------------- */}
+      {/* RESULTS */}
       <section className="marketplace-grid" aria-live="polite">
         {filtered.map((c) => (
           <ConsultantCard
