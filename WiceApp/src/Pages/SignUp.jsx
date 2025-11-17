@@ -8,7 +8,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildDefaultUserData } from "../services/userProfile.js";
-import termsText from "../data/terms"; // ✅ Importing your formatted terms.js file
+import termsText from "../data/terms";
 
 export default function SignUp() {
   const [error, setError] = useState("");
@@ -39,7 +39,7 @@ export default function SignUp() {
 
     setLoading(true);
     const form = new FormData(e.currentTarget);
-    const accountType = form.get("accountType");
+    const accountType = form.get("accountType"); // "client" or "consultant"
     const fullName = form.get("fullName");
     const email = form.get("email");
     const password = form.get("password");
@@ -63,25 +63,42 @@ export default function SignUp() {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(user, { displayName: fullName });
 
+      /* ⭐⭐ IMPORTANT CHANGE:
+         Create root user fields + default profile + dashboard for each role
+      */
       const baseDoc = {
-        fullName,
+        uid: user.uid,
         email,
+        fullName,
         role: accountType,
         accountType,
-        uid: user.uid,
         createdAt: serverTimestamp(),
       };
 
+      // ⭐⭐ THIS FUNCTION builds correct defaults for each role
       const defaults = buildDefaultUserData(accountType);
-      await setDoc(doc(db, "users", user.uid), { ...baseDoc, ...defaults });
+
+      // ⭐ Merge base fields + defaults safely into Firestore
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          ...baseDoc,
+          ...defaults
+        },
+        { merge: true }
+      );
+
+      // Refresh AuthContext user profile
       await refreshProfile();
 
+      // Redirect user to the correct profile-builder intro
       const destination =
         accountType === "consultant"
-          ? "/consultant/profile-builder/intro"
+          ? "/consultant/profile-builder"
           : "/client/profile-builder/intro";
 
       navigate(destination);
+
     } catch (err) {
       console.error("Signup error:", err);
       setError(err.message || "Failed to create account. Please try again.");
@@ -214,7 +231,8 @@ export default function SignUp() {
             Log In
           </a>
         </p>
-        {/* 🔧 Developer Test Button (for local dev only) */}
+
+        {/* Developer Test Button */}
         <div style={{ marginTop: "1.5rem" }}>
           <button
             type="button"
@@ -227,7 +245,7 @@ export default function SignUp() {
 
       </div>
 
-      {/* ✅ Terms Popup */}
+      {/* Terms Popup */}
       {showTerms && (
         <div className="terms-overlay">
           <div className="terms-container">
@@ -237,7 +255,7 @@ export default function SignUp() {
               className="terms-content grey-box"
               ref={termsRef}
               onScroll={handleTermsScroll}
-              dangerouslySetInnerHTML={{ __html: termsText }} // ✅ render terms.js content as HTML
+              dangerouslySetInnerHTML={{ __html: termsText }} 
             />
 
             <div className="terms-buttons">

@@ -16,14 +16,14 @@ import hero from "./assets/hero.jpg";
 // Lazy + pages
 const SignUp = lazy(() => import("./Pages/SignUp.jsx"));
 import Marketplace from "./Pages/Client/Marketplace.jsx";
-import ClientConsultantProfile from "./Pages/Client/ClientConsultantProfile.jsx";
+import ClientProfilePage from "./Pages/Client/ClientProfile.jsx";
 import ClientHome from "./Pages/Client/ClientHome.jsx";
 import ClientLogin from "./Pages/Client/ClientLoginPage.jsx";
 import ConsultantLogin from "./Pages/Consultant/ConsultantLoginPage.jsx";
 import ConsultantGrantHunt from "./Pages/Consultant/ConsultantGrantHunt.jsx";
 import ConsultantProfileEditor from "./Pages/Consultant/ConsultantProfile.jsx";
 import ConsultantPortal from "./Pages/Consultant/ConsultantPortal.jsx";
-import Profile from "./Pages/Profile/Profile.jsx";
+import ConsultantProfile from "./Pages/Consultant/ConsultantProfile.jsx"
 import Chat from "./Pages/Chat/Chat.jsx";
 import ProjectsHome from "./Pages/ProjectsPage/ProjectsHome.jsx";
 import Settings from "./Pages/Settings.jsx";
@@ -118,7 +118,7 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
 
   // 3. SPECIAL FIX:
   // Allow consultants into /consultant/profile-builder EVEN IF role has not finished loading yet.
-  if (location === "/consultant/profile-builder") {
+  if (location === "/consultant/profile-builder" ) {
     return element;
   }
 
@@ -276,7 +276,7 @@ export default function App() {
                     fallback="/client/login"
                     element={
                       <DashboardLayout>
-                        <ClientConsultantProfile />
+                        <ConsultantProfile/>
                       </DashboardLayout>
                     }
                   />
@@ -292,7 +292,7 @@ export default function App() {
                     fallback="/client/login"
                     element={
                       <DashboardLayout>
-                        <Profile />
+                        <ClientProfilePage />
                       </DashboardLayout>
                     }
                   />

@@ -97,9 +97,28 @@ export const defaultConsultantDashboard = {
 };
 
 /* ---------------------------------------------
-   BASE PROFILE (CLEAN + UNIFIED)
+   ONLY CLIENT DEFAULT FIELDS UPDATED
 --------------------------------------------- */
-const baseProfile = {
+const clientProfileDefaults = {
+  jobTitle: "",
+  organizationName: "",
+  organizationType: "",
+  primaryIndustry: "",
+  country: "",
+  websiteUrl: "",
+
+  supportSelections: [],   // e.g. ["MEL (Advisory)"]
+
+  timeZone: "",
+  contactMethods: [],       // ["Email", "Phone", "WhatsApp"]
+  phoneNumber: "",
+  whatsappNumber: "",
+};
+
+/* ---------------------------------------------
+   CONSULTANT DEFAULTS — DO NOT TOUCH
+--------------------------------------------- */
+const consultantProfileDefaults = {
   pronouns: "",
   timeZone: "",
   oneLinerBio: "",
@@ -124,20 +143,19 @@ const baseProfile = {
    DEFAULT USER DATA BUILDER
 --------------------------------------------- */
 export function buildDefaultUserData(accountType) {
-  // ORDER MATTERS → First profile, then dashboard, then hiddenChats
-  const data = {
-    profile: { ...baseProfile },
-  };
+  const data = {};
 
   if (accountType === "client") {
+    data.profile = { ...clientProfileDefaults };
     data.dashboardClient = JSON.parse(JSON.stringify(defaultClientDashboard));
   }
 
   if (accountType === "consultant") {
+    data.profile = { ...consultantProfileDefaults }; // untouched
     data.dashboardConsultant = JSON.parse(JSON.stringify(defaultConsultantDashboard));
   }
 
-  // Always last field
+  // Always include hiddenChats
   data.hiddenChats = {};
 
   return data;

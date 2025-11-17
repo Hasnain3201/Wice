@@ -578,3 +578,68 @@
 }
 
 .ghost-btn:hover { background: #f3f4f6; }
+
+.support-search-dropdown {
+  width: 100%;
+  background: white;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 30;
+}
+
+.support-parent {
+  padding: 12px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.support-parent:hover {
+  background: #f4f6fc;
+}
+
+.support-children {
+  padding-left: 20px;
+  background: white;
+}
+
+.support-child {
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.support-child:hover {
+  background: #eef2ff;
+}
+
+.support-tag-list {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.support-tag {
+  background: #d8e4ff;
+  border-radius: 18px;
+  padding: 6px 12px;
+  color: #103d8f;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.support-tag-remove {
+  background: none;
+  border: none;
+  margin-left: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
