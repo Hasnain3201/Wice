@@ -31,6 +31,7 @@ import Saved from "./Pages/Saved.jsx";
 import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
+import ConsultantPublicProfile from "./Pages/ConsultantPublicProfile.jsx";
 
 // Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
@@ -118,7 +119,7 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
 
   // 3. SPECIAL FIX:
   // Allow consultants into /consultant/profile-builder EVEN IF role has not finished loading yet.
-  if (location === "/consultant/profile-builder" ) {
+  if (location === "/consultant/profile-builder") {
     return element;
   }
 
@@ -159,6 +160,10 @@ export default function App() {
 
               {/* DEVELOPER TEST ROUTE — ALWAYS UNPROTECTED */}
               <Route path="/test/profile-builder" element={<ProfileBuilder />} />
+
+              {/* Public consultant profile view */}
+              <Route path="/consultant/:uid" element={<ConsultantPublicProfile />} />
+
 
               {/* Consultant Profile Builder */}
               <Route
@@ -276,7 +281,7 @@ export default function App() {
                     fallback="/client/login"
                     element={
                       <DashboardLayout>
-                        <ConsultantProfile/>
+                        <ConsultantProfile />
                       </DashboardLayout>
                     }
                   />

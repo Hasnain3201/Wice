@@ -1,0 +1,30 @@
+.public-profile-container {
+  padding: 28px;
+}
+
+.public-profile-container h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.one-liner {
+  font-size: 18px;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+.public-section {
+  margin-top: 25px;
+}
+
+.public-section h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.public-section p,
+.public-section li {
+  font-size: 16px;
+  color: #374151;
+}
