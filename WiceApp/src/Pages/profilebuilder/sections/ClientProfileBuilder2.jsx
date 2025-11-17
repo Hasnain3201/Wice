@@ -1,3 +1,5 @@
+// src/Pages/profilebuilder/ClientProfileBuilder2.jsx
+
 import React, { useState, useEffect } from "react";
 import "../profileBuilder.css";
 
@@ -16,27 +18,24 @@ export default function ClientProfileBuilder2({ onProgress }) {
   };
 
   const toggleMulti = (field, value) => {
-    setForm((prev) => {
-      const arr = prev[field];
-      return {
-        ...prev,
-        [field]: arr.includes(value)
-          ? arr.filter((x) => x !== value)
-          : [...arr, value],
-      };
-    });
+    setForm((prev) => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter((v) => v !== value)
+        : [...prev[field], value],
+    }));
   };
 
-  const fullFields = [
-    "website",
-    "supportAreas",
-    "engagementTypes",
-    "timezone",
-    "phone",
-    "whatsapp",
-  ];
+  const allFields = Object.keys(form);
 
-  const labelByKey = {
+  const filledKeys = allFields.filter((key) => {
+    const v = form[key];
+    return Array.isArray(v) ? v.length > 0 : v.trim() !== "";
+  });
+
+  const filledCount = filledKeys.length;
+
+  const labelMap = {
     website: "Website URL",
     supportAreas: "Support Areas Needed",
     engagementTypes: "Engagement Types",
@@ -45,38 +44,25 @@ export default function ClientProfileBuilder2({ onProgress }) {
     whatsapp: "Whatsapp",
   };
 
-  const filledKeys = fullFields.filter((field) => {
-    const value = form[field];
-    if (Array.isArray(value)) return value.length > 0;
-    return value.trim() !== "";
-  });
-
-  const filledCount = filledKeys.length;
-  const completedLabels = filledKeys.map((key) => labelByKey[key]);
+  const completedLabels = filledKeys.map((k) => labelMap[k]);
 
   useEffect(() => {
-    if (typeof onProgress === "function") {
-      onProgress({ filled: filledCount, completedLabels });
-    }
-  }, [filledCount, completedLabels, onProgress]);
+    onProgress &&
+      onProgress({
+        filled: filledCount,
+        completedLabels,
+        values: form, // ⭐ pass values up
+      });
+  }, [form]);
 
   return (
     <div className="section">
       <h2>Full Profile</h2>
-      <p>These fields are optional but helpful.</p>
 
-      {/* Website */}
       <label>Website URL</label>
-      <input
-        name="website"
-        type="text"
-        placeholder="https://"
-        value={form.website}
-        onChange={update}
-      />
+      <input name="website" value={form.website} onChange={update} />
 
-      {/* Support Needed */}
-      <label>Main Areas of Support Needed</label>
+      <label>Support Areas Needed</label>
       <div className="multi-select">
         {[
           "Program Design",
@@ -104,7 +90,6 @@ export default function ClientProfileBuilder2({ onProgress }) {
         ))}
       </div>
 
-      {/* Engagement Types */}
       <label>Preferred Engagement Types</label>
       <div className="multi-select">
         {["Short Term", "Long Term", "Advisory", "Fractional"].map((item) => (
@@ -119,35 +104,14 @@ export default function ClientProfileBuilder2({ onProgress }) {
         ))}
       </div>
 
-      {/* Time Zone */}
       <label>Time Zone</label>
-      <input
-        name="timezone"
-        type="text"
-        placeholder="e.g. GMT+1"
-        value={form.timezone}
-        onChange={update}
-      />
+      <input name="timezone" value={form.timezone} onChange={update} />
 
-      {/* Phone */}
       <label>Phone Number</label>
-      <input
-        name="phone"
-        type="text"
-        placeholder="Optional"
-        value={form.phone}
-        onChange={update}
-      />
+      <input name="phone" value={form.phone} onChange={update} />
 
-      {/* Whatsapp */}
       <label>Whatsapp</label>
-      <input
-        name="whatsapp"
-        type="text"
-        placeholder="Optional"
-        value={form.whatsapp}
-        onChange={update}
-      />
+      <input name="whatsapp" value={form.whatsapp} onChange={update} />
     </div>
   );
 }

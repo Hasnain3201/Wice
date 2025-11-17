@@ -1,35 +1,34 @@
+// src/Pages/profilebuilder/ClientProfileBuilder.jsx
+
 import React, { useState } from "react";
 import ProgressSidebar from "../componentsPB/ProgressSidebar";
 import SectionWrapper from "../componentsPB/SectionWrapper";
 
-// LIGHT PROFILE pages
+// LIGHT PROFILE
 import ClientProfileBuilder1 from "./ClientProfileBuilder1";
 import ClientProfileBuilder1Comp from "./ClientProfileBuilder1Comp";
 
-// FULL PROFILE pages
+// FULL PROFILE
 import ClientProfileBuilder2 from "./ClientProfileBuilder2";
 import ClientProfileBuilder2Comp from "./ClientProfileBuilder2Comp";
 
 import "../profileBuilder.css";
 
 export default function ClientProfileBuilder() {
-  // steps:
-  // 0 = light profile form
-  // 1 = light completion
-  // 2 = full profile form
-  // 3 = full completion
-
   const [step, setStep] = useState(0);
 
+  // Store ALL form input
+  const [lightData, setLightData] = useState({});
+  const [fullData, setFullData] = useState({});
+
+  // Progress tracking
   const [lightFilled, setLightFilled] = useState(0);
   const [fullFilled, setFullFilled] = useState(0);
   const [isLightComplete, setIsLightComplete] = useState(false);
-
   const [completedLightLabels, setCompletedLightLabels] = useState([]);
   const [completedFullLabels, setCompletedFullLabels] = useState([]);
 
-  // LIGHT fields
-  const lightFieldsLabels = [
+  const lightLabels = [
     "Full Name",
     "Job Title / Role",
     "Work Email",
@@ -40,8 +39,7 @@ export default function ClientProfileBuilder() {
     "Contact Method",
   ];
 
-  // FULL fields
-  const fullFieldsLabels = [
+  const fullLabels = [
     "Website URL",
     "Support Areas Needed",
     "Engagement Types",
@@ -50,35 +48,22 @@ export default function ClientProfileBuilder() {
     "Whatsapp",
   ];
 
-  // merged list AFTER they hit continue
-  const mergedList = [...lightFieldsLabels, ...fullFieldsLabels];
+  const mergedLabels = [...lightLabels, ...fullLabels];
+  const isFullMode = step >= 2;
 
-  // NEW: merged-mode logic
-  const isFullProfileMode = step >= 2;
+  const shownSections = isFullMode ? mergedLabels : lightLabels;
+  const completedSidebar = [...completedLightLabels, ...completedFullLabels];
 
-  const shownSections = isFullProfileMode ? mergedList : lightFieldsLabels;
-
-  const completedSidebarLabels = [
-    ...completedLightLabels,
-    ...completedFullLabels,
-  ];
-
-  const totalFields = lightFieldsLabels.length + fullFieldsLabels.length;
   const overallProgress = Math.round(
-    ((lightFilled + fullFilled) / totalFields) * 100
+    ((lightFilled + fullFilled) / mergedLabels.length) * 100
   );
 
   const goToLightCompletion = () => {
     if (isLightComplete) setStep(1);
   };
 
-  const goToFullProfile = () => {
-    setStep(2);
-  };
-
-  const goToFinalCompletion = () => {
-    setStep(3);
-  };
+  const goToFullForm = () => setStep(2);
+  const goToFinalCompletion = () => setStep(3);
 
   const back = () => {
     if (step === 1) setStep(0);
@@ -86,12 +71,9 @@ export default function ClientProfileBuilder() {
     else if (step === 3) setStep(2);
   };
 
-  const handleFinalSubmit = () => {
-    console.log("Submit Full Profile");
-  };
-
   let currentPage;
 
+  // Step 0 — LIGHT FORM
   if (step === 0) {
     currentPage = (
       <SectionWrapper
@@ -100,37 +82,50 @@ export default function ClientProfileBuilder() {
         disableNext={!isLightComplete}
       >
         <ClientProfileBuilder1
-          onProgress={({ filled, completedLabels, isComplete }) => {
+          onProgress={({ filled, completedLabels, isComplete, values }) => {
             setLightFilled(filled);
             setCompletedLightLabels(completedLabels);
             setIsLightComplete(isComplete);
+            setLightData(values); // ⭐ store data
           }}
         />
       </SectionWrapper>
     );
-  } else if (step === 1) {
+  }
+
+  // Step 1 — LIGHT COMPLETION
+  else if (step === 1) {
     currentPage = (
       <ClientProfileBuilder1Comp
+        lightData={lightData}
         onBack={back}
-        onContinue={goToFullProfile}
+        onContinue={goToFullForm}
       />
     );
-  } else if (step === 2) {
+  }
+
+  // Step 2 — FULL FORM
+  else if (step === 2) {
     currentPage = (
       <SectionWrapper onBack={back} onNext={goToFinalCompletion}>
         <ClientProfileBuilder2
-          onProgress={({ filled, completedLabels }) => {
+          onProgress={({ filled, completedLabels, values }) => {
             setFullFilled(filled);
             setCompletedFullLabels(completedLabels);
+            setFullData(values); // ⭐ store data
           }}
         />
       </SectionWrapper>
     );
-  } else {
+  }
+
+  // Step 3 — FULL COMPLETION
+  else {
     currentPage = (
       <ClientProfileBuilder2Comp
+        lightData={lightData}
+        fullData={fullData}
         onBack={back}
-        onSubmit={handleFinalSubmit}
       />
     );
   }
@@ -139,9 +134,9 @@ export default function ClientProfileBuilder() {
     <div className="profile-builder-container">
       <ProgressSidebar
         sections={shownSections}
-        completed={completedSidebarLabels}
+        completed={completedSidebar}
         progress={overallProgress}
-        isFullProfileMode={isFullProfileMode}  // ⭐ ADDED
+        isFullProfileMode={isFullMode}
       />
 
       <div className="form-section">{currentPage}</div>

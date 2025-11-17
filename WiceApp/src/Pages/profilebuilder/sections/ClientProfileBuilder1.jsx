@@ -1,3 +1,5 @@
+// src/Pages/profilebuilder/ClientProfileBuilder1.jsx
+
 import React, { useState, useEffect } from "react";
 import "../profileBuilder.css";
 
@@ -13,18 +15,17 @@ export default function ClientProfileBuilder1({ onProgress }) {
     contactMethod: "",
   });
 
-  const requiredFields = [
-    "fullName",
-    "jobTitle",
-    "workEmail",
-    "orgName",
-    "orgType",
-    "primaryIndustry",
-    "country",
-    "contactMethod",
-  ];
+  const required = Object.keys(form);
 
-  const labelByKey = {
+  const update = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const filledKeys = required.filter((k) => form[k].trim() !== "");
+  const filledCount = filledKeys.length;
+  const isComplete = filledCount === required.length;
+
+  const labelMap = {
     fullName: "Full Name",
     jobTitle: "Job Title / Role",
     workEmail: "Work Email",
@@ -35,101 +36,35 @@ export default function ClientProfileBuilder1({ onProgress }) {
     contactMethod: "Contact Method",
   };
 
-  const update = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const filledKeys = requiredFields.filter(
-    (f) => form[f].trim() !== ""
-  );
-  const filledCount = filledKeys.length;
-
-  const isComplete = filledCount === requiredFields.length;
-
-  const completedLabels = filledKeys.map((key) => labelByKey[key]);
+  const completedLabels = filledKeys.map((k) => labelMap[k]);
 
   useEffect(() => {
-    if (typeof onProgress === "function") {
-      onProgress({ filled: filledCount, completedLabels, isComplete });
-    }
-  }, [filledCount, completedLabels, isComplete, onProgress]);
+    onProgress &&
+      onProgress({
+        filled: filledCount,
+        completedLabels,
+        isComplete,
+        values: form, // ⭐ send values up
+      });
+  }, [form]);
 
   return (
     <div className="section">
       <h2>Light Profile</h2>
       <p>Please complete all required fields (*)</p>
 
-      <label>Full Name *</label>
-      <input
-        name="fullName"
-        type="text"
-        value={form.fullName}
-        onChange={update}
-        required
-      />
-
-      <label>Job Title / Role *</label>
-      <input
-        name="jobTitle"
-        type="text"
-        value={form.jobTitle}
-        onChange={update}
-        required
-      />
-
-      <label>Work Email *</label>
-      <input
-        name="workEmail"
-        type="email"
-        value={form.workEmail}
-        onChange={update}
-        required
-      />
-
-      <label>Organization Name *</label>
-      <input
-        name="orgName"
-        type="text"
-        value={form.orgName}
-        onChange={update}
-        required
-      />
-
-      <label>Organization Type *</label>
-      <input
-        name="orgType"
-        type="text"
-        value={form.orgType}
-        onChange={update}
-        required
-      />
-
-      <label>Primary Industry *</label>
-      <input
-        name="primaryIndustry"
-        type="text"
-        value={form.primaryIndustry}
-        onChange={update}
-        required
-      />
-
-      <label>Country *</label>
-      <input
-        name="country"
-        type="text"
-        value={form.country}
-        onChange={update}
-        required
-      />
-
-      <label>Contact Method *</label>
-      <input
-        name="contactMethod"
-        type="text"
-        value={form.contactMethod}
-        onChange={update}
-        required
-      />
+      {required.map((field) => (
+        <div key={field}>
+          <label>{labelMap[field]} *</label>
+          <input
+            name={field}
+            type="text"
+            value={form[field]}
+            onChange={update}
+            required
+          />
+        </div>
+      ))}
     </div>
   );
 }

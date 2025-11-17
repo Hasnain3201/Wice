@@ -1,16 +1,35 @@
+// src/Pages/profilebuilder/ClientProfileBuilder1Comp.jsx
+
 import { useNavigate } from "react-router-dom";
 import SectionDropdown from "../componentsPB/SectionDropdown";
 import "../profileBuilder.css";
 
+import { saveUserProfile } from "../../../services/userProfile";
+import { useAuth } from "../../../context/AuthContext";
+
 export default function ClientProfileBuilder1Comp({
-  lightData = {},
+  lightData,
   onBack,
   onContinue,
 }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleSaveAndReturn = () => {
-    // Future: Save to Firestore if needed
+  const handleSaveLight = async () => {
+    await saveUserProfile(user.uid, {
+      profile: {
+        fullName: lightData.fullName,
+        jobTitle: lightData.jobTitle,
+        organizationName: lightData.orgName,
+        organizationType: lightData.orgType,
+        primaryIndustry: lightData.primaryIndustry,
+        country: lightData.country,
+        contactMethods: [lightData.contactMethod],
+      },
+      clientLightCompleted: true,
+    });
+
+    alert("Your light profile has been saved!");
     navigate("/client/home");
   };
 
@@ -18,44 +37,37 @@ export default function ClientProfileBuilder1Comp({
     <div className="section">
       <h2>Review Your Light Profile</h2>
 
-      <div className="summary-card">
-        <h3>Your basic profile information is ready.</h3>
+      <SectionDropdown
+        title="Account Holder"
+        data={{
+          "Full Name": lightData.fullName,
+          "Job Title / Role": lightData.jobTitle,
+          "Work Email": lightData.workEmail,
+        }}
+      />
 
-        <SectionDropdown
-          title="Account Holder"
-          data={{
-            "Full Name": lightData.fullName,
-            "Job Title / Role": lightData.jobTitle,
-            "Work Email": lightData.workEmail,
-          }}
-        />
+      <SectionDropdown
+        title="Organization Information"
+        data={{
+          "Organization Name": lightData.orgName,
+          "Organization Type": lightData.orgType,
+          "Primary Industry": lightData.primaryIndustry,
+          Country: lightData.country,
+        }}
+      />
 
-        <SectionDropdown
-          title="Organization Information"
-          data={{
-            "Organization Name": lightData.orgName,
-            "Organization Type": lightData.orgType,
-            "Primary Industry": lightData.primaryIndustry,
-            Country: lightData.country,
-          }}
-        />
+      <SectionDropdown
+        title="Contact Preferences"
+        data={{ "Preferred Method": lightData.contactMethod }}
+      />
 
-        <SectionDropdown
-          title="Contact Preferences"
-          data={{
-            "Preferred Method": lightData.contactMethod,
-          }}
-        />
-      </div>
-
-      {/* ACTION BUTTONS */}
       <div className="completion-actions">
         <button className="back" onClick={onBack}>
           Back
         </button>
 
-        <button className="back" onClick={handleSaveAndReturn}>
-          Save Light Profile &amp; Return to Portal
+        <button className="back" onClick={handleSaveLight}>
+          Save & Return to Portal
         </button>
 
         <button className="next" onClick={onContinue}>
