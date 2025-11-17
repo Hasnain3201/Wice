@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   User,
-  Users,
   Home,
   Search,
   DollarSign,
@@ -15,9 +14,6 @@ import {
   Calendar,
   HelpCircle,
   LogOut,
-  FolderOpen,
-  UserCheck,
-  AlertTriangle,
 } from "lucide-react";
 import "./SideNav.css";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -30,12 +26,13 @@ export default function SideNav() {
   const hasUnreadChats = unreadChatIds.length > 0;
 
   const links = useMemo(() => {
+    // ⭐ CONSULTANT — NO SAVED
     if (role === "consultant") {
       return [
         { to: "/consultant/portal", label: "Home", icon: Home },
         { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
-        { to: "/saved", label: "Saved", icon: Bookmark },
+        // ❌ Removed Saved
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
@@ -44,12 +41,13 @@ export default function SideNav() {
       ];
     }
 
+    // ⭐ CLIENT — KEEP SAVED
     if (role === "client") {
       return [
         { to: "/client/home", label: "Home", icon: Home },
         { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
-        { to: "/saved", label: "Saved", icon: Bookmark },
+        { to: "/saved", label: "Saved", icon: Bookmark }, // ⭐ YES
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
@@ -59,13 +57,14 @@ export default function SideNav() {
       ];
     }
 
+    // ⭐ ADMIN — KEEP SAVED
     if (role === "admin") {
       return [
         { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { to: "/granthunt", label: "GrantHunt", icon: Search },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
         { to: "/chat", label: "Chat", icon: MessageSquare },
-        { to: "/saved", label: "Saved", icon: Bookmark },
+        { to: "/saved", label: "Saved", icon: Bookmark }, // ⭐ YES
       ];
     }
 
@@ -96,15 +95,13 @@ export default function SideNav() {
               {React.createElement(icon, { size: 18, className: "nav-icon" })}
               <span className="nav-label">
                 {label}
-                {showDot ? (
-                  <span className="nav-dot" aria-hidden="true" />
-                ) : null}
+                {showDot && <span className="nav-dot" />}
               </span>
             </NavLink>
           );
         })}
 
-        {/* Help icon link */}
+        {/* Help (hidden for admin only) */}
         {role !== "admin" && (
           <NavLink
             to="/help"
@@ -117,7 +114,7 @@ export default function SideNav() {
           </NavLink>
         )}
 
-        {/* Logout pinned to bottom */}
+        {/* Logout */}
         <button
           onClick={handleLogout}
           className="nav-item logout-btn"

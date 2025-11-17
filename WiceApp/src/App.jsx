@@ -203,7 +203,7 @@ export default function App() {
               {[
                 { path: "/marketplace", element: <Marketplace />, roles: ["client", "consultant", "admin"] },
                 { path: "/notifications", element: <Notifications />, roles: ["client", "consultant"] },
-                { path: "/saved", element: <Saved />, roles: ["client", "consultant", "admin"] },
+                { path: "/saved", element: <Saved />, roles: ["client", "admin"] },
                 { path: "/chat", element: <Chat />, roles: ["client", "consultant", "admin"] },
                 { path: "/projects", element: <ProjectsHome />, roles: ["client", "consultant"] },
                 { path: "/calendar", element: <CalendarPage />, roles: ["client", "consultant"] },

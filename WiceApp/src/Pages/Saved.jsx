@@ -1,3 +1,5 @@
+// src/Pages/Saved.jsx
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
@@ -33,6 +35,24 @@ export default function Saved() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [removingItemId, setRemovingItemId] = useState(null);
 
+  // Role flags
+  const isClient = role === "client";
+  const isAdmin = role === "admin";
+  const isConsultant = role === "consultant";
+
+  // Prevent consultants from loading saved
+  if (isConsultant) {
+    return (
+      <div className="dashboard-page">
+        <section className="dashboard-card">
+          <h1 className="dashboard-title">Saved</h1>
+          <p>Consultants do not have a Saved section.</p>
+        </section>
+      </div>
+    );
+  }
+
+  // Load folders for clients + admins only
   useEffect(() => {
     if (!user?.uid) {
       setFolders(createEmptySavedSections());
@@ -164,17 +184,8 @@ export default function Saved() {
     );
   };
 
-  const savedConsultantItems = useMemo(() => {
-    return (folders.consultantCollections || []).flatMap((folder) =>
-      (folder.items || []).map((item) => ({
-        ...item,
-        folderId: folder.id,
-        folderName: folder.name,
-      }))
-    );
-  }, [folders]);
-
-  const consultantAllItems = useMemo(() => {
+  // Flattened items for admins (Saved Grants)
+  const adminGrantItems = useMemo(() => {
     return (folders.savedGrants || []).flatMap((folder) =>
       (folder.items || []).map((item) => ({
         ...item,
@@ -184,22 +195,16 @@ export default function Saved() {
     );
   }, [folders]);
 
-  if (!user) {
-    return (
-      <div className="dashboard-page">
-        <section className="dashboard-card">
-          <h1 className="dashboard-title" style={{ fontSize: "1.6rem" }}>
-            Saved
-          </h1>
-          <p>Please log in to view your saved content.</p>
-        </section>
-      </div>
+  // Client Consultant items
+  const savedConsultantItems = useMemo(() => {
+    return (folders.consultantCollections || []).flatMap((folder) =>
+      (folder.items || []).map((item) => ({
+        ...item,
+        folderId: folder.id,
+        folderName: folder.name,
+      }))
     );
-  }
-
-  const isConsultant = role === "consultant";
-  const isClientView = role === "client" || role === "admin";
-  const allItems = isConsultant ? consultantAllItems : [];
+  }, [folders]);
 
   return (
     <div className="dashboard-page">
@@ -211,18 +216,14 @@ export default function Saved() {
           </h1>
         </header>
 
-        {loading ? (
-          <p style={{ marginTop: "8px", color: "#6b7280" }}>
-            Loading saved collections…
-          </p>
-        ) : null}
-        {error ? (
-          <p style={{ marginTop: "8px", color: "#b91c1c" }}>{error}</p>
-        ) : null}
+        {/* LOADING + ERROR */}
+        {loading && <p>Loading saved collections…</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
         {/* CLIENT VIEW */}
-        {isClientView && (
+        {isClient && (
           <>
+            {/* Consultant Collections */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -238,6 +239,7 @@ export default function Saved() {
                   <ChevronDown />
                 )}
               </button>
+
               {openSection === "consultantCollections" && (
                 <div className="saved-options">
                   <AddFolderButton section="consultantCollections" />
@@ -252,6 +254,7 @@ export default function Saved() {
               )}
             </div>
 
+            {/* All Saved Consultants */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -267,15 +270,13 @@ export default function Saved() {
                   <ChevronDown />
                 )}
               </button>
+
               {openSection === "savedConsultants" && (
                 <div className="saved-options">
                   {savedConsultantItems.length > 0 ? (
                     savedConsultantItems.map((item) => (
                       <div key={item.id} className="folder-item">
                         <Link to={item.link}>{item.title}</Link>
-                        {item.description ? (
-                          <p className="item-desc">{item.description}</p>
-                        ) : null}
                         <p className="item-desc">Folder: {item.folderName}</p>
                       </div>
                     ))
@@ -288,9 +289,10 @@ export default function Saved() {
           </>
         )}
 
-        {/* CONSULTANT VIEW */}
-        {isConsultant && (
+        {/* ADMIN VIEW */}
+        {isAdmin && (
           <>
+            {/* Saved Grants */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -302,6 +304,7 @@ export default function Saved() {
                 </div>
                 {openSection === "savedGrants" ? <ChevronUp /> : <ChevronDown />}
               </button>
+
               {openSection === "savedGrants" && (
                 <div className="saved-options">
                   <AddFolderButton section="savedGrants" />
@@ -316,6 +319,7 @@ export default function Saved() {
               )}
             </div>
 
+            {/* All Saved Grants */}
             <div className="saved-section">
               <button
                 className="saved-section-header"
@@ -327,10 +331,11 @@ export default function Saved() {
                 </div>
                 {openSection === "allGrants" ? <ChevronUp /> : <ChevronDown />}
               </button>
+
               {openSection === "allGrants" && (
                 <div className="saved-options">
-                  {allItems.length > 0 ? (
-                    allItems.map((item) => (
+                  {adminGrantItems.length > 0 ? (
+                    adminGrantItems.map((item) => (
                       <div key={item.id} className="folder-item">
                         {item.link.startsWith("http") ? (
                           <a href={item.link} target="_blank" rel="noreferrer">
@@ -339,14 +344,7 @@ export default function Saved() {
                         ) : (
                           <Link to={item.link}>{item.title}</Link>
                         )}
-                        {item.description ? (
-                          <p className="item-desc">{item.description}</p>
-                        ) : null}
-                        {item.folderName ? (
-                          <p className="item-desc">
-                            Folder: {item.folderName}
-                          </p>
-                        ) : null}
+                        <p className="item-desc">Folder: {item.folderName}</p>
                       </div>
                     ))
                   ) : (
@@ -359,7 +357,7 @@ export default function Saved() {
         )}
       </div>
 
-      {/* Folder Creation Modal */}
+      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -367,11 +365,11 @@ export default function Saved() {
               <h3>Create New Folder</h3>
               <X className="close-icon" size={20} onClick={closeModal} />
             </div>
-            {modalError ? (
-              <p style={{ color: "#dc2626", marginBottom: "0.75rem" }}>
+            {modalError && (
+              <p style={{ color: "red", marginBottom: "0.75rem" }}>
                 {modalError}
               </p>
-            ) : null}
+            )}
             <input
               type="text"
               value={newFolderName}
