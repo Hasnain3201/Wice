@@ -1,8 +1,44 @@
+// src/ProfileBuilder/sections/CompletionPage.jsx
 import "../ProfileBuilder.css";
 import SectionDropdown from "../componentsPB/SectionDropdown";
+import { saveUserProfile } from "../../../services/userProfile";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function CompletionPage({ profileData, onNextFull, onSave }) {
-  // Group Light Profile data for display
+  const { user } = useAuth();
+
+  async function handleLightSave() {
+    const uid = user?.uid;
+    if (!uid) return;
+
+    const lightData = {
+      profile: {
+        fullName: profileData.fullName,
+        pronouns: profileData.pronouns,
+        timeZone: profileData.timeZone,
+
+        oneLinerBio: profileData.oneLinerBio,
+        about: profileData.about,
+        totalYearsExperience: profileData.totalYearsExperience,
+        linkedinUrl: profileData.linkedinUrl,
+
+        industries: profileData.industries || [],
+        sectors: profileData.sectors || [],
+        languages: profileData.languages || [],
+
+        currency: profileData.currency,
+        dailyRate: profileData.dailyRate,
+        openToTravel: profileData.openToTravel,
+      },
+
+      phaseLightCompleted: true,
+    };
+
+    await saveUserProfile(uid, lightData);
+
+    onSave(); // return to ConsultantHome
+  }
+
   const identityBasics = {
     "Full Name": profileData.fullName,
     Pronouns: profileData.pronouns,
@@ -34,14 +70,13 @@ export default function CompletionPage({ profileData, onNextFull, onSave }) {
       <h2>Light Profile Completion</h2>
       <p>Review the information below. You can update anything later.</p>
 
-      {/* LIGHT PROFILE SECTIONS */}
       <SectionDropdown title="Identity Basics" data={identityBasics} />
       <SectionDropdown title="Professional Identity" data={professionalIdentity} />
       <SectionDropdown title="Expertise Snapshot" data={expertiseSnapshot} />
       <SectionDropdown title="Work Preferences" data={workPreferences} />
 
       <div className="section-actions">
-        <button className="back" onClick={onSave}>
+        <button className="back" onClick={handleLightSave}>
           Save & Return Home
         </button>
 
