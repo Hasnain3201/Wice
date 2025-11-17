@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import ConsultantCard from "../../Components/ConsultantCard.jsx";
 import { consultants } from "../../data/consultants.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import "./Marketplace.css"
 
 import {
   INDUSTRY_SECTORS,
