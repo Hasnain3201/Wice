@@ -8,6 +8,12 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { auth, storage } from "../../firebase";
 import { saveUserProfile } from "../../services/userProfile.js";
 import skillsData from "../../data/skillsData.js";
+import {
+  INDUSTRY_SECTORS,
+  TIMEZONES,
+  GEOGRAPHIC_EXPERIENCE,
+  DONOR_EXPERIENCE as DONOR_TAXONOMY,
+} from "../../data/taxonomy.js";
 import "./ConsultantProfile.css";
 
 /* ----------------- constants ----------------- */
@@ -16,55 +22,32 @@ const MAX_ABOUT = 300;
 const MAX_ONELINER = 120;
 
 // industries + sectors (same as your ExpertiseSnapshot)
-const INDUSTRY_OPTIONS = [
-  { value: "healthcare", label: "Healthcare" },
-  { value: "finance", label: "Finance" },
-  { value: "technology", label: "Technology" },
-  { value: "education", label: "Education" },
-];
+const INDUSTRY_OPTIONS = Object.keys(INDUSTRY_SECTORS).map((industry) => ({
+  value: industry,
+  label: industry,
+}));
 
-const SECTORS_BY_INDUSTRY = {
-  healthcare: [
-    { value: "public_health", label: "Public Health" },
-    { value: "pharma", label: "Pharmaceuticals" },
-    { value: "medical_devices", label: "Medical Devices" },
-  ],
-  finance: [
-    { value: "banking", label: "Banking" },
-    { value: "investment", label: "Investment Management" },
-    { value: "insurance", label: "Insurance" },
-  ],
-  technology: [
-    { value: "software", label: "Software Development" },
-    { value: "cybersecurity", label: "Cybersecurity" },
-    { value: "ai", label: "Artificial Intelligence" },
-  ],
-  education: [
-    { value: "higher_ed", label: "Higher Education" },
-    { value: "edtech", label: "EdTech" },
-  ],
-};
+const SECTOR_OPTIONS = Object.fromEntries(
+  Object.entries(INDUSTRY_SECTORS).map(([industry, sectorMap]) => [
+    industry,
+    Object.keys(sectorMap || {}).map((sector) => ({
+      value: sector,
+      label: sector,
+    })),
+  ])
+);
 
 // regions (from ExperienceSnapshot)
-const REGION_OPTIONS = [
-  { value: "Africa", label: "Africa" },
-  { value: "Asia", label: "Asia" },
-  { value: "Europe", label: "Europe" },
-  { value: "North America", label: "North America" },
-  { value: "South America", label: "South America" },
-  { value: "Oceania", label: "Oceania" },
-];
+const REGION_OPTIONS = Object.keys(GEOGRAPHIC_EXPERIENCE).map((region) => ({
+  value: region,
+  label: region,
+}));
 
 // donor experience options
-const DONOR_OPTIONS = [
-  { value: "usaid", label: "USAID" },
-  { value: "world_bank", label: "World Bank" },
-  { value: "undp", label: "UNDP" },
-  { value: "unicef", label: "UNICEF" },
-  { value: "gates_foundation", label: "Gates Foundation" },
-  { value: "dfid", label: "DFID (UK)" },
-  { value: "who", label: "WHO" },
-];
+const DONOR_OPTIONS = DONOR_TAXONOMY.map((donor) => ({
+  value: donor,
+  label: donor,
+}));
 
 // skills from skillsData.js
 const SKILL_OPTIONS = skillsData.map((s) => ({ value: s, label: s }));
@@ -75,20 +58,21 @@ const PRONOUN_OPTIONS = [
   { value: "he_him", label: "He / Him" },
   { value: "they_them", label: "They / Them" },
   { value: "prefer_not_say", label: "Prefer not to say" },
+  { value: "self_describe", label: "Self describe" },
 ];
 
-const TIMEZONE_OPTIONS = [
-  { value: "EST", label: "EST" },
-  { value: "PST", label: "PST" },
-  { value: "CST", label: "CST" },
-  { value: "MST", label: "MST" },
-];
+const TIMEZONE_OPTIONS = TIMEZONES.map((zone) => ({
+  value: zone,
+  label: zone,
+}));
 
 const DEGREE_OPTIONS = [
   { value: "bachelors", label: "Bachelor’s" },
   { value: "masters", label: "Master’s" },
   { value: "phd", label: "PhD" },
 ];
+
+const CURRENCY_OPTIONS = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "JPY"];
 
 export default function ConsultantProfile() {
   const { user, profile, refreshProfile, loading } = useAuth();
@@ -106,13 +90,16 @@ export default function ConsultantProfile() {
     totalYearsExperience: "",
     linkedinUrl: "",
     dailyRate: "",
-    availability: "",
     openToTravel: false,
     highestDegree: "",
     institution: "",
     resumeFile: "", // URL
     resumeFileName: "",
     resumeStoragePath: "",
+    currency: "USD",
+    availabilityStatus: "",
+    availabilityNote: "",
+    customPronouns: "",
   });
 
   // arrays / selects
@@ -149,6 +136,29 @@ export default function ConsultantProfile() {
     []
   );
 
+  const donorOptions = useMemo(() => {
+    const extras = selectedDonors.filter(
+      (selected) =>
+        !DONOR_OPTIONS.some((opt) => opt.value === selected.value)
+    );
+    if (extras.length === 0) return DONOR_OPTIONS;
+    return [...DONOR_OPTIONS, ...extras];
+  }, [selectedDonors]);
+
+  const hasFullProfile = useMemo(() => {
+    const details = profile?.profile || {};
+    if (profile?.phaseFullCompleted) return true;
+    return Boolean(
+      details.experienceRegions?.length ||
+        details.functionalExpertise?.length ||
+        details.highestDegree ||
+        details.resumeFile ||
+        details.additionalFiles?.length ||
+        details.donorExperience?.length ||
+        details.certifications?.length
+    );
+  }, [profile]);
+
   /* ---------- hydrate from Firestore ---------- */
 
   useEffect(() => {
@@ -156,34 +166,61 @@ export default function ConsultantProfile() {
 
     const profileMap = profile.profile || {};
 
-    // industries: nested structure or legacy strings
-    let industriesFromDb = profileMap.industries || [];
-    if (
-      Array.isArray(industriesFromDb) &&
-      industriesFromDb.length > 0 &&
-      typeof industriesFromDb[0] === "string"
-    ) {
-      industriesFromDb = industriesFromDb.map((val) => ({
-        industry: val,
-        sectors: [],
-      }));
-    }
-
+    // industries + sectors
+    const industriesFromDb = profileMap.industries || [];
+    const sectorsFromDb = profileMap.sectorsByIndustry || {};
     const nextIndustries = [];
     const nextSectorsByIndustry = {};
 
-    industriesFromDb.forEach((item) => {
-      const indOpt = INDUSTRY_OPTIONS.find((opt) => opt.value === item.industry);
-      if (!indOpt) return;
-      nextIndustries.push(indOpt);
+    const ensureIndustryOption = (name) =>
+      INDUSTRY_OPTIONS.find((opt) => opt.value === name) || {
+        value: name,
+        label: name,
+      };
 
-      const sectorVals = item.sectors || [];
-      const optionsForIndustry = SECTORS_BY_INDUSTRY[item.industry] || [];
-      const sectorOpts = optionsForIndustry.filter((opt) =>
-        sectorVals.includes(opt.value)
+    const ensureSectorOption = (industry, sector) => {
+      const pool = SECTOR_OPTIONS[industry] || [];
+      return (
+        pool.find(
+          (opt) => opt.value === sector || opt.label === sector
+        ) || { value: sector, label: sector }
       );
-      if (sectorOpts.length) {
-        nextSectorsByIndustry[item.industry] = sectorOpts;
+    };
+
+    industriesFromDb.forEach((entry) => {
+      const industryName =
+        typeof entry === "string" ? entry : entry?.industry || "";
+      if (!industryName) return;
+      const industryOption = ensureIndustryOption(industryName);
+      if (!nextIndustries.find((opt) => opt.value === industryOption.value)) {
+        nextIndustries.push(industryOption);
+      }
+      const savedSectors =
+        (typeof entry === "object" && Array.isArray(entry.sectors) && entry.sectors.length
+          ? entry.sectors
+          : sectorsFromDb[industryName]) || [];
+      if (savedSectors.length) {
+        nextSectorsByIndustry[industryName] = savedSectors.map((sector) =>
+          ensureSectorOption(industryName, sector)
+        );
+      }
+    });
+
+    Object.entries(sectorsFromDb).forEach(([industryName, sectorList]) => {
+      if (!sectorList || !sectorList.length) return;
+      if (!nextIndustries.find((opt) => opt.value === industryName)) {
+        nextIndustries.push(ensureIndustryOption(industryName));
+      }
+      if (!nextSectorsByIndustry[industryName]) {
+        nextSectorsByIndustry[industryName] = sectorList.map((sector) =>
+          ensureSectorOption(industryName, sector)
+        );
+      }
+    });
+
+    nextIndustries.forEach((opt) => {
+      if (!nextSectorsByIndustry[opt.value]) {
+        nextSectorsByIndustry[opt.value] = [];
       }
     });
 
@@ -205,16 +242,25 @@ export default function ConsultantProfile() {
     });
 
     // regions
-    const regionsFromDb = profileMap.regions || [];
-    const nextRegions = REGION_OPTIONS.filter((opt) =>
-      regionsFromDb.includes(opt.value)
-    );
+    const regionsFromDb =
+      profileMap.experienceRegions || profileMap.regions || [];
+    const nextRegions = regionsFromDb.map((region) => {
+      return (
+        REGION_OPTIONS.find(
+          (opt) => opt.value === region || opt.label === region
+        ) || { value: region, label: region }
+      );
+    });
 
     // donors
     const donorsFromDb = profileMap.donorExperience || [];
-    const nextDonors = DONOR_OPTIONS.filter((opt) =>
-      donorsFromDb.includes(opt.value)
-    );
+    const nextDonors = donorsFromDb.map((donor) => {
+      return (
+        DONOR_OPTIONS.find(
+          (opt) => opt.value === donor || opt.label === donor
+        ) || { value: donor, label: donor }
+      );
+    });
 
     // skills
     const skillsFromDb = profileMap.skills || [];
@@ -224,14 +270,15 @@ export default function ConsultantProfile() {
 
     // pronouns
     const pronounValue = profileMap.pronouns || "";
-    const pronounOpt =
+    let pronounOpt =
       PRONOUN_OPTIONS.find((o) => o.label === pronounValue) || null;
 
     // time zone
     const tzValue = profileMap.timeZone || "";
-    const tzOpt =
+    const tzMatch =
       TIMEZONE_OPTIONS.find((o) => o.value === tzValue || o.label === tzValue) ||
       null;
+    const tzOpt = tzMatch || (tzValue ? { value: tzValue, label: tzValue } : null);
 
     // degree
     const degreeValue = profileMap.highestDegree || "";
@@ -240,26 +287,36 @@ export default function ConsultantProfile() {
 
     // additional files (array of URLs or strings)
     const additionalFromDb = profileMap.additionalFiles || [];
+    const availabilityStatus = profileMap.availabilityStatus || "";
+    const availabilityNote = profileMap.availabilityNote || "";
+    const storedCurrency = profileMap.currency || "USD";
+    const customPronouns = profileMap.customPronouns || "";
+    if (!pronounOpt && customPronouns) {
+      pronounOpt = PRONOUN_OPTIONS.find((o) => o.value === "self_describe") || null;
+    }
 
     setForm({
       fullName: profile.fullName || user.displayName || "",
-      title: profile.title || "",
+      title: profile.title || profileMap.title || "",
       email: user.email || profile.email || "",
-      location: profile.location || "",
+      location: profile.location || profileMap.location || "",
       about: profileMap.about || "",
       oneLinerBio: profileMap.oneLinerBio || "",
-      timeZone: tzOpt?.value || "",
-      pronouns: pronounOpt?.label || "",
+      timeZone: tzOpt?.value || tzValue || "",
+      pronouns: pronounOpt?.value === "self_describe" ? customPronouns : pronounOpt?.label || "",
+      customPronouns,
       totalYearsExperience: profileMap.totalYearsExperience || "",
       linkedinUrl: profileMap.linkedinUrl || "",
       dailyRate: profileMap.dailyRate || "",
-      availability: profileMap.availability || "",
+      availabilityStatus,
+      availabilityNote,
       openToTravel: !!profileMap.openToTravel,
       highestDegree: degreeOpt?.label || "",
       institution: profileMap.institution || "",
       resumeFile: profileMap.resumeFile || "",
       resumeFileName: profileMap.resumeFileName || "",
       resumeStoragePath: profileMap.resumeStoragePath || "",
+      currency: storedCurrency,
     });
 
     setSelectedPronouns(pronounOpt);
@@ -302,7 +359,28 @@ export default function ConsultantProfile() {
 
   const handlePronounsChange = (option) => {
     setSelectedPronouns(option);
-    setForm((prev) => ({ ...prev, pronouns: option ? option.label : "" }));
+    if (option?.value === "self_describe") {
+      setForm((prev) => ({
+        ...prev,
+        customPronouns: prev.customPronouns || "",
+        pronouns: prev.customPronouns || "",
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        pronouns: option ? option.label : "",
+        customPronouns: "",
+      }));
+    }
+  };
+
+  const handleCustomPronounsChange = (event) => {
+    const value = event.target.value;
+    setForm((prev) => ({
+      ...prev,
+      customPronouns: value,
+      pronouns: selectedPronouns?.value === "self_describe" ? value : prev.pronouns,
+    }));
   };
 
   const handleTimeZoneChange = (option) => {
@@ -326,11 +404,7 @@ export default function ConsultantProfile() {
       const next = {};
       limited.forEach((ind) => {
         const key = ind.value;
-        const existing = prev[key] || [];
-        const allowedOptions = SECTORS_BY_INDUSTRY[key] || [];
-        next[key] = existing.filter((sec) =>
-          allowedOptions.some((opt) => opt.value === sec.value)
-        );
+        next[key] = prev[key] || [];
       });
       return next;
     });
@@ -432,23 +506,36 @@ export default function ConsultantProfile() {
 
     const existingProfileMap = profile?.profile || {};
 
-    const industriesPayload = selectedIndustries.map((ind) => ({
-      industry: ind.value,
-      sectors: (selectedSectorsByIndustry[ind.value] || []).map(
-        (sec) => sec.value
-      ),
-    }));
+    const industriesList = selectedIndustries.map((ind) => ind.value);
+    const sectorsByIndustry = {};
+    industriesList.forEach((industry) => {
+      const sectors = selectedSectorsByIndustry[industry] || [];
+      if (sectors.length) {
+        sectorsByIndustry[industry] = sectors.map((sec) => sec.value);
+      }
+    });
+    const flatSectors = Object.values(sectorsByIndustry).flat();
 
     const profilePayload = {
       ...existingProfileMap,
       about: form.about,
       oneLinerBio: form.oneLinerBio,
       pronouns: form.pronouns,
+      customPronouns: form.customPronouns || "",
       timeZone: form.timeZone,
       totalYearsExperience: form.totalYearsExperience,
       linkedinUrl: form.linkedinUrl,
       dailyRate: form.dailyRate,
-      availability: form.availability,
+      currency: form.currency || "USD",
+      availabilityStatus: form.availabilityStatus || "",
+      availabilityNote:
+        form.availabilityStatus === "not_currently_available"
+          ? form.availabilityNote || ""
+          : "",
+      availability:
+        form.availabilityStatus === "not_currently_available"
+          ? form.availabilityNote || ""
+          : "",
       openToTravel: !!form.openToTravel,
       highestDegree: form.highestDegree,
       institution: form.institution,
@@ -457,9 +544,13 @@ export default function ConsultantProfile() {
       resumeStoragePath:
         form.resumeStoragePath || existingProfileMap.resumeStoragePath || "",
       additionalFiles,
-      industries: industriesPayload,
+      industries: industriesList,
+      sectorsByIndustry,
+      sectors: flatSectors,
       languages: selectedLanguages.map((l) => l.label),
-      regions: selectedRegions.map((r) => r.value),
+      experienceRegions: selectedRegions.map((r) => r.value),
+      regions: existingProfileMap.regions || [],
+      experienceCountries: existingProfileMap.experienceCountries || [],
       donorExperience: selectedDonors.map((d) => d.value),
       skills: selectedSkills.map((s) => s.label),
     };
@@ -508,6 +599,16 @@ export default function ConsultantProfile() {
   const aboutChars = form.about.length;
   const oneLinerChars = form.oneLinerBio.length;
 
+  const availabilityLabel =
+    form.availabilityStatus === "available_now"
+      ? "Available now"
+      : form.availabilityStatus === "not_currently_available"
+      ? form.availabilityNote || "Not currently available"
+      : "—";
+
+  const currencyLabel =
+    form.currency || profile?.profile?.currency || "USD";
+
   const heroStats = [
     {
       label: "Experience",
@@ -519,23 +620,14 @@ export default function ConsultantProfile() {
     {
       label: "Daily rate",
       value: form.dailyRate
-        ? `${form.currency || "USD"} ${form.dailyRate}`
+        ? `${currencyLabel} ${form.dailyRate}`
         : "—",
     },
     {
-      label: "Open to travel",
-      value:
-        form.openToTravel
-          ? "Yes"
-          : profile?.profile?.openToTravel === true
-          ? "Yes"
-          : profile?.profile?.openToTravel === false
-          ? "No"
-          : "—",
+      label: "Availability",
+      value: availabilityLabel,
     },
   ];
-  const hasFullProfile = profile?.phaseFullCompleted;
-
   return (
     <main className="profile-form-page">
       <section className="profile-form-hero">
@@ -622,41 +714,44 @@ export default function ConsultantProfile() {
               required
             />
           </div>
-
-          <div className="settings-col">
-            <label className="label">Role / Title</label>
-            <input
-              className="input"
-              value={form.title}
-              onChange={handleFieldChange("title")}
-              placeholder="Senior Climate Consultant"
-            />
-          </div>
+          {hasFullProfile && (
+            <div className="settings-col">
+              <label className="label">Role / Title</label>
+              <input
+                className="input"
+                value={form.title}
+                onChange={handleFieldChange("title")}
+                placeholder="Senior Climate Consultant"
+              />
+            </div>
+          )}
         </div>
 
-        <div className="settings-row">
-          <div className="settings-col">
-            <label className="label">Email</label>
-            <input
-              className="input"
-              type="email"
-              value={form.email}
-              readOnly
-              disabled
-              title="Email updates will be supported soon."
-            />
-          </div>
+        {hasFullProfile && (
+          <div className="settings-row">
+            <div className="settings-col">
+              <label className="label">Email</label>
+              <input
+                className="input"
+                type="email"
+                value={form.email}
+                readOnly
+                disabled
+                title="Email updates will be supported soon."
+              />
+            </div>
 
-          <div className="settings-col">
-            <label className="label">Location</label>
-            <input
-              className="input"
-              value={form.location}
-              onChange={handleFieldChange("location")}
-              placeholder="Remote, USA"
-            />
+            <div className="settings-col">
+              <label className="label">Location</label>
+              <input
+                className="input"
+                value={form.location}
+                onChange={handleFieldChange("location")}
+                placeholder="Remote, USA"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* PRONOUNS / TIMEZONE (tag style single select) */}
         <div className="settings-row">
@@ -669,6 +764,15 @@ export default function ConsultantProfile() {
               isClearable
               placeholder="Select pronouns"
             />
+            {selectedPronouns?.value === "self_describe" && (
+              <input
+                className="input"
+                placeholder="Share your pronouns"
+                value={form.customPronouns}
+                onChange={handleCustomPronounsChange}
+                style={{ marginTop: 8 }}
+              />
+            )}
           </div>
 
           <div className="settings-col">
@@ -697,36 +801,108 @@ export default function ConsultantProfile() {
 
           <div className="settings-col">
             <label className="label">Daily Rate</label>
-            <input
-              className="input"
-              value={form.dailyRate}
-              onChange={handleFieldChange("dailyRate")}
-              placeholder="$1200 / day"
-            />
+            <div className="profile-rate-row">
+              <select
+                className="input"
+                value={form.currency}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, currency: e.target.value }))
+                }
+              >
+                {CURRENCY_OPTIONS.map((cur) => (
+                  <option key={cur} value={cur}>
+                    {cur}
+                  </option>
+                ))}
+              </select>
+              <input
+                className="input"
+                type="number"
+                min="0"
+                value={form.dailyRate}
+                onChange={handleFieldChange("dailyRate")}
+                placeholder="1200"
+              />
+            </div>
           </div>
         </div>
 
         <div className="settings-row">
           <div className="settings-col">
-            <label className="label">Availability</label>
-            <input
-              className="input"
-              value={form.availability}
-              onChange={handleFieldChange("availability")}
-              placeholder="Immediately available, 10–15 hrs/week…"
-            />
+            <label className="label">Availability Status</label>
+            <div className="profile-radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="availability-status"
+                  value="available_now"
+                  checked={form.availabilityStatus === "available_now"}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      availabilityStatus: e.target.value,
+                    }))
+                  }
+                />
+                Available now
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="availability-status"
+                  value="not_currently_available"
+                  checked={
+                    form.availabilityStatus === "not_currently_available"
+                  }
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      availabilityStatus: e.target.value,
+                    }))
+                  }
+                />
+                Not currently available
+              </label>
+            </div>
+            {form.availabilityStatus === "not_currently_available" && (
+              <input
+                className="input"
+                value={form.availabilityNote}
+                onChange={handleFieldChange("availabilityNote")}
+                placeholder="e.g., Available after June"
+                style={{ marginTop: 10 }}
+              />
+            )}
           </div>
 
           <div className="settings-col">
-            <label className="label">
-              <input
-                type="checkbox"
-                checked={form.openToTravel}
-                onChange={handleFieldChange("openToTravel")}
-                style={{ marginRight: 8 }}
-              />
-              Open to travel
-            </label>
+            <label className="label">Open to travel</label>
+            <div className="profile-radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="travel"
+                  value="yes"
+                  checked={form.openToTravel === true}
+                  onChange={() =>
+                    setForm((prev) => ({ ...prev, openToTravel: true }))
+                  }
+                />
+                Yes
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="travel"
+                  value="no"
+                  checked={form.openToTravel === false}
+                  onChange={() =>
+                    setForm((prev) => ({ ...prev, openToTravel: false }))
+                  }
+                />
+                No
+              </label>
+            </div>
           </div>
         </div>
 
@@ -781,7 +957,13 @@ export default function ConsultantProfile() {
               <label className="label">Sectors – {ind.label}</label>
               <Select
                 isMulti
-                options={SECTORS_BY_INDUSTRY[ind.value] || []}
+                options={
+                  (SECTOR_OPTIONS[ind.value] &&
+                    SECTOR_OPTIONS[ind.value].length > 0 &&
+                    SECTOR_OPTIONS[ind.value]) ||
+                  selectedSectorsByIndustry[ind.value] ||
+                  []
+                }
                 value={selectedSectorsByIndustry[ind.value] || []}
                 onChange={handleSectorsChange(ind.value)}
                 placeholder="Select sectors for this industry"
@@ -821,16 +1003,16 @@ export default function ConsultantProfile() {
         {hasFullProfile && (
           <>
             <div className="settings-row">
-              <div className="settings-col">
-                <label className="label">Donor Experience</label>
-                <Select
-                  isMulti
-                  options={DONOR_OPTIONS}
-                  value={selectedDonors}
-                  onChange={setSelectedDonors}
-                  placeholder="Select donor organizations"
-                />
-              </div>
+            <div className="settings-col">
+              <label className="label">Donor Experience</label>
+              <Select
+                isMulti
+                options={donorOptions}
+                value={selectedDonors}
+                onChange={setSelectedDonors}
+                placeholder="Select donor organizations"
+              />
+            </div>
 
               <div className="settings-col">
                 <label className="label">Skills</label>

@@ -103,3 +103,35 @@
   color: #0f172a;
   transform: translateY(-1px);
 }
+
+.profile-rate-row {
+  display: flex;
+  gap: 12px;
+}
+
+.profile-rate-row .input {
+  margin: 0;
+}
+
+.profile-rate-row select.input {
+  flex: 0 0 120px;
+}
+
+.profile-rate-row input.input {
+  flex: 1;
+}
+
+.profile-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.profile-radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #334155;
+}
