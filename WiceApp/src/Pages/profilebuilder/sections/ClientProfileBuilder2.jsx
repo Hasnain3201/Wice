@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import "../profileBuilder.css";
+import { TIMEZONES } from "../../../data/taxonomy.js";
 
 export default function ClientProfileBuilder2({ onProgress }) {
   const [form, setForm] = useState({
@@ -17,14 +18,46 @@ export default function ClientProfileBuilder2({ onProgress }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const toggleMulti = (field, value) => {
+  const addMulti = (field, value) => {
+    if (!value.trim()) return;
     setForm((prev) => ({
       ...prev,
       [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
+        ? prev[field]
         : [...prev[field], value],
     }));
   };
+
+  const removeMulti = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((v) => v !== value),
+    }));
+  };
+
+  // Static options for searchable dropdowns
+  const SUPPORT_OPTIONS = [
+    "Program Design",
+    "MEL",
+    "Grants & Compliance",
+    "Project Management",
+    "Operations",
+    "HR & Recruitment",
+    "Business Development",
+    "Tech & AI",
+    "ESG & Sustainability",
+    "Research",
+    "Communications",
+    "Finance",
+    "Other",
+  ];
+
+  const ENGAGEMENT_OPTIONS = [
+    "Short Term",
+    "Long Term",
+    "Advisory",
+    "Fractional",
+  ];
 
   const allFields = Object.keys(form);
 
@@ -38,7 +71,7 @@ export default function ClientProfileBuilder2({ onProgress }) {
   const labelMap = {
     website: "Website URL",
     supportAreas: "Support Areas Needed",
-    engagementTypes: "Engagement Types",
+    engagementTypes: "Preferred Engagement Types",
     timezone: "Time Zone",
     phone: "Phone Number",
     whatsapp: "Whatsapp",
@@ -62,51 +95,73 @@ export default function ClientProfileBuilder2({ onProgress }) {
       <label>Website URL</label>
       <input name="website" value={form.website} onChange={update} />
 
+      {/* ------------------ SUPPORT AREAS (SEARCHABLE MULTI) ------------------ */}
       <label>Support Areas Needed</label>
-      <div className="multi-select">
-        {[
-          "Program Design",
-          "MEL",
-          "Grants & Compliance",
-          "Project Management",
-          "Operations",
-          "HR & Recruitment",
-          "Business Development",
-          "Tech & AI",
-          "ESG & Sustainability",
-          "Research",
-          "Communications",
-          "Finance",
-          "Other",
-        ].map((item) => (
-          <label key={item}>
-            <input
-              type="checkbox"
-              checked={form.supportAreas.includes(item)}
-              onChange={() => toggleMulti("supportAreas", item)}
-            />
+
+      <input
+        list="support-list"
+        placeholder="Search and add…"
+        onChange={(e) => addMulti("supportAreas", e.target.value)}
+      />
+
+      <datalist id="support-list">
+        {SUPPORT_OPTIONS.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
+
+      {/* Tags */}
+      <div className="tags-container">
+        {form.supportAreas.map((item) => (
+          <span key={item} className="tag">
             {item}
-          </label>
+            <button onClick={() => removeMulti("supportAreas", item)}>×</button>
+          </span>
         ))}
       </div>
 
+      {/* ------------------ ENGAGEMENT TYPES (SEARCHABLE MULTI) ------------------ */}
       <label>Preferred Engagement Types</label>
-      <div className="multi-select">
-        {["Short Term", "Long Term", "Advisory", "Fractional"].map((item) => (
-          <label key={item}>
-            <input
-              type="checkbox"
-              checked={form.engagementTypes.includes(item)}
-              onChange={() => toggleMulti("engagementTypes", item)}
-            />
+
+      <input
+        list="engagement-list"
+        placeholder="Search and add…"
+        onChange={(e) => addMulti("engagementTypes", e.target.value)}
+      />
+
+      <datalist id="engagement-list">
+        {ENGAGEMENT_OPTIONS.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
+
+      {/* Tags */}
+      <div className="tags-container">
+        {form.engagementTypes.map((item) => (
+          <span key={item} className="tag">
             {item}
-          </label>
+            <button onClick={() => removeMulti("engagementTypes", item)}>×</button>
+          </span>
         ))}
       </div>
 
+      {/* ------------------ TIME ZONE (SEARCHABLE SINGLE) ------------------ */}
       <label>Time Zone</label>
-      <input name="timezone" value={form.timezone} onChange={update} />
+      <input
+        list="timezone-list"
+        name="timezone"
+        value={form.timezone}
+        onChange={update}
+        placeholder="Search timezone…"
+      />
 
+      <datalist id="timezone-list">
+        {TIMEZONES.map((tz) => (
+          <option key={tz} value={tz} />
+        ))}
+      </datalist>
+
+      {/* ------------------ PHONE + WHATSAPP ------------------ */}
       <label>Phone Number</label>
       <input name="phone" value={form.phone} onChange={update} />
 
