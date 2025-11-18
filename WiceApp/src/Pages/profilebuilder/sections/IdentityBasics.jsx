@@ -1,63 +1,76 @@
 import "../ProfileBuilder.css";
+import { TIMEZONES } from "../../../data/taxonomy";
 
-export default function IdentityBasics({ profileData, setProfileData, onNext }) {
+export default function IdentityBasics({ profileData, setProfileData }) {
   const update = (field, value) => {
-    setProfileData({
-      ...profileData,
+    setProfileData((prev) => ({
+      ...prev,
       [field]: value,
-    });
+    }));
   };
+
+  const pronouns = profileData.pronouns || "";
+  const showCustomPronouns = pronouns === "Self describe";
 
   return (
     <div className="section">
       <h2>Identity Basics</h2>
       <p>
-        Tell us where you are based so we can support time zone friendly matching
-        and ease client coordination.
+        Tell us where you are based so we can support time-zone friendly
+        matching and ease client coordination.
       </p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onNext();
-        }}
+      <label>Full Name *</label>
+      <input
+        type="text"
+        placeholder="Enter your full name"
+        required
+        value={profileData.fullName || ""}
+        onChange={(e) => update("fullName", e.target.value)}
+        autoComplete="name"
+      />
+
+      <label>Pronouns</label>
+      <select
+        value={profileData.pronouns || ""}
+        onChange={(e) => update("pronouns", e.target.value)}
       >
-        <label>Full Name *</label>
-        <input
-          type="text"
-          placeholder="Enter your full name"
-          required
-          value={profileData.fullName || ""}
-          onChange={(e) => update("fullName", e.target.value)}
-        />
+        <option value="">Select...</option>
+        <option>She / Her</option>
+        <option>He / Him</option>
+        <option>They / Them</option>
+        <option>Prefer not to say</option>
+        <option>Self describe</option>
+      </select>
 
-        <label>Pronouns</label>
-        <select
-          value={profileData.pronouns || ""}
-          onChange={(e) => update("pronouns", e.target.value)}
-        >
-          <option value="">Select...</option>
-          <option>She / Her</option>
-          <option>He / Him</option>
-          <option>They / Them</option>
-          <option>Prefer not to say</option>
-        </select>
+      {showCustomPronouns && (
+        <>
+          <label>Share your pronouns</label>
+          <input
+            type="text"
+            value={profileData.customPronouns || ""}
+            onChange={(e) => update("customPronouns", e.target.value)}
+            placeholder="Write your pronouns"
+          />
+        </>
+      )}
 
-        <label>Time Zone *</label>
-        <select
-          required
-          value={profileData.timeZone || ""}
-          onChange={(e) => update("timeZone", e.target.value)}
-        >
-          <option value="">Select...</option>
-          <option>EST</option>
-          <option>PST</option>
-          <option>CST</option>
-          <option>MST</option>
-        </select>
-
-        
-      </form>
+      <label>Time Zone *</label>
+      <p className="description">
+        Tell us where you are based so we can support time-zone friendly matching.
+      </p>
+      <select
+        required
+        value={profileData.timeZone || ""}
+        onChange={(e) => update("timeZone", e.target.value)}
+      >
+        <option value="">Select...</option>
+        {TIMEZONES.map((zone) => (
+          <option key={zone} value={zone}>
+            {zone}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

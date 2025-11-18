@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useCallback, useId, useRef } from "react";
 import "../profileBuilder.css";
 
 /**
- * SectionWrapper controls navigation buttons ONLY if showNav=true.
- * For pages that have their own Next/Back buttons, set showNav={false}
+ * Wraps every profile builder section in a <form> so native HTML validation
+ * runs automatically. Sections that need custom validation can call
+ * registerValidator(fn) to run additional checks before progressing.
  */
 export default function SectionWrapper({
   children,
@@ -13,11 +14,40 @@ export default function SectionWrapper({
   showSkip = false,
   showNav = true,
 }) {
+  const formId = useId();
+  const validatorRef = useRef(null);
+
+  const registerValidator = useCallback((fn) => {
+    validatorRef.current = typeof fn === "function" ? fn : null;
+  }, []);
+
+  const enhancedChildren = React.Children.map(children, (child) =>
+    React.isValidElement(child)
+      ? React.cloneElement(child, { registerValidator })
+      : child
+  );
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (validatorRef.current) {
+      const result = validatorRef.current();
+      if (!result) {
+        return;
+      }
+    }
+    onNext?.();
+  };
+
   return (
     <div className="form-section">
-      {children}
+      {showNav ? (
+        <form id={formId} onSubmit={handleSubmit}>
+          {enhancedChildren}
+        </form>
+      ) : (
+        enhancedChildren
+      )}
 
-      {/* Render navigation buttons only when enabled */}
       {showNav && (
         <div className="section-actions">
           {onBack && (
@@ -33,7 +63,7 @@ export default function SectionWrapper({
           )}
 
           {onNext && (
-            <button type="button" className="next" onClick={onNext}>
+            <button type="submit" form={formId} className="next">
               Next
             </button>
           )}

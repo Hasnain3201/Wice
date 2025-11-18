@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import "../Consultant/ConsultantProfile.css";
 
 const ALL_SUPPORT_AREAS = [
   "Program Design",
@@ -104,16 +105,37 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <div className="dashboard-page">
-      <header className="dashboard-header">
-        <h1 className="dashboard-title">Your Profile</h1>
-        <p className="dashboard-subtitle">
-          Update your information so WICE can match you with the right people.
-        </p>
-      </header>
+  const heroStats = [
+    { label: "Industry", value: form.primaryIndustry || "—" },
+    { label: "Country", value: form.country || "—" },
+    {
+      label: "Contact methods",
+      value:
+        form.contactMethods.length > 0
+          ? form.contactMethods.join(", ")
+          : "—",
+    },
+  ];
 
-      <form className="dashboard-card settings">
+  return (
+    <main className="profile-form-page">
+      <section className="profile-form-hero">
+        <div>
+          <p className="profile-eyebrow">Client profile</p>
+          <h1>Tell consultants what you need</h1>
+          <p>Keep these details accurate so WICE can match you with the right experts.</p>
+        </div>
+        <div className="profile-form-hero__stats">
+          {heroStats.map((stat) => (
+            <article key={stat.label}>
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-value">{stat.value}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <form className="profile-form-card settings">
 
         {/* ---------------------------------------------- */}
         {/* 1. INDIVIDUAL INFORMATION */}
@@ -305,6 +327,6 @@ export default function Profile() {
           </button>
         </div>
       </form>
-    </div>
+    </main>
   );
 }

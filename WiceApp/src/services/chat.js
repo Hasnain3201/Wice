@@ -44,13 +44,13 @@ export function listenToMessages(chatId, callback) {
 async function findDirectChat(currentUid, targetUid) {
   const q = query(
     collection(db, CHATS_COLLECTION),
-    where("type", "==", "direct"),
     where("participantIds", "array-contains", currentUid),
-    limit(20)
+    limit(50)
   );
   const snapshot = await getDocs(q);
   const match = snapshot.docs.find((docSnapshot) => {
     const data = docSnapshot.data();
+    if (data.type !== "direct") return false;
     return data.participantIds?.includes(targetUid);
   });
   return match ? { id: match.id, ...match.data() } : null;
@@ -144,10 +144,15 @@ export async function findUserByEmail(email) {
 export async function findUserByFullName(fullName, role) {
   if (!fullName) return null;
   const usersRef = collection(db, "users");
-  const constraints = [where("fullName", "==", fullName)];
-  if (role) constraints.push(where("accountType", "==", role));
-  const q = query(usersRef, ...constraints, limit(1));
-  const snapshot = await getDocs(q);
+  const buildQuery = (fieldPath) => {
+    const constraints = [where(fieldPath, "==", fullName)];
+    if (role) constraints.push(where("accountType", "==", role));
+    return query(usersRef, ...constraints, limit(1));
+  };
+  let snapshot = await getDocs(buildQuery("fullName"));
+  if (snapshot.empty) {
+    snapshot = await getDocs(buildQuery("profile.fullName"));
+  }
   if (snapshot.empty) return null;
   const docSnap = snapshot.docs[0];
   return { uid: docSnap.id, ...docSnap.data() };

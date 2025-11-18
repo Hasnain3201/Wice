@@ -1,60 +1,191 @@
 // src/ProfileBuilder/sections/CompletionPage.jsx
+import { useState } from "react";
 import "../ProfileBuilder.css";
 import SectionDropdown from "../componentsPB/SectionDropdown";
 import { saveUserProfile } from "../../../services/userProfile";
 import { useAuth } from "../../../context/AuthContext";
 
-export default function CompletionPage({ profileData, onNextFull, onSave }) {
-  const { user } = useAuth();
+const EXPERIENCE_BUCKET_MAP = {
+  "Less than 2": 1,
+  "2-4": 3,
+  "5-7": 6,
+  "8-10": 9,
+  "11-14": 12,
+  "15-20": 17,
+  "20+": 22,
+};
 
-  async function handleLightSave() {
-    const uid = user?.uid;
-    if (!uid) return;
-
-    const lightData = {
-      profile: {
-        fullName: profileData.fullName,
-        pronouns: profileData.pronouns,
-        timeZone: profileData.timeZone,
-
-        oneLinerBio: profileData.oneLinerBio,
-        about: profileData.about,
-        totalYearsExperience: profileData.totalYearsExperience,
-        linkedinUrl: profileData.linkedinUrl,
-
-        industries: profileData.industries || [],
-        sectors: profileData.sectors || [],
-        languages: profileData.languages || [],
-
-        currency: profileData.currency,
-        dailyRate: profileData.dailyRate,
-        openToTravel: profileData.openToTravel,
-      },
-
-      phaseLightCompleted: true,
-    };
-
-    await saveUserProfile(uid, lightData);
-
-    onSave(); // return to ConsultantHome
+function normalizeList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (typeof entry === "string") return entry.trim();
+        if (entry?.value) return String(entry.value).trim();
+        if (entry?.label) return String(entry.label).trim();
+        return null;
+      })
+      .filter(Boolean);
   }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseExperienceBucket(bucket) {
+  if (!bucket) return null;
+  const normalized = EXPERIENCE_BUCKET_MAP[bucket];
+  if (normalized) return normalized;
+  const numeric = Number(bucket);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function flattenMapValues(map = {}) {
+  return Object.values(map)
+    .flat()
+    .filter(Boolean);
+}
+
+export default function CompletionPage({ profileData, onNextFull, onSave }) {
+  const { user, refreshProfile } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const normalizePayload = () => {
+    const industries = normalizeList(profileData.industries);
+    const sectorsMap = profileData.sectorsByIndustry || {};
+    const subsectorMap = profileData.subsectorsBySector || {};
+    const sectorList = flattenMapValues(sectorsMap);
+    const subsectorList = flattenMapValues(subsectorMap);
+    const languages = normalizeList(profileData.languages);
+    const openToTravelValue =
+      profileData.openToTravel === "Yes"
+        ? true
+        : profileData.openToTravel === "No"
+        ? false
+        : null;
+    const experienceBucket = profileData.totalYearsExperience || "";
+    const experienceYears = parseExperienceBucket(experienceBucket);
+    const dailyRateNumber = Number(profileData.dailyRate);
+    const pronounsValue =
+      profileData.pronouns === "Self describe"
+        ? profileData.customPronouns || ""
+        : profileData.pronouns || "";
+    return {
+      fullName: profileData.fullName?.trim() || "",
+      headline: profileData.oneLinerBio || "",
+      profile: {
+        fullName: profileData.fullName?.trim() || "",
+        pronouns: pronounsValue,
+        customPronouns: profileData.pronouns === "Self describe" ? profileData.customPronouns || "" : "",
+        timeZone: profileData.timeZone || "",
+        oneLinerBio: profileData.oneLinerBio || "",
+        about: profileData.about || "",
+        totalYearsExperience: profileData.totalYearsExperience || "",
+        experienceBucket,
+        experienceYears,
+        linkedinUrl: profileData.linkedinUrl || "",
+        industries,
+        sectors: sectorList,
+        sectorsByIndustry: sectorsMap,
+        subsectorsBySector: subsectorMap,
+        subsectors: subsectorList,
+        languages,
+        currency: profileData.currency || "USD",
+        dailyRate: Number.isFinite(dailyRateNumber) ? dailyRateNumber : null,
+        availabilityStatus: profileData.availabilityStatus || "",
+        availabilityNote:
+          profileData.availabilityStatus === "not_currently_available"
+            ? profileData.availabilityNote || ""
+            : "",
+        openToTravel: openToTravelValue,
+      },
+    };
+  };
+
+  async function persistLightProfile() {
+    const uid = user?.uid;
+    if (!uid) {
+      setError("You must be signed in to save your profile.");
+      return false;
+    }
+
+    const payload = normalizePayload();
+    if (!payload.fullName || !payload.profile.oneLinerBio || !payload.profile.about) {
+      setError("Please complete all required sections before saving.");
+      return false;
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await saveUserProfile(uid, {
+        ...payload,
+        phaseLightCompleted: true,
+      });
+      if (typeof refreshProfile === "function") {
+        await refreshProfile();
+      }
+      return true;
+    } catch (err) {
+      console.error("Failed to save light profile:", err);
+      setError(err?.message || "Unable to save your profile right now.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const handleSaveAndExit = async () => {
+    const ok = await persistLightProfile();
+    if (ok) onSave();
+  };
+
+  const handleSaveAndContinue = async () => {
+    const ok = await persistLightProfile();
+    if (ok) onNextFull();
+  };
 
   const identityBasics = {
     "Full Name": profileData.fullName,
-    Pronouns: profileData.pronouns,
+    Pronouns:
+      profileData.pronouns === "Self describe"
+        ? profileData.customPronouns || ""
+        : profileData.pronouns,
     "Time Zone": profileData.timeZone,
   };
 
   const professionalIdentity = {
-    "One-Liner Bio": profileData.oneLinerBio,
-    About: profileData.about,
+    "Professional Headline": profileData.oneLinerBio,
+    "Short Bio": profileData.about,
     "Total Years Experience": profileData.totalYearsExperience,
     "LinkedIn URL": profileData.linkedinUrl,
   };
 
+  const sectorsGrouped = profileData.sectorsByIndustry || {};
+  const sectorsSummary = Object.keys(sectorsGrouped).length
+    ? Object.entries(sectorsGrouped)
+        .map(
+          ([industry, sectors]) =>
+            `${industry}: ${(sectors || []).join(", ") || "—"}`
+        )
+        .join(" | ")
+    : (profileData.sectors || []).join(", ");
+  const flattenedSubsectors = flattenMapValues(
+    profileData.subsectorsBySector || {}
+  );
+  const subsectorsSummary = flattenedSubsectors.length
+    ? flattenedSubsectors.join(", ")
+    : (profileData.subsectors || []).join(", ");
+
   const expertiseSnapshot = {
     Industries: profileData.industries?.join(", "),
-    Sectors: profileData.sectors?.join(", "),
+    Sectors: sectorsSummary,
+    Subsectors: subsectorsSummary,
     Languages: profileData.languages?.join(", "),
   };
 
@@ -62,6 +193,16 @@ export default function CompletionPage({ profileData, onNextFull, onSave }) {
     "Daily Rate": profileData.dailyRate
       ? `${profileData.currency} ${profileData.dailyRate}`
       : "",
+    "Availability Status":
+      profileData.availabilityStatus === "available_now"
+        ? "Available now"
+        : profileData.availabilityStatus === "not_currently_available"
+        ? "Not currently available"
+        : "",
+    "Availability Note":
+      profileData.availabilityStatus === "not_currently_available"
+        ? profileData.availabilityNote || "—"
+        : "",
     "Open to Travel": profileData.openToTravel,
   };
 
@@ -76,14 +217,16 @@ export default function CompletionPage({ profileData, onNextFull, onSave }) {
       <SectionDropdown title="Work Preferences" data={workPreferences} />
 
       <div className="section-actions">
-        <button className="back" onClick={handleLightSave}>
-          Save & Return Home
+        <button className="back" onClick={handleSaveAndExit} disabled={saving}>
+          {saving ? "Saving…" : "Save & Return Home"}
         </button>
 
-        <button className="next" onClick={onNextFull}>
+        <button className="next" onClick={handleSaveAndContinue} disabled={saving}>
           Continue to Full Profile
         </button>
       </div>
+
+      {error && <p className="error-message" role="alert">{error}</p>}
     </div>
   );
 }

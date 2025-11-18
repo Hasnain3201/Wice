@@ -102,7 +102,7 @@ function DashboardLayout({ children }) {
 // ⭐⭐⭐ FIXED VERSION — THIS IS THE ONLY CHANGE YOU NEEDED ⭐⭐⭐
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   const { role, user, loading, profile } = useAuth();
-  const location = window.location.pathname;
+  const location = typeof window !== "undefined" ? window.location.pathname : "";
 
   // 1. Still loading → show loader
   if (loading) {
@@ -117,10 +117,14 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   // 2. If user not logged in → redirect
   if (!user) return <Navigate to={fallback} replace />;
 
-  // 3. SPECIAL FIX:
-  // Allow consultants into /consultant/profile-builder EVEN IF role has not finished loading yet.
-  if (location === "/consultant/profile-builder") {
-    return element;
+  const goingToBuilder = location.startsWith("/consultant/profile-builder");
+  if (
+    goingToBuilder &&
+    profile?.phaseLightCompleted &&
+    !profile.phaseFullCompleted &&
+    !location.includes("/full")
+  ) {
+    return <Navigate to="/consultant/profile-builder/full" replace />;
   }
 
   // 4. Block revoked accounts
@@ -172,7 +176,18 @@ export default function App() {
                   <ProtectedRoute
                     allowedRoles={["consultant"]}
                     fallback="/consultant/login"
-                    element={<ProfileBuilder />}
+                    element={<ProfileBuilder mode="light" />}
+                  />
+                }
+              />
+
+              <Route
+                path="/consultant/profile-builder/full"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["consultant"]}
+                    fallback="/consultant/login"
+                    element={<ProfileBuilder mode="full" />}
                   />
                 }
               />

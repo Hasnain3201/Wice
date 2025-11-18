@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bookmark, MessageCircle, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -11,7 +11,7 @@ import {
 } from "../services/saved.js";
 
 export default function ConsultantCard({ consultant, viewerRole = "client" }) {
-  const { id, name, profile, email, sectors } = consultant || {};
+  const { id, name, profile, email, sectors, location, country } = consultant || {};
   const { user, role } = useAuth();
   const { startDirectChat } = useChat();
   const navigate = useNavigate();
@@ -36,10 +36,27 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
     profile?.oneLinerBio || profile?.about || "This consultant has not added a bio yet.";
 
   // For consultants viewing their own cards
+  const sectorSummary = useMemo(() => {
+    if (!sectors) return "";
+    if (Array.isArray(sectors)) {
+      return sectors
+        .filter(Boolean)
+        .slice(0, 2)
+        .join(", ");
+    }
+    return sectors;
+  }, [sectors]);
+
   const contextLine =
-    viewerRole === "consultant" && sectors
-      ? `Highlighted sectors: ${sectors}`
+    viewerRole === "consultant" && sectorSummary
+      ? `Highlighted sectors: ${sectorSummary}`
       : null;
+
+  const cardLocation = location || profile?.location || "";
+  const cardCountry = country || profile?.country || "";
+  const timeZone = profile?.timeZone || "";
+  const dailyRate = profile?.dailyRate;
+  const currency = profile?.currency || "USD";
 
   const loadFolders = async () => {
     if (!user?.uid) return;
@@ -64,6 +81,7 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       await loadFolders();
       setShowSaveModal(true);
     } catch (err) {
+      console.error("Failed to load saved folders:", err);
       setSaveError("Unable to load your collections right now.");
     } finally {
       setLoadingFolders(false);
@@ -78,10 +96,22 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
     setMessageError("");
     setMessaging(true);
     try {
-      const target =
-        (email && (await findUserByEmail(email))) ||
-        (await findUserByFullName(name, "consultant")) ||
-        null;
+      let target = null;
+
+      if (id) {
+        target = {
+          uid: id,
+          fullName: name,
+          email: email || profile?.email || "",
+          accountType: profile?.accountType || "consultant",
+        };
+      } else if (email) {
+        target = await findUserByEmail(email);
+      }
+
+      if (!target) {
+        target = await findUserByFullName(name, "consultant");
+      }
 
       if (!target?.uid) {
         setMessageError("This consultant is not available for messaging yet.");
@@ -96,6 +126,7 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       });
       navigate("/chat");
     } catch (err) {
+      console.error("Failed to start direct chat:", err);
       setMessageError("Unable to start chat right now. Please try again.");
     } finally {
       setMessaging(false);
@@ -124,6 +155,7 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       setShowSaveModal(false);
       setSelectedFolder("");
     } catch (err) {
+      console.error("Failed to save consultant to folder:", err);
       setModalSaveError("Unable to save this consultant right now.");
     } finally {
       setSavingConsultant(false);
@@ -149,6 +181,18 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
       <p className="card-headline">{oneLinerBio}</p>
 
       {contextLine ? <p className="card-context">{contextLine}</p> : null}
+
+      {(cardLocation || cardCountry || timeZone || dailyRate) && (
+        <p className="card-context" style={{ marginTop: 8 }}>
+          {cardLocation ? `${cardLocation}` : ""}
+          {cardLocation && cardCountry ? ", " : ""}
+          {cardCountry}
+          {(cardLocation || cardCountry) && timeZone ? " • " : ""}
+          {timeZone ? `${timeZone}` : ""}
+          {(cardLocation || cardCountry || timeZone) && dailyRate ? " • " : ""}
+          {dailyRate ? `${currency} ${dailyRate}/day` : ""}
+        </p>
+      )}
 
       {/* VIEW PROFILE */}
       <Link to={`/consultant/${id}`} className="card-cta">
@@ -215,6 +259,11 @@ export default function ConsultantCard({ consultant, viewerRole = "client" }) {
             ) : (
               <p>You have no collections yet. Create one on the Saved page.</p>
             )}
+            {modalSaveError ? (
+              <p className="card-error" role="alert">
+                {modalSaveError}
+              </p>
+            ) : null}
           </div>
         </div>
       )}

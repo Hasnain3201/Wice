@@ -8,13 +8,77 @@ import "../ProfileBuilder.css";
 import { saveUserProfile } from "../../../services/userProfile";
 import { useAuth } from "../../../context/AuthContext";
 
+const EXPERIENCE_BUCKET_MAP = {
+  "Less than 2": 1,
+  "2-4": 3,
+  "5-7": 6,
+  "8-10": 9,
+  "11-14": 12,
+  "15-20": 17,
+  "20+": 22,
+};
+
+function normalizeList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (typeof entry === "string") return entry.trim();
+        if (entry?.value) return String(entry.value).trim();
+        if (entry?.label) return String(entry.label).trim();
+        return null;
+      })
+      .filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseExperienceBucket(bucket) {
+  if (!bucket) return null;
+  const normalized = EXPERIENCE_BUCKET_MAP[bucket];
+  if (normalized) return normalized;
+  const numeric = Number(bucket);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function flattenList(source) {
+  if (!source) return "";
+  if (Array.isArray(source)) {
+    return source.join(", ");
+  }
+  return Object.values(source)
+    .flat()
+    .filter(Boolean)
+    .join(", ");
+}
+
+function formatEducation(entries) {
+  if (!Array.isArray(entries) || !entries.length) return "";
+  return entries
+    .map((entry) => {
+      const degree = entry?.degree?.trim();
+      const institution = entry?.institution?.trim();
+      if (!degree && !institution) return null;
+      return [degree, institution].filter(Boolean).join(" — ");
+    })
+    .filter(Boolean)
+    .join("; ");
+}
+
 export default function CompletionConfirmation({
   profileData,
   onBack,
-  onSubmit,
 }) {
   const [isChecked, setIsChecked] = useState(false);
-  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // ⭐ SAVE FULL PROFILE + SHOW POPUP + REDIRECT
@@ -22,58 +86,99 @@ export default function CompletionConfirmation({
     const uid = user?.uid;
     if (!uid) return;
 
-    const fullData = {
+    const industries = normalizeList(profileData.industries);
+    const sectors = normalizeList(profileData.sectors);
+    const languages = normalizeList(profileData.languages);
+    const donorExperience = normalizeList(profileData.donorExperience);
+    const capabilities = normalizeList(profileData.capabilitiesList);
+    const certifications = normalizeList(profileData.certifications);
+    const softwareTools = normalizeList(profileData.softwareTools);
+    const securityClearances = normalizeList(profileData.securityClearances);
+    const experienceYears = parseExperienceBucket(
+      profileData.totalYearsExperience
+    );
+    const dailyRateNumber = Number(profileData.dailyRate);
+    const additionalEducation = profileData.additionalEducation || [];
+    const additionalFiles = profileData.additionalFiles || [];
+
+  const payload = {
+      fullName: profileData.fullName?.trim() || "",
+      location: profileData.location || "",
+      country: profileData.country || "",
+      headline: profileData.oneLinerBio || "",
       profile: {
-        // LIGHT PROFILE
-        fullName: profileData.fullName,
-        pronouns: profileData.pronouns,
-        timeZone: profileData.timeZone,
-        oneLinerBio: profileData.oneLinerBio,
-        about: profileData.about,
-        totalYearsExperience: profileData.totalYearsExperience,
-        linkedinUrl: profileData.linkedinUrl,
-
-        industries: profileData.industries || [],
-        sectors: profileData.sectors || [],
-        languages: profileData.languages || [],
-
-        currency: profileData.currency,
-        dailyRate: profileData.dailyRate,
-        openToTravel: profileData.openToTravel,
-
-        // FULL PROFILE
+        fullName: profileData.fullName?.trim() || "",
+        pronouns: profileData.pronouns || "",
+        timeZone: profileData.timeZone || "",
+        location: profileData.location || "",
+        country: profileData.country || "",
+        oneLinerBio: profileData.oneLinerBio || "",
+        about: profileData.about || "",
+        totalYearsExperience: profileData.totalYearsExperience || "",
+        experienceBucket: profileData.totalYearsExperience || "",
+        experienceYears,
+        linkedinUrl: profileData.linkedinUrl || "",
+        industries,
+        sectors,
+        sectorsByIndustry: profileData.sectorsByIndustry || {},
+        subsectorsBySector: profileData.subsectorsBySector || {},
+        languages,
+        currency: profileData.currency || "USD",
+        dailyRate: Number.isFinite(dailyRateNumber) ? dailyRateNumber : null,
+        openToTravel:
+          profileData.openToTravel === "Yes"
+            ? true
+            : profileData.openToTravel === "No"
+            ? false
+            : profileData.openToTravel,
         experienceRegions: profileData.experienceRegions || [],
         experienceCountries: profileData.experienceCountries || [],
-        donorExperience: profileData.donorExperience || [],
-
-        capabilitiesList: profileData.capabilitiesList || [],
-
-        highestDegree: profileData.highestDegree,
-        institution: profileData.institution,
-        certifications: profileData.certifications || [],
-
-        portfolioLinks: profileData.portfolioLinks || [],
-        portfolioUploads: profileData.portfolioUploads || [],
+        donorExperience,
+        functionalExpertise: profileData.functionalExpertise || [],
+        capabilitiesList: capabilities,
+        technicalSkillsByExpertise:
+          profileData.technicalSkillsByExpertise || {},
+        softwareTools,
+        highestDegree: profileData.highestDegree || "",
+        institution: profileData.institution || "",
+        certifications,
+        securityClearances,
+        additionalEducation,
+        resumeFile: profileData.resumeFile || "",
+        resumeFileName: profileData.resumeFileName || "",
+        resumeStoragePath: profileData.resumeStoragePath || "",
+        additionalFiles,
       },
-
+      phaseLightCompleted: true,
       phaseFullCompleted: true,
     };
 
-    await saveUserProfile(uid, fullData);
+    setSaving(true);
+    setError("");
+    try {
+      await saveUserProfile(uid, payload);
+      if (typeof refreshProfile === "function") {
+        await refreshProfile();
+      }
 
-    // ⭐ SUCCESS POPUP
-    alert(
-      "🎉 Your profile has been successfully saved!\n\n" +
-      "You can update or edit your information anytime by visiting the Profile tab on your dashboard."
-    );
+      alert(
+        "🎉 Your profile has been successfully saved!\n\n" +
+          "You can update or edit your information anytime by visiting the Profile tab on your dashboard."
+      );
 
-    // ⭐ REDIRECT TO CONSULTANT HOME
-    navigate("/consultant/home");
+      navigate("/consultant/portal");
+    } catch (err) {
+      console.error("Failed to submit full profile:", err);
+      setError(err?.message || "Unable to submit your profile right now.");
+      setSaving(false);
+    }
   }
 
   // DISPLAY GROUPS (unchanged)
   const identityBasics = {
     "Full Name": profileData.fullName,
+    Country: profileData.country,
+    Location: profileData.location,
     Pronouns: profileData.pronouns,
     "Time Zone": profileData.timeZone,
   };
@@ -105,24 +210,27 @@ export default function CompletionConfirmation({
   };
 
   const professionalCapabilities = {
-    Capabilities: profileData.capabilitiesList?.join(", "),
+    "Functional Expertise": profileData.functionalExpertise?.join(", "),
+    "Technical Skills": flattenList(profileData.technicalSkillsByExpertise),
+    "Software & Tools": profileData.softwareTools?.join(", "),
   };
 
   const educationAndCredentials = {
     "Highest Degree": profileData.highestDegree,
     Institution: profileData.institution,
     Certifications: profileData.certifications?.join(", "),
+    "Security Clearances": profileData.securityClearances?.join(", "),
+    "Additional Education": formatEducation(profileData.additionalEducation),
   };
 
   const portfolio = {
-    "Portfolio Links":
-      profileData.portfolioLinks?.length > 0
-        ? profileData.portfolioLinks.join("\n")
-        : "",
-    "Uploaded Files":
-      profileData.portfolioUploads?.length > 0
-        ? profileData.portfolioUploads.map((f) => f.name).join("\n")
-        : "",
+    Resume: profileData.resumeFileName || (profileData.resumeFile ? "Uploaded" : "Not uploaded"),
+    "Supporting Documents":
+      profileData.additionalFiles?.length > 0
+        ? profileData.additionalFiles
+            .map((file) => file.name || "Document")
+            .join(", ")
+        : "None",
   };
 
   return (
@@ -169,12 +277,17 @@ export default function CompletionConfirmation({
 
         <button
           className="next"
-          disabled={!isChecked}
+          disabled={!isChecked || saving}
           onClick={handleSubmitProfile}
         >
-          Submit Profile
+          {saving ? "Submitting…" : "Submit Profile"}
         </button>
       </div>
+      {error && (
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

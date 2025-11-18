@@ -1,140 +1,167 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Select from "react-select";
-import { Country } from "country-state-city";
 import "../ProfileBuilder.css";
+import {
+  GEOGRAPHIC_EXPERIENCE,
+  DONOR_EXPERIENCE,
+} from "../../../data/taxonomy";
 
 export default function ExperienceSnapshot({
   profileData,
   setProfileData,
-  onNext,
-  onBack,
+  registerValidator,
 }) {
-  const [selectedRegions, setSelectedRegions] = useState(
-    profileData.experienceRegions?.map((r) => ({ value: r, label: r })) || []
-  );
-
-  const [selectedCountries, setSelectedCountries] = useState(
-    profileData.experienceCountries?.map((c) => ({ value: c, label: c })) || []
-  );
-
-  const [selectedDonors, setSelectedDonors] = useState(
-    profileData.donorExperience?.map((d) => ({ value: d, label: d })) || []
-  );
-
   const [error, setError] = useState("");
 
-  // Region options
-  const regionOptions = [
-    { value: "Africa", label: "Africa" },
-    { value: "Asia", label: "Asia" },
-    { value: "Europe", label: "Europe" },
-    { value: "North America", label: "North America" },
-    { value: "South America", label: "South America" },
-    { value: "Oceania", label: "Oceania" },
-  ];
+  const regionOptions = useMemo(
+    () =>
+      Object.keys(GEOGRAPHIC_EXPERIENCE).map((region) => ({
+        value: region,
+        label: region,
+      })),
+    []
+  );
 
-  // Donor options
-  const donorOptions = [
-    { value: "USAID", label: "USAID" },
-    { value: "World Bank", label: "World Bank" },
-    { value: "UNDP", label: "UNDP" },
-    { value: "UNICEF", label: "UNICEF" },
-    { value: "Gates Foundation", label: "Gates Foundation" },
-    { value: "DFID", label: "DFID (UK)" },
-    { value: "WHO", label: "WHO" },
-  ];
+  const donorOptions = useMemo(
+    () =>
+      DONOR_EXPERIENCE.map((donor) => ({
+        value: donor,
+        label: donor,
+      })),
+    []
+  );
 
-  const allCountries = Country.getAllCountries();
+  const selectedRegions = (profileData.experienceRegions || []).map(
+    (region) => ({
+      value: region,
+      label: region,
+    })
+  );
 
-  const countriesByRegion = {
-    Africa: allCountries.filter((c) => c.region === "Africa"),
-    Asia: allCountries.filter((c) => c.region === "Asia"),
-    Europe: allCountries.filter((c) => c.region === "Europe"),
-    "North America": allCountries.filter((c) => c.region === "Americas"),
-    "South America": allCountries.filter((c) => c.region === "Americas"),
-    Oceania: allCountries.filter((c) => c.region === "Oceania"),
-  };
+  const selectedCountries = (profileData.experienceCountries || []).map(
+    (country) => ({
+      value: country,
+      label: country,
+    })
+  );
 
-  const handleRegionChange = (selected) => {
-    setSelectedRegions(selected || []);
-    setSelectedCountries([]);
-  };
+  const selectedDonors = (profileData.donorExperience || []).map((donor) => ({
+    value: donor,
+    label: donor,
+  }));
 
-  const regionLabels = selectedRegions.map((r) => r.label);
-
-  const currentCountries = selectedRegions.flatMap((region) => {
-    const list = countriesByRegion[region.value] || [];
-    return list.map((c) => ({
-      value: c.name,
-      label: c.name,
-    }));
-  });
-
-  // ⭐ Sync full-profile experience fields into profileData
-  useEffect(() => {
-    setProfileData({
-      ...profileData,
-      experienceRegions: selectedRegions.map((r) => r.label),
-      experienceCountries: selectedCountries.map((c) => c.label),
-      donorExperience: selectedDonors.map((d) => d.label),
+  const countryOptions = useMemo(() => {
+    const seen = new Set();
+    const rows = [];
+    selectedRegions.forEach((region) => {
+      (GEOGRAPHIC_EXPERIENCE[region.value] || []).forEach((country) => {
+        if (seen.has(country)) return;
+        seen.add(country);
+        rows.push({ value: country, label: country });
+      });
     });
-  }, [selectedRegions, selectedCountries, selectedDonors]);
+    return rows;
+  }, [selectedRegions]);
 
-  const handleNextClick = () => {
-    if (selectedRegions.length === 0) {
-      setError("Please select at least one region before continuing.");
-      return;
-    }
-    setError("");
-    onNext();
+  const handleRegionChange = (values) => {
+    const regions = (values || []).map((opt) => opt.value);
+    setProfileData((prev) => {
+      const allowedCountries = new Set(
+        regions.flatMap((region) => GEOGRAPHIC_EXPERIENCE[region] || [])
+      );
+      const filteredCountries = (prev.experienceCountries || []).filter((country) =>
+        allowedCountries.has(country)
+      );
+      return {
+        ...prev,
+        experienceRegions: regions,
+        experienceCountries: filteredCountries,
+      };
+    });
   };
+
+  const handleCountryChange = (values) => {
+    setProfileData((prev) => ({
+      ...prev,
+      experienceCountries: (values || []).map((opt) => opt.value),
+    }));
+  };
+
+  const handleDonorChange = (values) => {
+    setProfileData((prev) => ({
+      ...prev,
+      donorExperience: (values || []).map((opt) => opt.value),
+    }));
+  };
+
+  useEffect(() => {
+    if (!registerValidator) return;
+    const validator = () => {
+      if (!profileData.experienceRegions?.length) {
+        setError("Select at least one region.");
+        return false;
+      }
+      if (!profileData.experienceCountries?.length) {
+        setError("Select at least one country.");
+        return false;
+      }
+      setError("");
+      return true;
+    };
+    registerValidator(validator);
+    return () => registerValidator(null);
+  }, [
+    registerValidator,
+    profileData.experienceRegions,
+    profileData.experienceCountries,
+  ]);
 
   return (
     <div className="section">
       <h2>Experience Snapshot</h2>
-      <p>Select the regions, countries, and donors you have worked with.</p>
+      <p>
+        Highlight where you have delivered work and the donor ecosystems you understand.
+      </p>
 
-      {/* Regions */}
-      <label>Regions *</label>
+      <label>Regions you have worked in *</label>
       <Select
         isMulti
         options={regionOptions}
         value={selectedRegions}
         onChange={handleRegionChange}
+        placeholder="Select one or more regions"
       />
+      <p className="description">
+        Add at least one region—you can always refine this later.
+      </p>
 
-      {/* Countries */}
       {selectedRegions.length > 0 && (
         <>
-          <label>Countries *</label>
+          <label>Countries within those regions *</label>
           <Select
             isMulti
-            options={currentCountries}
+            options={countryOptions}
             value={selectedCountries}
-            onChange={(val) => setSelectedCountries(val || [])}
+            onChange={handleCountryChange}
+            placeholder="Select countries you have direct experience in"
           />
         </>
       )}
 
-      {/* Donor Experience */}
-      <label>Donor Experience</label>
+      <label>Donor Experience (optional)</label>
       <Select
         isMulti
         options={donorOptions}
         value={selectedDonors}
-        onChange={setSelectedDonors}
+        onChange={handleDonorChange}
+        placeholder="Search donors or multilateral partners"
       />
 
-      {error && <p className="error-message">{error}</p>}
-
-      <div className="section-actions">
-        {onBack && (
-          <button className="back" onClick={onBack}>
-            Back
-          </button>
-        )}
-        
-      </div>
+      {error && (
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

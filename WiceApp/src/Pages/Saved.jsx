@@ -40,18 +40,6 @@ export default function Saved() {
   const isAdmin = role === "admin";
   const isConsultant = role === "consultant";
 
-  // Prevent consultants from loading saved
-  if (isConsultant) {
-    return (
-      <div className="dashboard-page">
-        <section className="dashboard-card">
-          <h1 className="dashboard-title">Saved</h1>
-          <p>Consultants do not have a Saved section.</p>
-        </section>
-      </div>
-    );
-  }
-
   // Load folders for clients + admins only
   useEffect(() => {
     if (!user?.uid) {
@@ -205,6 +193,17 @@ export default function Saved() {
       }))
     );
   }, [folders]);
+
+  if (isConsultant) {
+    return (
+      <div className="dashboard-page">
+        <section className="dashboard-card">
+          <h1 className="dashboard-title">Saved</h1>
+          <p>Consultants do not have a Saved section.</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-page">

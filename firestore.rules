@@ -6,6 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function docIsPublicConsultant(docData) {
+      return docData.accountType == 'consultant' &&
+        docData.phaseLightCompleted == true;
+    }
+
     function docHasAdminRole(userDoc) {
       return userDoc.accountType == 'admin' ||
         userDoc.role == 'admin' ||
@@ -25,6 +30,11 @@ service cloud.firestore {
         resource.data.participantIds.hasAny([request.auth.uid]);
     }
 
+    function isChatParticipantById(chatId) {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds.hasAny([request.auth.uid]);
+    }
+
     function isCreatingChat() {
       return request.auth != null &&
         request.resource.data.participantIds.hasAny([request.auth.uid]);
@@ -35,7 +45,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn() && (isUserOwner(userId) || isAdmin());
+      allow read: if isSignedIn() &&
+        (isUserOwner(userId) ||
+          isAdmin() ||
+          docIsPublicConsultant(resource.data));
       allow create: if isSignedIn();
       allow update: if isUserOwner(userId) || isAdmin();
       allow delete: if isAdmin();
@@ -62,7 +75,7 @@ service cloud.firestore {
       allow update, delete: if isExistingChatParticipant() || isAdmin();
 
       match /messages/{messageId} {
-        allow read, write: if isExistingChatParticipant() || isAdmin();
+        allow read, write: if isChatParticipantById(chatId) || isAdmin();
       }
     }
   }

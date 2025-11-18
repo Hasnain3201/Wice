@@ -15,6 +15,10 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+if (!firebaseConfig.storageBucket && firebaseConfig.projectId) {
+  firebaseConfig.storageBucket = `${firebaseConfig.projectId}.appspot.com`;
+}
+
 if (import.meta.env.DEV) {
   const missingKeys = Object.entries(firebaseConfig)
     .filter(([key, value]) => !value && key !== "measurementId")

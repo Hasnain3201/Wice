@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProgressSidebar from "./componentsPB/ProgressSidebar";
 import SectionWrapper from "./componentsPB/SectionWrapper";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 import IntroPage from "./sections/IntroPage";
 import IdentityBasics from "./sections/IdentityBasics";
@@ -18,33 +19,168 @@ import CompletionConfirmation from "./sections/CompletionConfirmation";
 
 import "./profileBuilder.css";
 
-export default function ProfileBuilder() {
+export default function ProfileBuilder({ mode = "light" }) {
   const navigate = useNavigate();
 
-  const sections = [
+  const lightSections = [
     "Intro Page",
     "Identity Basics",
     "Professional Identity",
     "Expertise Snapshot",
     "Work Preferences",
     "Light Completion",
+  ];
+  const fullSections = [
     "Experience Snapshot",
     "Professional Capabilities",
     "Education and Credentials",
     "Portfolio and Proof of Work",
     "Completion Confirmation",
   ];
-
+  const sections = mode === "full" ? ["Experience Snapshot", ...fullSections.slice(1)] : [...lightSections, ...fullSections];
   const [currentSection, setCurrentSection] = useState(sections[0]);
   const [completed, setCompleted] = useState([]);
 
   // ⭐ GLOBAL PROFILE DATA FOR ALL PAGES
-  const [profileData, setProfileData] = useState({});
+  const [profileData, setProfileData] = useState({
+    fullName: "",
+    pronouns: "",
+    customPronouns: "",
+    timeZone: "",
+    oneLinerBio: "",
+    about: "",
+    totalYearsExperience: "",
+    linkedinUrl: "",
+    industries: [],
+    sectors: [],
+    sectorsByIndustry: {},
+    subsectorsBySector: {},
+    subsectors: [],
+    languages: [],
+    currency: "USD",
+    dailyRate: "",
+    availabilityStatus: "",
+    availabilityNote: "",
+    openToTravel: "",
+    experienceRegions: [],
+    experienceCountries: [],
+    donorExperience: [],
+    functionalExpertise: [],
+    technicalSkillsByExpertise: {},
+    softwareTools: [],
+    highestDegree: "",
+    institution: "",
+    certifications: [],
+    securityClearances: [],
+    resumeFile: "",
+    resumeFileName: "",
+    resumeStoragePath: "",
+    additionalFiles: [],
+    additionalEducation: [],
+  });
 
-  const [isFullProfileMode, setIsFullProfileMode] = useState(false);
+  const { profile: userDoc, user } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
 
-  const progress =
-    (completed.length / (sections.length - (isFullProfileMode ? 0 : 4))) * 100;
+  useEffect(() => {
+    if (!userDoc || hydrated) return;
+    if (userDoc.accountType !== "consultant") {
+      setHydrated(true);
+      return;
+    }
+    const stored = userDoc.profile || {};
+    setProfileData((prev) => ({
+      ...prev,
+      fullName:
+        prev.fullName ||
+        userDoc.fullName ||
+        stored.fullName ||
+        user?.displayName ||
+        "",
+      pronouns: prev.pronouns || stored.pronouns || "",
+      customPronouns: prev.customPronouns || stored.customPronouns || "",
+      timeZone: prev.timeZone || stored.timeZone || "",
+      oneLinerBio: prev.oneLinerBio || stored.oneLinerBio || "",
+      about: prev.about || stored.about || "",
+      totalYearsExperience:
+        prev.totalYearsExperience ||
+        stored.experienceBucket ||
+        stored.totalYearsExperience ||
+        "",
+      linkedinUrl: prev.linkedinUrl || stored.linkedinUrl || "",
+      industries: Array.isArray(prev.industries) && prev.industries.length
+        ? prev.industries
+        : stored.industries || [],
+      sectors:
+        Array.isArray(prev.sectors) && prev.sectors.length
+          ? prev.sectors
+          : stored.sectors || [],
+      sectorsByIndustry: prev.sectorsByIndustry || stored.sectorsByIndustry || {},
+      subsectorsBySector: prev.subsectorsBySector || stored.subsectorsBySector || {},
+      subsectors:
+        Array.isArray(prev.subsectors) && prev.subsectors.length
+          ? prev.subsectors
+          : stored.subsectors || [],
+      languages:
+        prev.languages && prev.languages.length
+          ? prev.languages
+          : Array.isArray(stored.languages)
+          ? stored.languages
+          : [],
+      currency: prev.currency || stored.currency || "USD",
+      dailyRate:
+        prev.dailyRate ||
+        (stored.dailyRate !== undefined && stored.dailyRate !== null
+          ? String(stored.dailyRate)
+          : ""),
+      availabilityStatus: prev.availabilityStatus || stored.availabilityStatus || "",
+      availabilityNote: prev.availabilityNote || stored.availabilityNote || "",
+      openToTravel:
+        prev.openToTravel ||
+        (stored.openToTravel === true
+          ? "Yes"
+          : stored.openToTravel === false
+          ? "No"
+          : ""),
+      experienceRegions: stored.experienceRegions || prev.experienceRegions || [],
+      experienceCountries: stored.experienceCountries || prev.experienceCountries || [],
+      donorExperience: stored.donorExperience || prev.donorExperience || [],
+      functionalExpertise: stored.functionalExpertise || prev.functionalExpertise || [],
+      technicalSkillsByExpertise:
+        stored.functionalSkillsByExpertise ||
+        prev.technicalSkillsByExpertise ||
+        {},
+      softwareTools: stored.softwareTools || prev.softwareTools || [],
+      highestDegree: stored.highestDegree || prev.highestDegree || "",
+      institution: stored.institution || prev.institution || "",
+      certifications: stored.certifications || prev.certifications || [],
+      securityClearances:
+        stored.securityClearances || prev.securityClearances || [],
+      resumeFile: stored.resumeFile || prev.resumeFile || "",
+      resumeFileName: prev.resumeFileName || stored.resumeFileName || "",
+      resumeStoragePath:
+        prev.resumeStoragePath || stored.resumeStoragePath || "",
+      additionalFiles:
+        Array.isArray(prev.additionalFiles) && prev.additionalFiles.length
+          ? prev.additionalFiles
+          : Array.isArray(stored.additionalFiles)
+          ? stored.additionalFiles.map((entry) =>
+              typeof entry === "string"
+                ? { name: "", url: entry, path: "" }
+                : entry
+            )
+          : [],
+      additionalEducation:
+        Array.isArray(prev.additionalEducation) && prev.additionalEducation.length
+          ? prev.additionalEducation
+          : stored.additionalEducation || [],
+    }));
+    setHydrated(true);
+  }, [userDoc, user, hydrated]);
+
+  const [isFullProfileMode, setIsFullProfileMode] = useState(mode === "full");
+
+  const progress = (completed.length / sections.length) * 100;
 
   const canProgress = (section, valid) => {
     if (valid && !completed.includes(section)) {
@@ -75,7 +211,7 @@ export default function ProfileBuilder() {
     }
   };
 
-  const handleSaveAndReturn = () => navigate("/consultant/login");
+  const handleSaveAndReturn = () => navigate("/consultant/portal");
 
   const isFullProfileSection = (sectionName) =>
     [
@@ -135,7 +271,7 @@ export default function ProfileBuilder() {
 
       case "Light Completion":
         return (
-          <SectionWrapper {...props} showSkip={false}>
+          <SectionWrapper {...props} showSkip={false} showNav={false}>
             <CompletionPage
               profileData={profileData}
               onSave={handleSaveAndReturn}
@@ -191,7 +327,6 @@ export default function ProfileBuilder() {
             <CompletionConfirmation
               profileData={profileData}
               onBack={() => handleBack("Completion Confirmation")}
-              onSubmit={() => handleNext("Completion Confirmation")}
             />
           </div>
         );

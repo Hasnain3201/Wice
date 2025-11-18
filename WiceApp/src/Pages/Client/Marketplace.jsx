@@ -3,8 +3,8 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ConsultantCard from "../../Components/ConsultantCard.jsx";
-import { consultants } from "../../data/consultants.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { subscribeToConsultants } from "../../services/consultantsDirectory.js";
 import "./Marketplace.css";
 
 import {
@@ -563,12 +563,19 @@ function FunctionalFilter({ filters, setFilters }) {
 /* ------------------------ MAIN COMPONENT ------------------------ */
 
 export default function Marketplace() {
-  const { role } = useAuth();
+  const { role, profile } = useAuth();
   const isConsultant = role === "consultant";
+  const needsFullProfileCTA =
+    isConsultant &&
+    profile?.phaseLightCompleted &&
+    !profile?.phaseFullCompleted;
   const [q, setQ] = useState("");
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [consultants, setConsultants] = useState([]);
+  const [consultantsLoading, setConsultantsLoading] = useState(true);
+  const [consultantsError, setConsultantsError] = useState("");
 
   const [filters, setFilters] = useState({
     industries: [],
@@ -593,6 +600,23 @@ export default function Marketplace() {
   const [savedFilters, setSavedFilters] = useState([]);
   const [editingFilterId, setEditingFilterId] = useState(null);
   const [editingFilterName, setEditingFilterName] = useState("");
+
+  useEffect(() => {
+    setConsultantsLoading(true);
+    setConsultantsError("");
+    const unsubscribe = subscribeToConsultants(
+      (list) => {
+        setConsultants(list);
+        setConsultantsLoading(false);
+      },
+      (err) => {
+        console.error("Failed to load consultants:", err);
+        setConsultantsError("Unable to load consultants right now.");
+        setConsultantsLoading(false);
+      }
+    );
+    return () => unsubscribe?.();
+  }, []);
 
   /* ---------- Saved filters helpers ---------- */
 
@@ -774,7 +798,7 @@ export default function Marketplace() {
 
       return true;
     });
-  }, [q, filters]);
+  }, [q, filters, consultants]);
 
   /* ------------------------ RENDER ------------------------ */
 
@@ -791,14 +815,16 @@ export default function Marketplace() {
         </p>
       </header>
 
-      {isConsultant && (
+      {needsFullProfileCTA && (
         <div className="marketplace-consultant-banner">
           <div>
-            <h3>Boost your visibility</h3>
-            <p>Keep your profile updated so clients can find you.</p>
+            <h3>Finish your full profile</h3>
+            <p>
+              Complete the remaining sections so clients can view your full expertise.
+            </p>
           </div>
-          <Link className="banner-link" to="/consultant/profile">
-            Manage profile
+          <Link className="banner-link" to="/consultant/profile-builder/full">
+            Complete profile
           </Link>
         </div>
       )}
@@ -1098,7 +1124,7 @@ export default function Marketplace() {
 
                           <div className="saved-filter-summary">
                             {Object.entries(preset.values)
-                              .filter(([_, v]) =>
+                              .filter(([, v]) =>
                                 Array.isArray(v) ? v.length > 0 : v !== ""
                               )
                               .map(([key, val]) =>
@@ -1149,16 +1175,24 @@ export default function Marketplace() {
 
       {/* RESULTS */}
       <section className="marketplace-grid" aria-live="polite">
-        {filtered.map((c) => (
-          <ConsultantCard
-            key={c.id}
-            consultant={c}
-            viewerRole={isConsultant ? "consultant" : "client"}
-          />
-        ))}
+        {consultantsLoading && (
+          <p style={{ color: "#6b7280" }}>Loading consultants…</p>
+        )}
+        {!consultantsLoading &&
+          filtered.map((c) => (
+            <ConsultantCard
+              key={c.id}
+              consultant={c}
+              viewerRole={isConsultant ? "consultant" : "client"}
+            />
+          ))}
       </section>
 
-      {filtered.length === 0 && (
+      {consultantsError && (
+        <p style={{ marginTop: 16, color: "#b91c1c" }}>{consultantsError}</p>
+      )}
+
+      {!consultantsLoading && !consultantsError && filtered.length === 0 && (
         <p style={{ marginTop: 16, color: "#6b7280" }}>
           No consultants match your search.
         </p>

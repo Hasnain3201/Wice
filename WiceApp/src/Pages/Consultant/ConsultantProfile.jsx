@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Select from "react-select";
 import ISO6391 from "iso-639-1";
 import { updateProfile as updateAuthProfile } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { auth, storage } from "../../firebase";
 import { saveUserProfile } from "../../services/userProfile.js";
 import skillsData from "../../data/skillsData.js";
+import "./ConsultantProfile.css";
 
 /* ----------------- constants ----------------- */
 
@@ -109,6 +111,8 @@ export default function ConsultantProfile() {
     highestDegree: "",
     institution: "",
     resumeFile: "", // URL
+    resumeFileName: "",
+    resumeStoragePath: "",
   });
 
   // arrays / selects
@@ -123,7 +127,7 @@ export default function ConsultantProfile() {
   const [selectedDonors, setSelectedDonors] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
 
-  const [additionalFiles, setAdditionalFiles] = useState([]); // array of URLs
+  const [additionalFiles, setAdditionalFiles] = useState([]); // [{ name, url, path }]
 
   const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -254,6 +258,8 @@ export default function ConsultantProfile() {
       highestDegree: degreeOpt?.label || "",
       institution: profileMap.institution || "",
       resumeFile: profileMap.resumeFile || "",
+      resumeFileName: profileMap.resumeFileName || "",
+      resumeStoragePath: profileMap.resumeStoragePath || "",
     });
 
     setSelectedPronouns(pronounOpt);
@@ -265,9 +271,18 @@ export default function ConsultantProfile() {
     setSelectedRegions(nextRegions);
     setSelectedDonors(nextDonors);
     setSelectedSkills(nextSkills);
-    setAdditionalFiles(
-      Array.isArray(additionalFromDb) ? additionalFromDb : []
-    );
+    const normalizedAdditional = Array.isArray(additionalFromDb)
+      ? additionalFromDb.map((entry) =>
+          typeof entry === "string"
+            ? {
+                name: entry?.split("?")[0].split("/").pop() || "Document",
+                url: entry,
+                path: "",
+              }
+            : entry
+        )
+      : [];
+    setAdditionalFiles(normalizedAdditional);
   }, [profile, user, languageOptions]);
 
   /* ------------- field handlers ------------- */
@@ -342,7 +357,12 @@ export default function ConsultantProfile() {
       );
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
-      setForm((prev) => ({ ...prev, resumeFile: url }));
+      setForm((prev) => ({
+        ...prev,
+        resumeFile: url,
+        resumeFileName: file.name,
+        resumeStoragePath: storageRef.fullPath,
+      }));
     } catch (err) {
       console.error("Resume upload failed:", err);
       setError("Unable to upload resume right now.");
@@ -357,7 +377,6 @@ export default function ConsultantProfile() {
     setUploadingAdditional(true);
     setError("");
     try {
-      const urls = [];
       for (const file of files) {
         const storageRef = ref(
           storage,
@@ -365,9 +384,11 @@ export default function ConsultantProfile() {
         );
         await uploadBytes(storageRef, file);
         const url = await getDownloadURL(storageRef);
-        urls.push(url);
+        setAdditionalFiles((prev) => [
+          ...prev,
+          { name: file.name, url, path: storageRef.fullPath },
+        ]);
       }
-      setAdditionalFiles((prev) => [...prev, ...urls]);
     } catch (err) {
       console.error("Additional files upload failed:", err);
       setError("Unable to upload files right now.");
@@ -378,8 +399,21 @@ export default function ConsultantProfile() {
     }
   };
 
-  const handleRemoveAdditionalFile = (urlToRemove) => {
-    setAdditionalFiles((prev) => prev.filter((url) => url !== urlToRemove));
+  const handleRemoveAdditionalFile = async (fileToRemove) => {
+    try {
+      if (fileToRemove?.path) {
+        await deleteObject(ref(storage, fileToRemove.path));
+      }
+    } catch (err) {
+      console.error("Failed to delete document:", err);
+    }
+    setAdditionalFiles((prev) =>
+      prev.filter((file) =>
+        fileToRemove?.path
+          ? file.path !== fileToRemove.path
+          : file.url !== fileToRemove.url
+      )
+    );
   };
 
   /* ------------- submit/save ------------- */
@@ -419,7 +453,10 @@ export default function ConsultantProfile() {
       highestDegree: form.highestDegree,
       institution: form.institution,
       resumeFile: form.resumeFile || null,
-      additionalFiles: additionalFiles,
+      resumeFileName: form.resumeFileName || existingProfileMap.resumeFileName || "",
+      resumeStoragePath:
+        form.resumeStoragePath || existingProfileMap.resumeStoragePath || "",
+      additionalFiles,
       industries: industriesPayload,
       languages: selectedLanguages.map((l) => l.label),
       regions: selectedRegions.map((r) => r.value),
@@ -471,16 +508,67 @@ export default function ConsultantProfile() {
   const aboutChars = form.about.length;
   const oneLinerChars = form.oneLinerBio.length;
 
-  /* ------------- render ------------- */
+  const heroStats = [
+    {
+      label: "Experience",
+      value:
+        form.totalYearsExperience ||
+        profile?.profile?.totalYearsExperience ||
+        "—",
+    },
+    {
+      label: "Daily rate",
+      value: form.dailyRate
+        ? `${form.currency || "USD"} ${form.dailyRate}`
+        : "—",
+    },
+    {
+      label: "Open to travel",
+      value:
+        form.openToTravel
+          ? "Yes"
+          : profile?.profile?.openToTravel === true
+          ? "Yes"
+          : profile?.profile?.openToTravel === false
+          ? "No"
+          : "—",
+    },
+  ];
+  const hasFullProfile = profile?.phaseFullCompleted;
 
   return (
-    <main className="shell">
-      <h1 className="dashboard-title">Your Profile</h1>
-      <p className="subtitle" style={{ marginTop: 8 }}>
-        Update your consultant details so clients can understand your expertise.
-      </p>
+    <main className="profile-form-page">
+      <section className="profile-form-hero">
+        <div>
+          <p className="profile-eyebrow">Consultant profile</p>
+          <h1>Your expertise at a glance</h1>
+          <p>Keep this profile fresh so clients can quickly understand your availability.</p>
+        </div>
+        <div className="profile-form-hero__stats">
+          {heroStats.map((stat) => (
+            <article key={stat.label}>
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-value">{stat.value}</span>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <form className="settings" onSubmit={handleSubmit}>
+      <form className="profile-form-card settings" onSubmit={handleSubmit}>
+        {!hasFullProfile && (
+          <div className="profile-builder-banner">
+            <div>
+              <h3>Finish your full profile</h3>
+              <p>
+                You’ve completed the light profile. Share your full experience
+                so clients can see everything.
+              </p>
+            </div>
+            <Link className="banner-link" to="/consultant/profile-builder/full">
+              Continue profile
+            </Link>
+          </div>
+        )}
         {/* ABOUT at top with counter */}
         <div className="settings-full">
           <label className="label">About</label>
@@ -625,7 +713,7 @@ export default function ConsultantProfile() {
               className="input"
               value={form.availability}
               onChange={handleFieldChange("availability")}
-              placeholder="10–15 hours/week, evenings only…"
+              placeholder="Immediately available, 10–15 hrs/week…"
             />
           </div>
 
@@ -643,28 +731,30 @@ export default function ConsultantProfile() {
         </div>
 
         {/* EDUCATION */}
-        <div className="settings-row">
-          <div className="settings-col">
-            <label className="label">Highest Degree</label>
-            <Select
-              value={selectedDegree}
-              onChange={handleDegreeChange}
-              options={DEGREE_OPTIONS}
-              isClearable
-              placeholder="Select degree"
-            />
-          </div>
+        {hasFullProfile && (
+          <div className="settings-row">
+            <div className="settings-col">
+              <label className="label">Highest Degree</label>
+              <Select
+                value={selectedDegree}
+                onChange={handleDegreeChange}
+                options={DEGREE_OPTIONS}
+                isClearable
+                placeholder="Select degree"
+              />
+            </div>
 
-          <div className="settings-col">
-            <label className="label">Institution</label>
-            <input
-              className="input"
-              value={form.institution}
-              onChange={handleFieldChange("institution")}
-              placeholder="Harvard University"
-            />
+            <div className="settings-col">
+              <label className="label">Institution</label>
+              <input
+                className="input"
+                value={form.institution}
+                onChange={handleFieldChange("institution")}
+                placeholder="Harvard University"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* INDUSTRIES & SECTORS */}
         <div className="settings-row">
@@ -714,117 +804,129 @@ export default function ConsultantProfile() {
             />
           </div>
 
-          <div className="settings-col">
-            <label className="label">Regions</label>
-            <Select
-              isMulti
-              options={REGION_OPTIONS}
-              value={selectedRegions}
-              onChange={setSelectedRegions}
-              placeholder="Select regions"
-            />
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div className="settings-col">
-            <label className="label">Donor Experience</label>
-            <Select
-              isMulti
-              options={DONOR_OPTIONS}
-              value={selectedDonors}
-              onChange={setSelectedDonors}
-              placeholder="Select donor organizations"
-            />
-          </div>
-
-          <div className="settings-col">
-            <label className="label">Skills</label>
-            <Select
-              isMulti
-              options={SKILL_OPTIONS}
-              value={selectedSkills}
-              onChange={setSelectedSkills}
-              placeholder="Select skills"
-            />
-          </div>
-        </div>
-
-        {/* FILES: RESUME + ADDITIONAL */}
-        <div className="settings-row">
-          <div className="settings-col">
-            <label className="label">Resume</label>
-            <div className="file-upload-row">
-              <label className="ghost-btn" htmlFor="resume-upload-input">
-                {uploadingResume ? "Uploading…" : "Upload Resume"}
-              </label>
-              <input
-                id="resume-upload-input"
-                type="file"
-                accept=".pdf,.doc,.docx"
-                style={{ display: "none" }}
-                onChange={handleResumeUpload}
-              />
-              {form.resumeFile && (
-                <a
-                  href={form.resumeFile}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="link"
-                  style={{ marginLeft: 12 }}
-                >
-                  View current resume
-                </a>
-              )}
-            </div>
-          </div>
-
-          <div className="settings-col">
-            <label className="label">Additional Files</label>
-            <div className="file-upload-row">
-              <label
-                className="ghost-btn"
-                htmlFor="additional-files-upload-input"
-              >
-                {uploadingAdditional ? "Uploading…" : "Upload Files"}
-              </label>
-              <input
-                id="additional-files-upload-input"
-                type="file"
-                multiple
-                style={{ display: "none" }}
-                onChange={handleAdditionalFilesUpload}
+          {hasFullProfile && (
+            <div className="settings-col">
+              <label className="label">Regions</label>
+              <Select
+                isMulti
+                options={REGION_OPTIONS}
+                value={selectedRegions}
+                onChange={setSelectedRegions}
+                placeholder="Select regions"
               />
             </div>
-            {additionalFiles.length > 0 && (
-              <ul className="file-list">
-                {additionalFiles.map((url) => {
-                  const name = url.split("?")[0].split("/").pop();
-                  return (
-                    <li key={url} className="file-list-item">
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="link"
-                      >
-                        {name}
-                      </a>
-                      <button
-                        type="button"
-                        className="ghost-btn"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => handleRemoveAdditionalFile(url)}
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+          )}
         </div>
+
+        {hasFullProfile && (
+          <>
+            <div className="settings-row">
+              <div className="settings-col">
+                <label className="label">Donor Experience</label>
+                <Select
+                  isMulti
+                  options={DONOR_OPTIONS}
+                  value={selectedDonors}
+                  onChange={setSelectedDonors}
+                  placeholder="Select donor organizations"
+                />
+              </div>
+
+              <div className="settings-col">
+                <label className="label">Skills</label>
+                <Select
+                  isMulti
+                  options={SKILL_OPTIONS}
+                  value={selectedSkills}
+                  onChange={setSelectedSkills}
+                  placeholder="Select skills"
+                />
+              </div>
+            </div>
+
+            {/* FILES: RESUME + ADDITIONAL */}
+            <div className="settings-row">
+              <div className="settings-col">
+                <label className="label">Resume</label>
+                <div className="file-upload-row">
+                  <label className="ghost-btn" htmlFor="resume-upload-input">
+                    {uploadingResume ? "Uploading…" : "Upload Resume"}
+                  </label>
+                  <input
+                    id="resume-upload-input"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    style={{ display: "none" }}
+                    onChange={handleResumeUpload}
+                  />
+                  {form.resumeFile && (
+                    <a
+                      href={form.resumeFile}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="link"
+                      style={{ marginLeft: 12 }}
+                    >
+                      {form.resumeFileName
+                        ? `View ${form.resumeFileName}`
+                        : "View current resume"}
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div className="settings-col">
+                <label className="label">Additional Files</label>
+                <div className="file-upload-row">
+                  <label
+                    className="ghost-btn"
+                    htmlFor="additional-files-upload-input"
+                  >
+                    {uploadingAdditional ? "Uploading…" : "Upload Files"}
+                  </label>
+                  <input
+                    id="additional-files-upload-input"
+                    type="file"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={handleAdditionalFilesUpload}
+                  />
+                </div>
+                {additionalFiles.length > 0 && (
+                  <ul className="file-list">
+                    {additionalFiles.map((file) => {
+                      const url = file.url || "";
+                      const name =
+                        file.name ||
+                        url.split("?")[0].split("/").pop() ||
+                        "Supporting document";
+                      return (
+                        <li key={file.path || url} className="file-list-item">
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="link"
+                          >
+                            {name}
+                          </a>
+                          <button
+                            type="button"
+                            className="ghost-btn"
+                            style={{ marginLeft: 8 }}
+                            onClick={() => handleRemoveAdditionalFile(file)}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* ACTIONS */}
         <div className="settings-actions">

@@ -39,14 +39,14 @@ export default function ClientProfileBuilder1({ onProgress }) {
   const completedLabels = filledKeys.map((k) => labelMap[k]);
 
   useEffect(() => {
-    onProgress &&
-      onProgress({
-        filled: filledCount,
-        completedLabels,
-        isComplete,
-        values: form, // ⭐ send values up
-      });
-  }, [form]);
+    if (!onProgress) return;
+    onProgress({
+      filled: filledCount,
+      completedLabels,
+      isComplete,
+      values: form,
+    });
+  }, [form, filledCount, completedLabels, isComplete, onProgress]);
 
   return (
     <div className="section">
