@@ -17,7 +17,13 @@ exports.toggleUser = functions.https.onCall(async (data, context) => {
       .doc(context.auth.uid)
       .get();
 
-  if (!callerDoc.exists || callerDoc.data().accountType !== "admin") {
+  const callerData = callerDoc.exists ? callerDoc.data() : {};
+  const callerRole = callerData.accountType ||
+    callerData.role ||
+    (callerData.profile ? callerData.profile.accountType : null) ||
+    (callerData.profile ? callerData.profile.role : null);
+
+  if (!callerDoc.exists || callerRole !== "admin") {
     throw new functions.https.HttpsError(
         "permission-denied",
         "Admin only.",

@@ -6,10 +6,18 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function docHasAdminRole(userDoc) {
+      return userDoc.accountType == 'admin' ||
+        userDoc.role == 'admin' ||
+        (userDoc.profile != null && userDoc.profile.accountType == 'admin') ||
+        (userDoc.profile != null && userDoc.profile.role == 'admin');
+    }
+
     function isAdmin() {
       return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid))
-          .data.accountType == 'admin';
+        docHasAdminRole(
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        );
     }
 
     function isExistingChatParticipant() {
@@ -22,10 +30,15 @@ service cloud.firestore {
         request.resource.data.participantIds.hasAny([request.auth.uid]);
     }
 
+    function isUserOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow update, delete: if isAdmin();
+      allow read: if isSignedIn() && (isUserOwner(userId) || isAdmin());
       allow create: if isSignedIn();
+      allow update: if isUserOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /grants/{grantId} {
