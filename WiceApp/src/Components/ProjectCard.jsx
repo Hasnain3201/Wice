@@ -143,7 +143,7 @@ export default function ProjectCard({ project }) {
             </div>
 
             <div className="file-section">
-              <h4>Their Files</h4>
+              <h4>Team Uploaded Files</h4>
               {theirFiles.length > 0 ? (
                 <ul>
                   {theirFiles.map((file, index) => (
