@@ -6,7 +6,7 @@
 
 .profile-form-hero {
   background: linear-gradient(135deg, #eef2ff, #ffffff);
-  padding: 28px 32px;
+  padding: 10px 32px;
   border-radius: 28px;
   display: flex;
   flex-wrap: wrap;
@@ -14,7 +14,7 @@
   justify-content: space-between;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
   border: 1px solid rgba(79, 70, 229, 0.15);
-  margin-bottom: 28px;
+  margin-bottom: 5px;
 }
 
 .profile-eyebrow {
