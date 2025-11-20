@@ -856,3 +856,13 @@ export const PREFERED_CONTACT_METHOD = [
     "Email",
     "Phone",
 ];
+
+export const EXPERIENCE_BUCKET_MAP = [
+  "Less than 2yrs",
+  "2-4yrs",
+  "5-7yrs",
+  "8-10yrs",
+  "11-14yrs",
+  "15-20yrs",
+  "20+yrs",
+];

@@ -104,6 +104,395 @@
   transform: translateY(-1px);
 }
 
+/* ============================================================
+   MARKETPLACE INDUSTRY FILTER – PROFILE VERSION
+   ============================================================ */
+
+/* wrapper */
+.filters-field {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+/* Label + column of selected tags */
+.filter-label-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.filter-tags-column {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+/* ============================
+   TAG PILL BASE STYLES
+   ============================ */
+
+.filter-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #e7f2ff;
+  border: 1px solid #bfdbfe;
+  padding: 0;
+  height: 30px;
+  overflow: hidden;
+  font-size: 0.85rem;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.filter-tag-main {
+  background: transparent;
+  padding: 0 10px;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tag-remove {
+  width: 26px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tag-remove:hover {
+  background: #dbeafe;
+}
+
+/* Subsector mini tags */
+.filter-tag-subsector {
+  background: #e5e7eb !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+  padding: 0 8px !important;
+  height: 28px !important;
+}
+
+.tag-remove-small {
+  font-size: 0.65rem;
+  margin-left: 6px;
+}
+
+/* caret icon */
+.tag-caret {
+  margin-left: 6px;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* ============================
+   INDUSTRY + SECTOR GROUPS
+   ============================ */
+.industry-tag-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sector-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+.sector-tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.subsector-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 20px;
+}
+
+/* ============================
+   DROPDOWN STYLES
+   ============================ */
+
+.tag-dropdown {
+  position: relative;
+  margin-left: 6px;
+  margin-top: 2px;
+}
+
+.tag-dropdown > .multi-option,
+.tag-dropdown > label {
+  cursor: pointer;
+}
+
+.tag-dropdown::after {
+  content: "";
+}
+
+.tag-dropdown > div,
+.tag-dropdown label,
+.tag-dropdown .multi-option {
+  z-index: 30;
+}
+
+.tag-dropdown {
+  background: white;
+}
+
+.tag-dropdown {
+  position: relative;
+}
+
+.tag-dropdown > .multi-option {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.tag-dropdown {
+  position: relative;
+}
+
+.tag-dropdown > div,
+.tag-dropdown > label,
+.tag-dropdown .multi-option {
+  cursor: pointer;
+}
+
+/* Actual dropdown panel */
+.tag-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0px 12px 28px rgba(0, 0, 0, 0.15);
+  padding: 6px 0;
+  width: 220px;
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+}
+
+/* Checkbox row */
+.multi-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.multi-option:hover {
+  background: #f3f4f6;
+}
+
+.multi-option input {
+  margin: 0;
+}
+
+/* Empty text */
+.tag-dropdown-empty {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: left;
+}
+
+/* ============================
+   SEARCH BAR
+   ============================ */
+
+.tag-search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.tag-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+}
+
+.tag-search-input:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* Suggestions dropdown */
+.tag-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0px 12px 28px rgba(0, 0, 0, 0.15);
+  z-index: 60;
+  padding: 6px 0;
+}
+
+.tag-suggestion-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tag-suggestion-checkbox:hover {
+  background: #f3f4f6;
+}
+
+/* Ensure checkboxes align */
+.tag-suggestion-checkbox input {
+  margin: 0;
+}
+
+/* ============================
+   HELPER TEXT
+   ============================ */
+.industry-helper-text {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.industry-helper-text.error {
+  color: #b91c1c;
+}
+
+.industry-section,
+.filters-field,
+.filter-with-tags,
+.filter-label-row,
+.filter-tags-column,
+.industry-tag-block {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* ============================================================
+   HORIZONTAL INDUSTRY COLUMN LAYOUT (MAX 3 INDUSTRIES)
+   ============================================================ */
+
+/* Wrapper holding ALL selected industry blocks */
+.industry-tag-columns {
+  display: flex;
+  flex-direction: row;
+  gap: 28px;            /* space between columns */
+  flex-wrap: nowrap;    /* prevent wrapping */
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* Each industry column */
+.industry-tag-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: auto;          /* auto-width based on content */
+}
+
+/* Industry tag at top of each column */
+.industry-tag-column > .filter-tag-pill {
+  margin-bottom: 6px;
+}
+
+/* Sector tags inside column */
+.industry-tag-column .sector-tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Subsector mini-tags inside column */
+.industry-tag-column .subsector-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 24px;   /* indent mini-tags slightly */
+}
+
+/* ===========================================
+   FORCE OLD WICE DROPDOWN STYLE (Correct Class)
+   =========================================== */
+
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  height: 44px;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #374151;
+  cursor: pointer;
+
+  /* old subtle inner shadow */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  /* Chevron arrow EXACTLY like your screenshot */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+}
+
+/* Hover state */
+select.input:hover {
+  border-color: #d1d5db;
+}
+
+/* Focus state */
+select.input:focus {
+  border-color: #9ca3af;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Multi-select dropdown boxes */
+select.input[multiple] {
+  background-image: none !important;
+  height: 120px;
+  border-radius: 8px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.input {
+  max-width:100%
+}
+
 .profile-rate-row {
   display: flex;
   gap: 12px;
