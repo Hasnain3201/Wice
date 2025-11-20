@@ -364,8 +364,8 @@ export const GEOGRAPHIC_EXPERIENCE = {
         "Central African Republic",
         "Chad",
         "Comoros",
-        "Congo, Democratic Republic of the",
-        "Congo, Republic of the",
+        "Democratic Republic of the Congo",
+        "Republic of the Congo",
         "Côte d’Ivoire",
         "Djibouti",
         "Equatorial Guinea",
@@ -849,4 +849,10 @@ export const TIMEZONES = [
   "UTC+8 (CST/SGT)",
   "UTC+9 (JST)",
   "UTC+10 (AEST)",
+];
+
+export const PREFERED_CONTACT_METHOD = [
+    "WhatsApp",
+    "Email",
+    "Phone",
 ];
