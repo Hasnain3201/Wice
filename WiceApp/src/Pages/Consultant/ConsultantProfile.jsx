@@ -838,50 +838,7 @@ export default function ConsultantProfile() {
 
         <div className="settings-row">
           <div className="settings-col">
-            <label className="label">Availability Status</label>
-            <div className="profile-radio-group">
-              <label>
-                <input
-                  type="radio"
-                  name="availability-status"
-                  value="available_now"
-                  checked={form.availabilityStatus === "available_now"}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      availabilityStatus: e.target.value,
-                    }))
-                  }
-                />
-                Available now
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="availability-status"
-                  value="not_currently_available"
-                  checked={
-                    form.availabilityStatus === "not_currently_available"
-                  }
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      availabilityStatus: e.target.value,
-                    }))
-                  }
-                />
-                Not currently available
-              </label>
-            </div>
-            {form.availabilityStatus === "not_currently_available" && (
-              <input
-                className="input"
-                value={form.availabilityNote}
-                onChange={handleFieldChange("availabilityNote")}
-                placeholder="e.g., Available after June"
-                style={{ marginTop: 10 }}
-              />
-            )}
+            <label className="label">Availability</label>""
             <button
               type="button"
               className="ghost-btn"
