@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useChat } from "../context/ChatContext.jsx";
+import BookingModal from "../Components/BookingModal.jsx";
 import "./ConsultantPublicProfile.css";
 import { X } from "lucide-react";
 
@@ -170,7 +171,7 @@ export default function ConsultantPublicProfile() {
                     </div>
                 </div>
 
-                {/* HERO ACTIONS — NOW WITH BOOK CONSULTANT BUTTON */}
+                {/* HERO ACTIONS – NOW WITH BOOK CONSULTANT BUTTON */}
                 <div className="hero-actions">
                     <button
                         className="book-btn"
@@ -328,25 +329,14 @@ export default function ConsultantPublicProfile() {
             </div>
 
             {/* BOOKING MODAL */}
-            {showBookingModal && (
-                <div className="modal-overlay" onClick={() => setShowBookingModal(false)}>
-                    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Book This Consultant</h3>
-                            <X
-                                className="close-icon"
-                                size={20}
-                                onClick={() => setShowBookingModal(false)}
-                                style={{ cursor: "pointer" }}
-                            />
-                        </div>
-
-                        <ConsultantBookingWidget
-                            calLink={calComLink || "wice/default-event"}
-                        />
-                    </div>
-                </div>
-            )}
+            <BookingModal
+                isOpen={showBookingModal}
+                onClose={() => setShowBookingModal(false)}
+                consultantId={uid}
+                clientId={user?.uid}
+                clientName={user?.displayName || user?.fullName}
+                clientEmail={user?.email}
+            />
         </div>
     );
 }
