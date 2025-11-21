@@ -7,6 +7,7 @@ export default function GrantHunt() {
   const [sector, setSector] = useState("All");
   const [region, setRegion] = useState("All");
   const [type, setType] = useState("All");
+  const hasGrants = grants.length > 0;
 
   const sectors = ["All", "Climate", "Health", "Energy", "Agriculture", "Community"];
   const regions = ["All", "US", "EU", "Global", "Africa", "Asia", "LAC"];
@@ -102,7 +103,9 @@ export default function GrantHunt() {
 
         {filtered.length === 0 && (
           <p style={{ marginTop: 16, color: "#6b7280" }}>
-            No results. Try changing filters or search terms.
+            {hasGrants
+              ? "No results. Try changing filters or search terms."
+              : "No grants are published yet."}
           </p>
         )}
       </section>

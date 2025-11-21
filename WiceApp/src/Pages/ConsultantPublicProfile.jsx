@@ -62,6 +62,7 @@ export default function ConsultantPublicProfile() {
         "Unnamed Consultant";
 
     const resumeUrl = profile.resumeFile || profile.resumeUrl || null;
+    const bookingUrl = profile.bookingUrl || null;
     const supportingDocs = Array.isArray(profile.additionalFiles)
         ? profile.additionalFiles.map((entry) =>
               typeof entry === "string"
@@ -140,15 +141,16 @@ export default function ConsultantPublicProfile() {
                 </div>
 
                 <div className="hero-actions">
-                    <a
-                        className="book-btn"
-                        href={`https://cal.com/YOUR_ORGANIZATION/${uid}`}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Book Appointment
-                    </a>
-
+                    {bookingUrl && (
+                        <a
+                            className="book-btn"
+                            href={bookingUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            Book Appointment
+                        </a>
+                    )}
                     {resumeUrl && (
                         <a className="resume-btn" href={resumeUrl} target="_blank" rel="noreferrer">
                             View Resume

@@ -4,51 +4,7 @@ import "./Notifications.css";
 
 export default function Notifications() {
   // include an "index" property for each notification
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "opportunity",
-      title: "New Consulting Opportunity",
-      description:
-        "A company is looking for sustainability consultants to help with an upcoming project.",
-      postedDate: "Oct 22, 2025",
-      closingDate: "Nov 10, 2025",
-      viewed: false,
-      index: 0,
-    },
-    {
-      id: 2,
-      type: "grant",
-      title: "Agritech Grant Open",
-      description:
-        "A $25,000 grant is available for startups focused on agriculture innovation.",
-      postedDate: "Oct 20, 2025",
-      closingDate: "Dec 1, 2025",
-      viewed: false,
-      index: 1,
-    },
-    {
-      id: 3,
-      type: "milestone",
-      title: "Project Milestone Reached",
-      description:
-        "Your team completed the data collection phase for the GreenFuture project.",
-      postedDate: "Oct 19, 2025",
-      viewed: false,
-      index: 2,
-    },
-    {
-      id: 4,
-      type: "saved",
-      title: "Saved Project Reminder",
-      description:
-        "You saved the ‘Clean Water Initiative’ grant for later — don’t forget to apply before it closes!",
-      postedDate: "Oct 18, 2025",
-      closingDate: "Nov 5, 2025",
-      viewed: false,
-      index: 3,
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   // Toggle viewed and reorder accordingly
   const handleViewedChange = (id) => {
@@ -72,15 +28,21 @@ export default function Notifications() {
   return (
     <div className="dashboard-page notifications-page">
       <h1 className="dashboard-title">Notifications</h1>
-      <div className="notifications-list">
-        {notifications.map((n) => (
-          <NotificationCard
-            key={n.id}
-            {...n}
-            onViewedChange={() => handleViewedChange(n.id)}
-          />
-        ))}
-      </div>
+      {notifications.length === 0 ? (
+        <p className="notifications-empty">
+          You have no notifications yet. New activity will appear here.
+        </p>
+      ) : (
+        <div className="notifications-list">
+          {notifications.map((n) => (
+            <NotificationCard
+              key={n.id}
+              {...n}
+              onViewedChange={() => handleViewedChange(n.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

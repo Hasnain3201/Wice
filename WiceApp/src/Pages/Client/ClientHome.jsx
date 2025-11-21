@@ -13,29 +13,6 @@ export default function ClientHome() {
   const upcomingConsultations = dashboard.upcoming || [];
   const recentUpdates = dashboard.recentUpdates || [];
 
-  const upcomingRows =
-    upcomingConsultations.length > 0
-      ? upcomingConsultations
-      : [
-          {
-            id: "placeholder-1",
-            date: "—",
-            consultant: "No consultations scheduled",
-            topic: "Add bookings to see them here.",
-          },
-        ];
-
-  const updatesList =
-    recentUpdates.length > 0
-      ? recentUpdates
-      : [
-          {
-            id: "update-1",
-            icon: "ℹ️",
-            text: "Updates from your engagements will appear here.",
-          },
-        ];
-
   return (
     <div className="dashboard-page c-home-container">
       <header className="dashboard-header">
@@ -86,32 +63,40 @@ export default function ClientHome() {
 
       <section className="c-home-section">
         <h2>Upcoming Consultations</h2>
-        <div className="c-home-table">
-          <div className="c-home-row header">
-            <span>Date</span>
-            <span>Consultant</span>
-            <span>Topic</span>
-          </div>
-          {upcomingRows.map((item) => (
-            <div className="c-home-row" key={item.id || `${item.date}-${item.consultant}`}>
-              <span>{item.date}</span>
-              <span>{item.consultant}</span>
-              <span>{item.topic}</span>
+        {upcomingConsultations.length === 0 ? (
+          <p className="c-home-empty">No consultations scheduled yet.</p>
+        ) : (
+          <div className="c-home-table">
+            <div className="c-home-row header">
+              <span>Date</span>
+              <span>Consultant</span>
+              <span>Topic</span>
             </div>
-          ))}
-        </div>
+            {upcomingConsultations.map((item) => (
+              <div className="c-home-row" key={item.id || `${item.date}-${item.consultant}`}>
+                <span>{item.date}</span>
+                <span>{item.consultant}</span>
+                <span>{item.topic}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="c-home-section">
         <h2>Recent Updates</h2>
-        <ul className="c-home-list">
-          {updatesList.map((item) => (
-            <li key={item.id || item.text}>
-              {item.icon ? `${item.icon} ` : ""}
-              {item.text}
-            </li>
-          ))}
-        </ul>
+        {recentUpdates.length === 0 ? (
+          <p className="c-home-empty">Updates from your engagements will appear here.</p>
+        ) : (
+          <ul className="c-home-list">
+            {recentUpdates.map((item) => (
+              <li key={item.id || item.text}>
+                {item.icon ? `${item.icon} ` : ""}
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

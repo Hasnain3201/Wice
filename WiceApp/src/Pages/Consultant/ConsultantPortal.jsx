@@ -26,55 +26,22 @@ export default function ConsultantPortal() {
   const upcomingConsultations = dashboard.upcoming || [];
   const pipeline = dashboard.pipeline || [];
 
-  const metricEntries =
-    Object.keys(metrics).length === 0
-      ? [
-          {
-            key: "placeholder",
-            label: "Metrics coming soon",
-            value: "—",
-            hint: "Connect your pipeline to see live stats.",
-            icon: Briefcase,
-          },
-        ]
-      : Object.entries(METRIC_LABELS).map(([metricKey, label]) => ({
-          key: metricKey,
-          label,
-          value: metrics[metricKey] ?? 0,
-          hint:
-            metricKey === "engagements"
-              ? "+ keep nurturing client relationships"
-              : metricKey === "upcomingSessions"
-              ? "Check your availability"
-              : metricKey === "openProposals"
-              ? "Follow up with prospects"
-              : "Stay responsive to requests",
-          icon: METRIC_ICONS[metricKey] || Briefcase,
-        }));
-
-  const upcomingList =
-    upcomingConsultations.length > 0
-      ? upcomingConsultations
-      : [
-          {
-            id: "placeholder",
-            date: "—",
-            client: "No sessions scheduled",
-            topic: "Add bookings to see them here.",
-          },
-        ];
-
-  const pipelineList =
-    pipeline.length > 0
-      ? pipeline
-      : [
-          {
-            id: "pipeline-placeholder",
-            title: "Your pipeline is empty",
-            status: "Track prospects to monitor progress.",
-            value: "",
-          },
-        ];
+  const metricEntries = Object.entries(METRIC_LABELS).map(
+    ([metricKey, label]) => ({
+      key: metricKey,
+      label,
+      value: metrics[metricKey] ?? 0,
+      hint:
+        metricKey === "engagements"
+          ? "+ keep nurturing client relationships"
+          : metricKey === "upcomingSessions"
+          ? "Check your availability"
+          : metricKey === "openProposals"
+          ? "Follow up with prospects"
+          : "Stay responsive to requests",
+      icon: METRIC_ICONS[metricKey] || Briefcase,
+    })
+  );
 
   return (
     <div className="dashboard-page consultant-portal">
@@ -98,34 +65,46 @@ export default function ConsultantPortal() {
       <div className="consultant-grid">
         <section className="consultant-panel">
           <h3>Upcoming Consultations</h3>
-          <ul className="consultant-list">
-            {upcomingList.map((item) => (
-              <li key={item.id || `${item.date}-${item.client}`}>
-                <span className="consultant-date">{item.date}</span>
-                <div>
-                  <p className="consultant-client">{item.client}</p>
-                  <p className="consultant-topic">{item.topic}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {upcomingConsultations.length === 0 ? (
+            <p className="consultant-topic">
+              No sessions scheduled yet. New bookings will appear here.
+            </p>
+          ) : (
+            <ul className="consultant-list">
+              {upcomingConsultations.map((item) => (
+                <li key={item.id || `${item.date}-${item.client}`}>
+                  <span className="consultant-date">{item.date}</span>
+                  <div>
+                    <p className="consultant-client">{item.client}</p>
+                    <p className="consultant-topic">{item.topic}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="consultant-panel">
           <h3>Pipeline Highlights</h3>
-          <ul className="consultant-list">
-            {pipelineList.map((lead) => (
-              <li key={lead.id || lead.title}>
-                <div>
-                  <p className="consultant-client">{lead.title}</p>
-                  <p className="consultant-topic">{lead.status}</p>
-                </div>
-                {lead.value ? (
-                  <span className="consultant-value">{lead.value}</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          {pipeline.length === 0 ? (
+            <p className="consultant-topic">
+              No pipeline items yet. Track proposals and deals here.
+            </p>
+          ) : (
+            <ul className="consultant-list">
+              {pipeline.map((lead) => (
+                <li key={lead.id || lead.title}>
+                  <div>
+                    <p className="consultant-client">{lead.title}</p>
+                    <p className="consultant-topic">{lead.status}</p>
+                  </div>
+                  {lead.value ? (
+                    <span className="consultant-value">{lead.value}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 

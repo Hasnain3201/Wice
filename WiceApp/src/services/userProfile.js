@@ -38,62 +38,19 @@ export async function saveUserProfile(uid, data) {
    DASHBOARD DATA (STATIC)
 --------------------------------------------- */
 export const defaultClientDashboard = {
-  recentUpdates: [
-    { id: "update-1", icon: "🔔", text: "New consultant added: Schala Battle" },
-    { id: "update-2", icon: "📅", text: "Consultation with Robert Layng confirmed." },
-    { id: "update-3", icon: "💬", text: "You have 2 unread messages in chat." }
-  ],
-  upcoming: [
-    {
-      id: "client-1",
-      consultant: "Jeremy Foster",
-      topic: "Community Energy",
-      date: "10/20/2025"
-    },
-    {
-      id: "client-2",
-      consultant: "Sara Calvert",
-      topic: "Environmental Policy",
-      date: "10/24/2025"
-    }
-  ]
+  recentUpdates: [],
+  upcoming: []
 };
 
 export const defaultConsultantDashboard = {
   metrics: {
-    engagements: 4,
-    openProposals: 5,
-    unreadMessages: 2,
-    upcomingSessions: 3
+    engagements: 0,
+    openProposals: 0,
+    unreadMessages: 0,
+    upcomingSessions: 0
   },
-  pipeline: [
-    {
-      id: "pipeline-1",
-      title: "Infrastructure Resilience RFP",
-      status: "Proposal due 11/02",
-      value: "$120k"
-    },
-    {
-      id: "pipeline-2",
-      title: "Community Solar Deployment",
-      status: "Intro call scheduled",
-      value: "$45k"
-    }
-  ],
-  upcoming: [
-    {
-      id: "consultant-1",
-      client: "Coastal Resilience Org",
-      topic: "Energy Transition Strategy",
-      date: "Oct 20"
-    },
-    {
-      id: "consultant-2",
-      client: "Global Health Alliance",
-      topic: "Climate & Health Workshop",
-      date: "Oct 24"
-    }
-  ]
+  pipeline: [],
+  upcoming: []
 };
 
 /* ---------------------------------------------
