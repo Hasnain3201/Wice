@@ -71,8 +71,11 @@ export default function Chat() {
     messageList.length > 0 ? messageList[messageList.length - 1] : null;
 
   useEffect(() => {
-    if (!activeChat || !latestMessage) return;
-    markChatAsRead(activeChat.id, latestMessage.createdAt);
+    if (!activeChat) return;
+    const fallbackTimestamp =
+      latestMessage?.createdAt || activeChat.lastMessage?.createdAt;
+    if (!fallbackTimestamp) return;
+    markChatAsRead(activeChat.id, fallbackTimestamp);
   }, [activeChat, latestMessage, markChatAsRead]);
 
   useEffect(() => {
