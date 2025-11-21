@@ -8,48 +8,44 @@ service cloud.firestore {
 
     function docIsPublicConsultant(docData) {
       return docData.accountType == 'consultant' &&
-        docData.phaseLightCompleted == true;
+             docData.phaseLightCompleted == true;
     }
 
     function docHasAdminRole(userDoc) {
       return userDoc.accountType == 'admin' ||
-        userDoc.role == 'admin' ||
-        (userDoc.profile != null && userDoc.profile.accountType == 'admin') ||
-        (userDoc.profile != null && userDoc.profile.role == 'admin');
+             userDoc.role == 'admin' ||
+             (userDoc.profile != null && userDoc.profile.accountType == 'admin') ||
+             (userDoc.profile != null && userDoc.profile.role == 'admin');
     }
 
     function isAdmin() {
       return request.auth != null &&
-        docHasAdminRole(
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data
-        );
-    }
-
-    function isExistingChatParticipant() {
-      return request.auth != null &&
-        resource.data.participantIds.hasAny([request.auth.uid]);
-    }
-
-    function isChatParticipantById(chatId) {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds.hasAny([request.auth.uid]);
-    }
-
-    function isCreatingChat() {
-      return request.auth != null &&
-        request.resource.data.participantIds.hasAny([request.auth.uid]);
+             docHasAdminRole(
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+             );
     }
 
     function isUserOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return request.auth != null &&
+             request.auth.uid == userId;
+    }
+
+    function isConsultantForBooking() {
+      return request.auth != null &&
+             request.auth.uid == resource.data.consultantId;
+    }
+
+    function isClientForBooking() {
+      return request.auth != null &&
+             request.auth.uid == resource.data.clientId;
     }
 
     // USERS COLLECTION
     match /users/{userId} {
       allow read: if isSignedIn() &&
         (isUserOwner(userId) ||
-          isAdmin() ||
-          docIsPublicConsultant(resource.data));
+         isAdmin() ||
+         docIsPublicConsultant(resource.data));
       allow create: if isSignedIn();
       allow update: if isUserOwner(userId) || isAdmin();
       allow delete: if isAdmin();
@@ -69,47 +65,75 @@ service cloud.firestore {
     // SAVED COLLECTIONS
     match /savedCollections/{userId} {
       allow read: if isSignedIn() &&
-        (request.auth.uid == userId || isAdmin());
-      allow write: if isSignedIn() && request.auth.uid == userId;
+                    (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() &&
+                     request.auth.uid == userId;
     }
 
     // CHATS & MESSAGES
     match /chats/{chatId} {
-      allow create: if isCreatingChat() || isAdmin();
-      allow read: if isExistingChatParticipant() || isAdmin();
-      allow update, delete: if isExistingChatParticipant() || isAdmin();
+      allow create: if isSignedIn();
+      allow read: if isAdmin() ||
+                  (request.auth != null &&
+                   resource.data.participantIds.hasAny([request.auth.uid]));
+      allow update, delete: if isAdmin() ||
+                            (request.auth != null &&
+                             resource.data.participantIds.hasAny([request.auth.uid]));
 
       match /messages/{messageId} {
-        allow read, write: if isChatParticipantById(chatId) || isAdmin();
+        allow read, write: if isAdmin() ||
+                           (request.auth != null &&
+                            get(/databases/$(database)/documents/chats/$(chatId))
+                              .data.participantIds.hasAny([request.auth.uid]));
       }
     }
 
-    // ⭐ AVAILABILITIES COLLECTION — UPDATED FOR BOOKING
+    // ⭐ AVAILABILITIES COLLECTION 
     match /availabilities/{userId} {
-
-      // Anyone can READ consultant availability (clients need this)
+      // Anyone can view consultant availability
       allow read: if true;
 
-      // Only consultant themselves OR admin can WRITE their availability
-      allow write: if request.auth != null &&
+      // Only consultant or admin can modify
+      allow write: if isSignedIn() &&
                    (request.auth.uid == userId || isAdmin());
     }
 
-    // ⭐ BOOKINGS COLLECTION — INSTANT BOOKING (OPTION B)
+    // ⭐ BOOKINGS COLLECTION — Consultant Accept/Decline Enabled
     match /bookings/{bookingId} {
-      // Anyone logged in can create a booking
-      allow create: if request.auth != null;
 
-      // Consultant, client, or admin can read
-      allow read: if request.auth != null &&
+      // Anyone signed in can create a booking
+      allow create: if isSignedIn();
+
+      // Consultant, client, admin can read the booking
+      allow read: if isSignedIn() &&
+        (isClientForBooking() ||
+         isConsultantForBooking() ||
+         isAdmin());
+
+      // UPDATES:
+      // - Client can cancel only their own booking
+      // - Consultant can accept or decline their own bookings
+      // - Admin can update anything
+      allow update: if isSignedIn() &&
         (
-          request.auth.uid == resource.data.clientId ||
-          request.auth.uid == resource.data.consultantId ||
+          // Consultant accepting/declining
+          (isConsultantForBooking() &&
+           (
+             request.resource.data.status == 'confirmed' ||
+             request.resource.data.status == 'declined'
+           )
+          ) ||
+
+          // Client cancelling
+          (isClientForBooking() &&
+           request.resource.data.status == 'cancelled') ||
+
+          // Admin override
           isAdmin()
         );
 
-      // Only admin can modify bookings (keeps system clean)
-      allow update, delete: if isAdmin();
+      // No one deletes bookings except admin
+      allow delete: if isAdmin();
     }
 
     // DEFAULT DENY EVERYTHING ELSE
