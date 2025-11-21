@@ -85,7 +85,6 @@ const consultantProfileDefaults = {
   industries: [],
   languages: [],
   dailyRate: "",
-  availability: "",
   openToTravel: false,
   regions: [],
   donorExperience: [],
