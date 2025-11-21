@@ -1,7 +1,7 @@
 // src/Pages/profilebuilder/ClientProfileBuilder.jsx
 
 import React, { useMemo, useState } from "react";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import ProgressSidebar from "../componentsPB/ProgressSidebar";
 import SectionWrapper from "../componentsPB/SectionWrapper";
 
