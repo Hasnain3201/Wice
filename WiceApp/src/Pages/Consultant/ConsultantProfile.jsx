@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { auth, storage } from "../../firebase";
 import { saveUserProfile } from "../../services/userProfile.js";
 import skillsData from "../../data/skillsData.js";
+import AvailabilityModal from "../../Components/AvailabilityModal.jsx";
 import {
   INDUSTRY_SECTORS,
   TIMEZONES,
@@ -121,6 +122,8 @@ export default function ConsultantProfile() {
   const [uploadingAdditional, setUploadingAdditional] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  // for avilability modal!!!!!! KEEP
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 
   const isConsultant = useMemo(
     () => profile?.accountType === "consultant",
@@ -321,14 +324,14 @@ export default function ConsultantProfile() {
     setSelectedSkills(nextSkills);
     const normalizedAdditional = Array.isArray(additionalFromDb)
       ? additionalFromDb.map((entry) =>
-          typeof entry === "string"
-            ? {
-                name: entry?.split("?")[0].split("/").pop() || "Document",
-                url: entry,
-                path: "",
-              }
-            : entry
-        )
+        typeof entry === "string"
+          ? {
+            name: entry?.split("?")[0].split("/").pop() || "Document",
+            url: entry,
+            path: "",
+          }
+          : entry
+      )
       : [];
     setAdditionalFiles(normalizedAdditional);
   }, [profile, user, languageOptions]);
@@ -608,8 +611,8 @@ export default function ConsultantProfile() {
     form.availabilityStatus === "available_now"
       ? "Available now"
       : form.availabilityStatus === "not_currently_available"
-      ? form.availabilityNote || "Not currently available"
-      : "—";
+        ? form.availabilityNote || "Not currently available"
+        : "—";
 
   const currencyLabel =
     form.currency || profile?.profile?.currency || "USD";
@@ -879,6 +882,14 @@ export default function ConsultantProfile() {
                 style={{ marginTop: 10 }}
               />
             )}
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={() => setShowAvailabilityModal(true)}
+              style={{ marginTop: 12 }}
+            >
+              Update Your Availability Schedule
+            </button>
           </div>
 
           <div className="settings-col">
@@ -1009,16 +1020,16 @@ export default function ConsultantProfile() {
         {hasFullProfile && (
           <>
             <div className="settings-row">
-            <div className="settings-col">
-              <label className="label">Donor Experience</label>
-              <Select
-                isMulti
-                options={donorOptions}
-                value={selectedDonors}
-                onChange={setSelectedDonors}
-                placeholder="Select donor organizations"
-              />
-            </div>
+              <div className="settings-col">
+                <label className="label">Donor Experience</label>
+                <Select
+                  isMulti
+                  options={donorOptions}
+                  value={selectedDonors}
+                  onChange={setSelectedDonors}
+                  placeholder="Select donor organizations"
+                />
+              </div>
 
               <div className="settings-col">
                 <label className="label">Skills</label>
@@ -1125,6 +1136,13 @@ export default function ConsultantProfile() {
           {error ? <span className="hint-error">{error}</span> : null}
         </div>
       </form>
+
+      <AvailabilityModal
+        isOpen={showAvailabilityModal}
+        onClose={() => setShowAvailabilityModal(false)}
+        userId={user?.uid}
+      />
+
     </main>
   );
 }
