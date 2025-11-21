@@ -126,6 +126,7 @@ export default function ConsultantProfile() {
     () => profile?.accountType === "consultant",
     [profile?.accountType]
   );
+  const hasLightProfile = Boolean(profile?.phaseLightCompleted);
 
   const languageOptions = useMemo(
     () =>
@@ -146,17 +147,7 @@ export default function ConsultantProfile() {
   }, [selectedDonors]);
 
   const hasFullProfile = useMemo(() => {
-    const details = profile?.profile || {};
-    if (profile?.phaseFullCompleted) return true;
-    return Boolean(
-      details.experienceRegions?.length ||
-        details.functionalExpertise?.length ||
-        details.highestDegree ||
-        details.resumeFile ||
-        details.additionalFiles?.length ||
-        details.donorExperience?.length ||
-        details.certifications?.length
-    );
+    return Boolean(profile?.phaseFullCompleted);
   }, [profile]);
 
   /* ---------- hydrate from Firestore ---------- */
@@ -439,7 +430,14 @@ export default function ConsultantProfile() {
       }));
     } catch (err) {
       console.error("Resume upload failed:", err);
-      setError("Unable to upload resume right now.");
+      const needsBucket =
+        err?.code === "storage/invalid-argument" ||
+        (err?.message || "").toLowerCase().includes("bucket");
+      setError(
+        needsBucket
+          ? "Resume upload requires Firebase Storage. Configure VITE_FIREBASE_STORAGE_BUCKET and enable Storage."
+          : "Unable to upload resume right now."
+      );
     } finally {
       setUploadingResume(false);
     }
@@ -465,7 +463,14 @@ export default function ConsultantProfile() {
       }
     } catch (err) {
       console.error("Additional files upload failed:", err);
-      setError("Unable to upload files right now.");
+      const needsBucket =
+        err?.code === "storage/invalid-argument" ||
+        (err?.message || "").toLowerCase().includes("bucket");
+      setError(
+        needsBucket
+          ? "File uploads require Firebase Storage. Configure VITE_FIREBASE_STORAGE_BUCKET and enable Storage."
+          : "Unable to upload files right now."
+      );
     } finally {
       setUploadingAdditional(false);
       // allow re-selecting the same file name
@@ -650,14 +655,15 @@ export default function ConsultantProfile() {
         {!hasFullProfile && (
           <div className="profile-builder-banner">
             <div>
-              <h3>Finish your full profile</h3>
+              <h3>{hasLightProfile ? "Finish your full profile" : "Complete your light profile"}</h3>
               <p>
-                You’ve completed the light profile. Share your full experience
-                so clients can see everything.
+                {hasLightProfile
+                  ? "Share your full experience so clients can see everything."
+                  : "Start with the light profile to unlock your public consultant card."}
               </p>
             </div>
             <Link className="banner-link" to="/consultant/profile-builder/full">
-              Continue profile
+              Go to profile builder
             </Link>
           </div>
         )}

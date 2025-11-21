@@ -14,7 +14,7 @@ export default function ClientProfileBuilder2Comp({
 }) {
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
 
   const handleSubmit = async () => {
     await saveUserProfile(user.uid, {
@@ -35,7 +35,11 @@ export default function ClientProfileBuilder2Comp({
         whatsappNumber: fullData.whatsapp,
       },
       clientFullCompleted: true,
+      clientLightCompleted: true,
+      phaseFullCompleted: true,
+      phaseLightCompleted: true,
     });
+    await refreshProfile?.();
 
     alert("Your full profile has been saved!");
 

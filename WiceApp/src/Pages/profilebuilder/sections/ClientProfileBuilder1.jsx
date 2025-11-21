@@ -8,17 +8,17 @@ import {
   PREFERED_CONTACT_METHOD,
 } from "../../../data/taxonomy.js";
 
-export default function ClientProfileBuilder1({ onProgress }) {
+export default function ClientProfileBuilder1({ onProgress, initialValues = {} }) {
   const [form, setForm] = useState({
-    fullName: "",
-    jobTitle: "",
-    workEmail: "",
-    orgName: "",
-    orgType: "",
-    primaryIndustry: "",
-    sector: "",
-    country: "",
-    contactMethod: "", // now “Preferred Contact Method”
+    fullName: initialValues.fullName || "",
+    jobTitle: initialValues.jobTitle || "",
+    workEmail: initialValues.workEmail || "",
+    orgName: initialValues.orgName || "",
+    orgType: initialValues.orgType || "",
+    primaryIndustry: initialValues.primaryIndustry || "",
+    sector: initialValues.sector || "",
+    country: initialValues.country || "",
+    contactMethod: initialValues.contactMethod || "", // now “Preferred Contact Method”
   });
 
   // Build taxonomy lists
@@ -32,6 +32,29 @@ export default function ClientProfileBuilder1({ onProgress }) {
   const allCountries = Object.values(GEOGRAPHIC_EXPERIENCE).flat();
 
   const required = Object.keys(form);
+  useEffect(() => {
+    setForm({
+      fullName: initialValues.fullName || "",
+      jobTitle: initialValues.jobTitle || "",
+      workEmail: initialValues.workEmail || "",
+      orgName: initialValues.orgName || "",
+      orgType: initialValues.orgType || "",
+      primaryIndustry: initialValues.primaryIndustry || "",
+      sector: initialValues.sector || "",
+      country: initialValues.country || "",
+      contactMethod: initialValues.contactMethod || "",
+    });
+  }, [
+    initialValues.fullName,
+    initialValues.jobTitle,
+    initialValues.workEmail,
+    initialValues.orgName,
+    initialValues.orgType,
+    initialValues.primaryIndustry,
+    initialValues.sector,
+    initialValues.country,
+    initialValues.contactMethod,
+  ]);
 
   const update = (e) => {
     const { name, value } = e.target;
@@ -49,7 +72,7 @@ export default function ClientProfileBuilder1({ onProgress }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filledKeys = required.filter((k) => form[k].trim() !== "");
+  const filledKeys = required.filter((k) => (form[k] || "").trim() !== "");
   const filledCount = filledKeys.length;
   const isComplete = filledCount === required.length;
 

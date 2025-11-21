@@ -117,9 +117,24 @@ function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   // 2. If user not logged in → redirect
   if (!user) return <Navigate to={fallback} replace />;
 
-  const goingToBuilder = location.startsWith("/consultant/profile-builder");
+  const goingToConsultantBuilder = location.startsWith("/consultant/profile-builder");
+  const goingToClientBuilder = location.startsWith("/client/profile-builder");
+
+  // Require light profile before accessing the rest of the app
+  if (profile?.accountType === "consultant" && !profile?.phaseLightCompleted) {
+    if (!goingToConsultantBuilder) {
+      return <Navigate to="/consultant/profile-builder" replace />;
+    }
+  }
+
+  if (profile?.accountType === "client" && !profile?.phaseLightCompleted) {
+    if (!goingToClientBuilder) {
+      return <Navigate to="/client/profile-builder/intro" replace />;
+    }
+  }
+
   if (
-    goingToBuilder &&
+    goingToConsultantBuilder &&
     profile?.phaseLightCompleted &&
     !profile.phaseFullCompleted &&
     !location.includes("/full")

@@ -13,7 +13,7 @@ export default function ClientProfileBuilder1Comp({
   onContinue,
 }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
 
   const handleSaveLight = async () => {
     await saveUserProfile(user.uid, {
@@ -23,11 +23,14 @@ export default function ClientProfileBuilder1Comp({
         organizationName: lightData.orgName,
         organizationType: lightData.orgType,
         primaryIndustry: lightData.primaryIndustry,
+        sector: lightData.sector,
         country: lightData.country,
         contactMethods: [lightData.contactMethod],
       },
       clientLightCompleted: true,
+      phaseLightCompleted: true,
     });
+    await refreshProfile?.();
 
     alert("Your light profile has been saved!");
     navigate("/client/home");

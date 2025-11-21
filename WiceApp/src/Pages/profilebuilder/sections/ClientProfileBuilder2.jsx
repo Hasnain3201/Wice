@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import "../profileBuilder.css";
 import { TIMEZONES } from "../../../data/taxonomy.js";
 
-export default function ClientProfileBuilder2({ onProgress }) {
+export default function ClientProfileBuilder2({ onProgress, initialValues = {} }) {
   const [form, setForm] = useState({
-    website: "",
-    supportAreas: [],
-    engagementTypes: [],
-    timezone: "",
-    phone: "",
-    whatsapp: "",
+    website: initialValues.website || "",
+    supportAreas: initialValues.supportAreas || [],
+    engagementTypes: initialValues.engagementTypes || [],
+    timezone: initialValues.timezone || "",
+    phone: initialValues.phone || "",
+    whatsapp: initialValues.whatsapp || "",
   });
 
   const update = (e) => {
@@ -60,6 +60,24 @@ export default function ClientProfileBuilder2({ onProgress }) {
   ];
 
   const allFields = Object.keys(form);
+
+  useEffect(() => {
+    setForm({
+      website: initialValues.website || "",
+      supportAreas: initialValues.supportAreas || [],
+      engagementTypes: initialValues.engagementTypes || [],
+      timezone: initialValues.timezone || "",
+      phone: initialValues.phone || "",
+      whatsapp: initialValues.whatsapp || "",
+    });
+  }, [
+    initialValues.website,
+    initialValues.supportAreas,
+    initialValues.engagementTypes,
+    initialValues.timezone,
+    initialValues.phone,
+    initialValues.whatsapp,
+  ]);
 
   const filledKeys = allFields.filter((key) => {
     const v = form[key];

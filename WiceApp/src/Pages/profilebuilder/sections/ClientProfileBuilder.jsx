@@ -1,6 +1,7 @@
 // src/Pages/profilebuilder/ClientProfileBuilder.jsx
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
 import ProgressSidebar from "../componentsPB/ProgressSidebar";
 import SectionWrapper from "../componentsPB/SectionWrapper";
 
@@ -15,11 +16,31 @@ import ClientProfileBuilder2Comp from "./ClientProfileBuilder2Comp";
 import "../profileBuilder.css";
 
 export default function ClientProfileBuilder() {
+  const { profile } = useAuth();
+  const baseProfile = useMemo(() => profile?.profile || {}, [profile]);
   const [step, setStep] = useState(0);
 
   // Store ALL form input
-  const [lightData, setLightData] = useState({});
-  const [fullData, setFullData] = useState({});
+  const [lightData, setLightData] = useState(() => ({
+    fullName: baseProfile.fullName || "",
+    jobTitle: baseProfile.jobTitle || "",
+    workEmail: baseProfile.workEmail || profile?.email || "",
+    orgName: baseProfile.organizationName || "",
+    orgType: baseProfile.organizationType || "",
+    primaryIndustry: baseProfile.primaryIndustry || "",
+    sector: baseProfile.sector || "",
+    country: baseProfile.country || "",
+    contactMethod: (baseProfile.contactMethods || [])[0] || "",
+  }));
+
+  const [fullData, setFullData] = useState(() => ({
+    website: baseProfile.websiteUrl || "",
+    supportAreas: baseProfile.supportSelections || [],
+    engagementTypes: baseProfile.engagementTypes || [],
+    timezone: baseProfile.timeZone || "",
+    phone: baseProfile.phoneNumber || "",
+    whatsapp: baseProfile.whatsappNumber || "",
+  }));
 
   // Progress tracking
   const [lightFilled, setLightFilled] = useState(0);
@@ -76,17 +97,18 @@ export default function ClientProfileBuilder() {
   // Step 0 — LIGHT FORM
   if (step === 0) {
     currentPage = (
-      <SectionWrapper
-        hideBack={true}
-        onNext={goToLightCompletion}
-        disableNext={!isLightComplete}
-      >
-        <ClientProfileBuilder1
-          onProgress={({ filled, completedLabels, isComplete, values }) => {
-            setLightFilled(filled);
-            setCompletedLightLabels(completedLabels);
-            setIsLightComplete(isComplete);
-            setLightData(values); // ⭐ store data
+          <SectionWrapper
+            hideBack={true}
+            onNext={goToLightCompletion}
+            disableNext={!isLightComplete}
+          >
+            <ClientProfileBuilder1
+              initialValues={lightData}
+              onProgress={({ filled, completedLabels, isComplete, values }) => {
+                setLightFilled(filled);
+                setCompletedLightLabels(completedLabels);
+                setIsLightComplete(isComplete);
+                setLightData(values); // ⭐ store data
           }}
         />
       </SectionWrapper>
@@ -109,6 +131,7 @@ export default function ClientProfileBuilder() {
     currentPage = (
       <SectionWrapper onBack={back} onNext={goToFinalCompletion}>
         <ClientProfileBuilder2
+          initialValues={fullData}
           onProgress={({ filled, completedLabels, values }) => {
             setFullFilled(filled);
             setCompletedFullLabels(completedLabels);

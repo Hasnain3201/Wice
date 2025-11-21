@@ -19,9 +19,9 @@ export default function ClientIntroPage() {
         </p>
 
         <p className="intro-description">
-          You will start by completing a quick <strong>Light Profile</strong> which is required
-          to activate your account. <strong>This will take less than 2 minutes!</strong>  
-          After that, you can optionally complete your Full Profile.
+          Start with a quick <strong>Light Profile</strong> to activate your account.{" "}
+          <strong>This takes less than 2 minutes.</strong> After that, you can
+          complete your Full Profile to share more details.
         </p>
 
         <button type="button" className="next" onClick={handleStart}>

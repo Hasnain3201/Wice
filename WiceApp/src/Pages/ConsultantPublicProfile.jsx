@@ -84,11 +84,35 @@ export default function ConsultantPublicProfile() {
             ? `${locationLine} • ${profile.timeZone}`
             : locationLine || profile.timeZone || "";
 
+    const lightComplete =
+        Boolean(consultant.phaseLightCompleted || profile.phaseLightCompleted);
+    const fullComplete =
+        Boolean(consultant.phaseFullCompleted || profile.phaseFullCompleted);
+
     const industriesText = profile.industries?.join(", ") || "—";
     const languagesText = profile.languages?.join(", ") || "—";
     const sectorsText = profile.sectors?.join(", ") || "—";
     const donorsText = profile.donorExperience?.join(", ") || "—";
     const skillsText = profile.capabilitiesList?.join(", ") || "—";
+    const regionsText = profile.experienceRegions?.join(", ") || "—";
+    const countriesText = profile.experienceCountries?.join(", ") || "—";
+
+    const availabilityStatus = profile.availabilityStatus || "";
+    const availabilityText =
+        availabilityStatus === "available_now"
+            ? "Available now"
+            : availabilityStatus === "not_currently_available"
+            ? profile.availabilityNote || "Not currently available"
+            : "—";
+    const dailyRateText = profile.dailyRate
+        ? `${profile.currency || "USD"} ${profile.dailyRate}`
+        : "—";
+    const openToTravelText =
+        profile.openToTravel === true || profile.openToTravel === "Yes"
+            ? "Yes"
+            : profile.openToTravel === false || profile.openToTravel === "No"
+            ? "No"
+            : "—";
 
     async function handleMessage() {
         if (!user || role !== "client") {
@@ -207,6 +231,11 @@ export default function ConsultantPublicProfile() {
                 <section className="public-section">
                     <h2>About</h2>
                     <p>{profile.about || "No description provided."}</p>
+                    {!lightComplete && (
+                        <p className="muted">
+                            This consultant has not finished their light profile yet.
+                        </p>
+                    )}
                 </section>
 
                 <section className="public-section">
@@ -217,10 +246,6 @@ export default function ConsultantPublicProfile() {
                             <p>{industriesText}</p>
                         </div>
                         <div>
-                            <strong>Focus Regions</strong>
-                            <p>{profile.experienceRegions?.join(", ") || "—"}</p>
-                        </div>
-                        <div>
                             <strong>Languages</strong>
                             <p>{languagesText}</p>
                         </div>
@@ -228,14 +253,22 @@ export default function ConsultantPublicProfile() {
                             <strong>Sectors</strong>
                             <p>{sectorsText}</p>
                         </div>
-                        <div>
-                            <strong>Donor Experience</strong>
-                            <p>{donorsText}</p>
-                        </div>
-                        <div>
-                            <strong>Capabilities</strong>
-                            <p>{skillsText}</p>
-                        </div>
+                        {fullComplete && (
+                            <>
+                                <div>
+                                    <strong>Focus Regions</strong>
+                                    <p>{regionsText}</p>
+                                </div>
+                                <div>
+                                    <strong>Donor Experience</strong>
+                                    <p>{donorsText}</p>
+                                </div>
+                                <div>
+                                    <strong>Capabilities</strong>
+                                    <p>{skillsText}</p>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </section>
 
@@ -243,64 +276,74 @@ export default function ConsultantPublicProfile() {
                     <h2>Work Preferences</h2>
                     <ul>
                         <li>
-                            <strong>Daily Rate:</strong>{" "}
-                            {profile.dailyRate
-                                ? `${profile.currency || "USD"} ${profile.dailyRate}`
-                                : "—"}
+                            <strong>Daily Rate:</strong> {dailyRateText}
                         </li>
                         <li>
-                            <strong>Open to Travel:</strong>{" "}
-                            {profile.openToTravel === true || profile.openToTravel === "Yes"
-                                ? "Yes"
-                                : profile.openToTravel === false || profile.openToTravel === "No"
-                                ? "No"
-                                : "—"}
+                            <strong>Availability:</strong> {availabilityText}
                         </li>
                         <li>
-                            <strong>Regions:</strong>{" "}
-                            {profile.experienceCountries?.join(", ") || "—"}
+                            <strong>Open to Travel:</strong> {openToTravelText}
                         </li>
-                    </ul>
-                </section>
-
-                <section className="public-section">
-                    <h2>Education</h2>
-                    <ul>
-                        <li>
-                            <strong>Degree:</strong> {profile.highestDegree || "—"}
-                        </li>
-                        <li>
-                            <strong>Institution:</strong> {profile.institution || "—"}
-                        </li>
-                    </ul>
-                </section>
-
-                <section className="public-section">
-                    <h2>Portfolio</h2>
-                    {resumeUrl ? (
-                        <p>
-                            <a href={resumeUrl} target="_blank" rel="noreferrer">
-                                View CV / Resume
-                            </a>
-                        </p>
-                    ) : (
-                        <p className="muted">No resume uploaded.</p>
-                    )}
-
-                    {supportingDocs.length > 0 ? (
-                        <ul className="portfolio-list">
-                            {supportingDocs.map((doc, index) => (
-                                <li key={doc.url || index}>
-                                    <a href={doc.url} target="_blank" rel="noreferrer">
-                                        {doc.name || "Supporting document"}
-                                    </a>
+                        {fullComplete && (
+                            <>
+                                <li>
+                                    <strong>Regions:</strong> {regionsText}
                                 </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="muted">No supporting documents provided.</p>
+                                <li>
+                                    <strong>Countries:</strong> {countriesText}
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                    {!fullComplete && (
+                        <p className="muted">
+                            Complete the full profile to share regions, countries, and additional preferences.
+                        </p>
                     )}
                 </section>
+
+                {fullComplete && (
+                    <>
+                        <section className="public-section">
+                            <h2>Education</h2>
+                            <ul>
+                                <li>
+                                    <strong>Degree:</strong> {profile.highestDegree || "—"}
+                                </li>
+                                <li>
+                                    <strong>Institution:</strong> {profile.institution || "—"}
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section className="public-section">
+                            <h2>Portfolio</h2>
+                            {resumeUrl ? (
+                                <p>
+                                    <a href={resumeUrl} target="_blank" rel="noreferrer">
+                                        View CV / Resume
+                                    </a>
+                                </p>
+                            ) : (
+                                <p className="muted">No resume uploaded.</p>
+                            )}
+
+                            {supportingDocs.length > 0 ? (
+                                <ul className="portfolio-list">
+                                    {supportingDocs.map((doc, index) => (
+                                        <li key={doc.url || index}>
+                                            <a href={doc.url} target="_blank" rel="noreferrer">
+                                                {doc.name || "Supporting document"}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="muted">No supporting documents provided.</p>
+                            )}
+                        </section>
+                    </>
+                )}
             </div>
         </div>
     );

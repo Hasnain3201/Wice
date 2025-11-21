@@ -13,9 +13,8 @@ export default function IntroPage({ onStart }) {
         </p>
 
         <p className="intro-description">
-          You will have the option of quickly creating a profile with basic
-          information called a <strong>Light profile</strong> or taking the time
-          to complete your entire profile.
+          Start with the required <strong>Light Profile</strong> to activate your account (under
+          2 minutes). You can expand to your Full Profile any time.
         </p>
 
         <button type="button" className="next" onClick={onStart}>
