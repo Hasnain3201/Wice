@@ -100,16 +100,23 @@ const consultantProfileDefaults = {
    DEFAULT USER DATA BUILDER
 --------------------------------------------- */
 export function buildDefaultUserData(accountType) {
-  const data = {};
+  const data = {
+    phaseLightCompleted: false,
+    phaseFullCompleted: false,
+  };
 
   if (accountType === "client") {
     data.profile = { ...clientProfileDefaults };
     data.dashboardClient = JSON.parse(JSON.stringify(defaultClientDashboard));
+    data.clientLightCompleted = false;
+    data.clientFullCompleted = false;
   }
 
   if (accountType === "consultant") {
     data.profile = { ...consultantProfileDefaults }; // untouched
     data.dashboardConsultant = JSON.parse(JSON.stringify(defaultConsultantDashboard));
+    data.consultantLightCompleted = false;
+    data.consultantFullCompleted = false;
   }
 
   // Always include hiddenChats
