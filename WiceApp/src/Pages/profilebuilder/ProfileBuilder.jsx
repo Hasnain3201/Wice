@@ -125,8 +125,8 @@ export default function ProfileBuilder({ mode = "light" }) {
         prev.languages && prev.languages.length
           ? prev.languages
           : Array.isArray(stored.languages)
-          ? stored.languages
-          : [],
+            ? stored.languages
+            : [],
       currency: prev.currency || stored.currency || "USD",
       dailyRate:
         prev.dailyRate ||
@@ -140,8 +140,8 @@ export default function ProfileBuilder({ mode = "light" }) {
         (stored.openToTravel === true
           ? "Yes"
           : stored.openToTravel === false
-          ? "No"
-          : ""),
+            ? "No"
+            : ""),
       experienceRegions: stored.experienceRegions || prev.experienceRegions || [],
       experienceCountries: stored.experienceCountries || prev.experienceCountries || [],
       donorExperience: stored.donorExperience || prev.donorExperience || [],
@@ -164,12 +164,12 @@ export default function ProfileBuilder({ mode = "light" }) {
         Array.isArray(prev.additionalFiles) && prev.additionalFiles.length
           ? prev.additionalFiles
           : Array.isArray(stored.additionalFiles)
-          ? stored.additionalFiles.map((entry) =>
+            ? stored.additionalFiles.map((entry) =>
               typeof entry === "string"
                 ? { name: "", url: entry, path: "" }
                 : entry
             )
-          : [],
+            : [],
       additionalEducation:
         Array.isArray(prev.additionalEducation) && prev.additionalEducation.length
           ? prev.additionalEducation
@@ -265,9 +265,14 @@ export default function ProfileBuilder({ mode = "light" }) {
       case "Work Preferences":
         return (
           <SectionWrapper {...props} showSkip={false}>
-            <WorkPreferences profileData={profileData} setProfileData={setProfileData} />
+            <WorkPreferences
+              profileData={profileData}
+              setProfileData={setProfileData}
+              userId={user?.uid}
+            />
           </SectionWrapper>
         );
+
 
       case "Light Completion":
         return (

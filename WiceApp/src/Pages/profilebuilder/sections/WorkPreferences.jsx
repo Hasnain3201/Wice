@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 import "../ProfileBuilder.css";
+import AvailabilityEditor from "../componentsPB/AvailabilityEditor.jsx";
 
 export default function WorkPreferences({
   profileData,
   setProfileData,
   registerValidator,
+  userId,
 }) {
   const [currency, setCurrency] = useState(profileData.currency || "USD");
   const [dailyRate, setDailyRate] = useState(profileData.dailyRate || "");
-  const [availabilityStatus, setAvailabilityStatus] = useState(
-    profileData.availabilityStatus || ""
-  );
-  const [availabilityNote, setAvailabilityNote] = useState(
-    profileData.availabilityNote || ""
-  );
   const [openToTravel, setOpenToTravel] = useState(
     profileData.openToTravel || ""
   );
@@ -21,47 +17,30 @@ export default function WorkPreferences({
 
   const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "JPY"];
 
+  // Keep writing the non-availability fields into profileData (users collection)
   useEffect(() => {
     setProfileData((prev) => ({
       ...prev,
       currency,
       dailyRate,
-      availabilityStatus,
-      availabilityNote,
       openToTravel,
     }));
-  }, [
-    currency,
-    dailyRate,
-    availabilityStatus,
-    availabilityNote,
-    openToTravel,
-    setProfileData,
-  ]);
+  }, [currency, dailyRate, openToTravel, setProfileData]);
 
+  // Re-hydrate local state when profileData changes
   useEffect(() => {
     setCurrency(profileData.currency || "USD");
     setDailyRate(profileData.dailyRate || "");
     setOpenToTravel(profileData.openToTravel || "");
-    setAvailabilityStatus(profileData.availabilityStatus || "");
-    setAvailabilityNote(profileData.availabilityNote || "");
-  }, [
-    profileData.currency,
-    profileData.dailyRate,
-    profileData.openToTravel,
-    profileData.availabilityStatus,
-    profileData.availabilityNote,
-  ]);
+  }, [profileData.currency, profileData.dailyRate, profileData.openToTravel]);
 
+  // Validation: daily rate + travel only (availability handled separately)
   useEffect(() => {
     if (!registerValidator) return;
+
     const validator = () => {
       if (!dailyRate || Number(dailyRate) <= 0) {
         setError("Enter your typical daily rate.");
-        return false;
-      }
-      if (!availabilityStatus) {
-        setError("Select your availability status.");
         return false;
       }
       if (!openToTravel) {
@@ -71,13 +50,14 @@ export default function WorkPreferences({
       setError("");
       return true;
     };
+
     registerValidator(validator);
     return () => registerValidator(null);
-  }, [dailyRate, availabilityStatus, openToTravel, registerValidator]);
+  }, [dailyRate, openToTravel, registerValidator]);
 
   useEffect(() => {
     setError("");
-  }, [dailyRate, availabilityStatus, openToTravel, availabilityNote, currency]);
+  }, [dailyRate, openToTravel, currency]);
 
   return (
     <div className="section">
@@ -109,38 +89,6 @@ export default function WorkPreferences({
         />
       </div>
 
-      <label>Availability Status *</label>
-      <div className="radio-inline">
-        <label>
-          <input
-            type="radio"
-            name="availability"
-            value="available_now"
-            checked={availabilityStatus === "available_now"}
-            onChange={(e) => setAvailabilityStatus(e.target.value)}
-          />
-          Available now
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="availability"
-            value="not_currently_available"
-            checked={availabilityStatus === "not_currently_available"}
-            onChange={(e) => setAvailabilityStatus(e.target.value)}
-          />
-          Not currently available
-        </label>
-      </div>
-      {availabilityStatus === "not_currently_available" && (
-        <input
-          className="input"
-          placeholder="Add a note (e.g., available after June)"
-          value={availabilityNote}
-          onChange={(e) => setAvailabilityNote(e.target.value)}
-        />
-      )}
-
       <label>Open to Travel *</label>
       <div className="radio-inline">
         <label>
@@ -165,6 +113,9 @@ export default function WorkPreferences({
           No
         </label>
       </div>
+
+      {/* NEW: weekly availability editor stored in availabilities/{uid} */}
+      <AvailabilityEditor userId={userId} timeZone={profileData.timeZone} />
 
       {error && (
         <p className="error-message" role="alert">

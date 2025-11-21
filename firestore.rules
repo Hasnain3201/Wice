@@ -44,6 +44,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    // USERS COLLECTION
     match /users/{userId} {
       allow read: if isSignedIn() &&
         (isUserOwner(userId) ||
@@ -54,21 +55,25 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // GRANTS
     match /grants/{grantId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ADMIN LOGS
     match /adminActions/{logId} {
       allow read, write: if isAdmin();
     }
 
+    // SAVED COLLECTIONS
     match /savedCollections/{userId} {
       allow read: if isSignedIn() &&
         (request.auth.uid == userId || isAdmin());
       allow write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    // CHATS & MESSAGES
     match /chats/{chatId} {
       allow create: if isCreatingChat() || isAdmin();
       allow read: if isExistingChatParticipant() || isAdmin();
@@ -77,6 +82,16 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read, write: if isChatParticipantById(chatId) || isAdmin();
       }
+    }
+
+    // ⭐ NEW — AVAILABILITIES COLLECTION (THIS FIXES YOUR ISSUE)
+    match /availabilities/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // DEFAULT DENY EVERYTHING ELSE
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
