@@ -70,7 +70,7 @@ export default function Notifications() {
   };
 
   return (
-    <div className="notifications-page">
+    <div className="dashboard-page notifications-page">
       <h1 className="dashboard-title">Notifications</h1>
       <div className="notifications-list">
         {notifications.map((n) => (
