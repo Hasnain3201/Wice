@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import "../Pages/Client/ClientLoginPage.css"; // reuse existing client login styles
+import "../Pages/Client/ClientLoginPage.css";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 export default function LoginCard({
   onSubmit,
@@ -11,7 +12,24 @@ export default function LoginCard({
   errorMessage,
   loading = false,
 }) {
+
+  const styles = {
+    forgot: {
+      padding: '0.25rem 0.5rem',
+      backgroundColor: 'white',
+      color: '#374151',
+      border: '1px solid #d1d5db',
+      borderRadius: '5px',
+      fontSize: '0.7rem',
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    }
+  };
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+
   const autoComplete =
     identifierType === "email" ? "email" : "username";
 
@@ -55,17 +73,26 @@ export default function LoginCard({
 
         <div className="wice-row">
           <label className="wice-checkbox">
-            <input
-              type="checkbox"
-              id="remember"
-              name="remember"
-              defaultChecked
-            />
+            <input type="checkbox" id="remember" name="remember" defaultChecked />
             Remember me
           </label>
-          <a className="wice-link" href={forgotPath}>
+
+          {/* Replace link with modal trigger */}
+          <button
+            type="button"
+            style={styles.forgot}
+            onClick={() => setShowForgotModal(true)}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = '#f9fafb';
+              e.target.style.borderColor = '#9ca3af';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = 'white';
+              e.target.style.borderColor = '#d1d5db';
+            }}
+          >
             Forgot password?
-          </a>
+          </button>
         </div>
 
         {errorMessage ? (
@@ -78,6 +105,12 @@ export default function LoginCard({
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
+
+      {/* Modal at bottom */}
+      <ForgotPasswordModal
+        isOpen={showForgotModal}
+        onClose={() => setShowForgotModal(false)}
+      />
     </div>
   );
 }

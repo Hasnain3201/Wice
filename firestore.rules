@@ -40,29 +40,44 @@ service cloud.firestore {
              request.auth.uid == resource.data.clientId;
     }
 
-    // USERS COLLECTION
+
+    // -------------------------------------------------------------------
+    // USERS COLLECTION (FIXED SO CONSULTANTS CAN SEARCH DIRECTORY)
+    // -------------------------------------------------------------------
     match /users/{userId} {
-      allow read: if isSignedIn() &&
-        (isUserOwner(userId) ||
-         isAdmin() ||
-         docIsPublicConsultant(resource.data));
-      allow create: if isSignedIn();
+
+      // ⭐ FIX: Allow any signed-in user to read basic user profile info
+      allow read: if isSignedIn();
+
+      // Still only owner or admin can update
       allow update: if isUserOwner(userId) || isAdmin();
+
+      // Account creation allowed for signed-in users
+      allow create: if isSignedIn();
+
+      // Only admin can delete users
       allow delete: if isAdmin();
     }
 
+
+    // -------------------------------------------------------------------
     // GRANTS
+    // -------------------------------------------------------------------
     match /grants/{grantId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // -------------------------------------------------------------------
     // ADMIN LOGS
+    // -------------------------------------------------------------------
     match /adminActions/{logId} {
       allow read, write: if isAdmin();
     }
 
+    // -------------------------------------------------------------------
     // SAVED COLLECTIONS
+    // -------------------------------------------------------------------
     match /savedCollections/{userId} {
       allow read: if isSignedIn() &&
                     (request.auth.uid == userId || isAdmin());
@@ -70,7 +85,9 @@ service cloud.firestore {
                      request.auth.uid == userId;
     }
 
+    // -------------------------------------------------------------------
     // CHATS & MESSAGES
+    // -------------------------------------------------------------------
     match /chats/{chatId} {
       allow create: if isSignedIn();
       allow read: if isAdmin() ||
@@ -88,55 +105,49 @@ service cloud.firestore {
       }
     }
 
-    // ⭐ AVAILABILITIES COLLECTION 
-    match /availabilities/{userId} {
-      // Anyone can view consultant availability
-      allow read: if true;
 
-      // Only consultant or admin can modify
+    // -------------------------------------------------------------------
+    // AVAILABILITIES
+    // -------------------------------------------------------------------
+    match /availabilities/{userId} {
+      allow read: if true;
       allow write: if isSignedIn() &&
                    (request.auth.uid == userId || isAdmin());
     }
 
-    // ⭐ BOOKINGS COLLECTION — Consultant Accept/Decline Enabled
+
+    // -------------------------------------------------------------------
+    // BOOKINGS (CONSULTANT ACCEPT/DECLINE ENABLED)
+    // -------------------------------------------------------------------
     match /bookings/{bookingId} {
 
-      // Anyone signed in can create a booking
       allow create: if isSignedIn();
 
-      // Consultant, client, admin can read the booking
       allow read: if isSignedIn() &&
         (isClientForBooking() ||
          isConsultantForBooking() ||
          isAdmin());
 
-      // UPDATES:
-      // - Client can cancel only their own booking
-      // - Consultant can accept or decline their own bookings
-      // - Admin can update anything
       allow update: if isSignedIn() &&
         (
-          // Consultant accepting/declining
           (isConsultantForBooking() &&
            (
              request.resource.data.status == 'confirmed' ||
              request.resource.data.status == 'declined'
            )
           ) ||
-
-          // Client cancelling
           (isClientForBooking() &&
            request.resource.data.status == 'cancelled') ||
-
-          // Admin override
           isAdmin()
         );
 
-      // No one deletes bookings except admin
       allow delete: if isAdmin();
     }
 
-    // DEFAULT DENY EVERYTHING ELSE
+
+    // -------------------------------------------------------------------
+    // DEFAULT: DENY EVERYTHING ELSE
+    // -------------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
     }
