@@ -2,6 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import "./Settings.css";
 import { useAuth } from "../context/AuthContext.jsx";
+import { auth } from "../firebase";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
 
 /** ---- Field catalog & labels ---- */
 const LABELS = {
@@ -46,6 +52,14 @@ function mergeWithCurrentFields(savedObj = {}, fieldList) {
 export default function Settings() {
   const { user, role, profile } = useAuth(); // role should be "client" or "consultant"
   const [openSection, setOpenSection] = useState(null);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [pwForm, setPwForm] = useState({
+    current: "",
+    next: "",
+    confirm: "",
+  });
+  const [pwMessage, setPwMessage] = useState("");
+  const [pwError, setPwError] = useState("");
 
   // Which fields to show based on role
   const portalFields = useMemo(
@@ -105,6 +119,50 @@ export default function Settings() {
       [section]: { ...prev[section], [key]: !prev[section][key] },
     }));
 
+  const passwordValid = (value) => {
+    if (!value || value.length < 6) return false;
+    const hasLetter = /[A-Za-z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    return hasLetter && hasNumber;
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwMessage("");
+    setPwError("");
+    if (!user?.email) {
+      setPwError("You must be signed in to change your password.");
+      return;
+    }
+    if (pwForm.next !== pwForm.confirm) {
+      setPwError("New passwords do not match.");
+      return;
+    }
+    if (!passwordValid(pwForm.next)) {
+      setPwError("Password must be at least 6 characters and include a letter and a number.");
+      return;
+    }
+    try {
+      setChangingPassword(true);
+      const credential = EmailAuthProvider.credential(user.email, pwForm.current);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+      await updatePassword(auth.currentUser, pwForm.next);
+      setPwMessage("Password updated successfully.");
+      setPwForm({ current: "", next: "", confirm: "" });
+    } catch (err) {
+      const code = err?.code || "";
+      if (code === "auth/wrong-password") {
+        setPwError("Current password is incorrect.");
+      } else if (code === "auth/too-many-requests") {
+        setPwError("Too many attempts. Please wait a minute and try again.");
+      } else {
+        setPwError(err?.message || "Unable to change password right now.");
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="dashboard-page">
@@ -132,6 +190,77 @@ export default function Settings() {
       </header>
 
       <div className="dashboard-card settings-card settings-card--wide">
+        {/* PASSWORD MANAGEMENT */}
+        <section className="settings-section">
+          <button
+            className="settings-section__header"
+            onClick={() => toggleSection("password")}
+            aria-expanded={openSection === "password"}
+          >
+            <span>Password</span>
+            {openSection === "password" ? <ChevronUp /> : <ChevronDown />}
+          </button>
+          <p className="settings-section__desc">
+            Update your password. You’ll need your current password to confirm the change.
+          </p>
+          <div
+            className={`settings-section__body ${
+              openSection === "password" ? "is-open" : ""
+            }`}
+          >
+            <form className="settings-form" onSubmit={handleChangePassword}>
+              <label>
+                Current password
+                <input
+                  type="password"
+                  value={pwForm.current}
+                  onChange={(e) =>
+                    setPwForm((prev) => ({ ...prev, current: e.target.value }))
+                  }
+                  autoComplete="current-password"
+                  required
+                />
+              </label>
+              <label>
+                New password
+                <input
+                  type="password"
+                  value={pwForm.next}
+                  onChange={(e) =>
+                    setPwForm((prev) => ({ ...prev, next: e.target.value }))
+                  }
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+              <label>
+                Confirm new password
+                <input
+                  type="password"
+                  value={pwForm.confirm}
+                  onChange={(e) =>
+                    setPwForm((prev) => ({ ...prev, confirm: e.target.value }))
+                  }
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+
+              {pwError && (
+                <p className="settings-error" role="alert">
+                  {pwError}
+                </p>
+              )}
+              {pwMessage && <p className="settings-success">{pwMessage}</p>}
+
+              <div className="settings-actions">
+                <button className="btn primary" type="submit" disabled={changingPassword}>
+                  {changingPassword ? "Updating…" : "Update password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
 
         {/* PORTAL NOTIFICATIONS */}
         <section className="settings-section">

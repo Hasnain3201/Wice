@@ -32,6 +32,7 @@ import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import ConsultantPublicProfile from "./Pages/ConsultantPublicProfile.jsx";
+import VerifyEmail from "./Pages/VerifyEmail.jsx";
 
 // Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
@@ -176,6 +177,7 @@ export default function App() {
               <Route path="/employee/login" element={<ConsultantLogin />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
               {/* DEVELOPER TEST ROUTE — ALWAYS UNPROTECTED */}
               <Route path="/test/profile-builder" element={<ProfileBuilder />} />
@@ -210,12 +212,24 @@ export default function App() {
               {/* CLIENT PROFILE BUILDER */}
               <Route
                 path="/client/profile-builder/intro"
-                element={<ClientIntroPage />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={<ClientIntroPage />}
+                  />
+                }
               />
 
               <Route
                 path="/client/profile-builder"
-                element={<ClientProfileBuilder />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["client"]}
+                    fallback="/client/login"
+                    element={<ClientProfileBuilder />}
+                  />
+                }
               />
 
               {/* Client Dashboard */}

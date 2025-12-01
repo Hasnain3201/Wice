@@ -20,7 +20,7 @@ const ROLE_LABELS = {
   client: "Client",
 };
 const PROTECTED_ADMIN_EMAIL =
-  import.meta.env.VITE_PROTECTED_ADMIN_EMAIL?.toLowerCase() || null;
+  "admin@wice.org";
 
 function getAccountType(entry) {
   return (
@@ -44,6 +44,20 @@ function getDisplayName(entry) {
 
 function getStatus(entry) {
   return entry?.status || entry?.profile?.status || null;
+}
+
+function getPreviousRole(entry) {
+  return entry?.previousAccountType || entry?.profile?.previousAccountType || null;
+}
+
+function getDemoteRole(entry) {
+  const previous = getPreviousRole(entry);
+  if (previous && previous !== "admin") return previous;
+  const stored = entry?.profile?.accountTypeBeforeAdmin;
+  if (stored && stored !== "admin") return stored;
+  const current = getAccountType(entry);
+  if (current && current !== "admin") return current;
+  return "consultant";
 }
 
 export default function AdminDashboard() {
@@ -410,12 +424,18 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               className="admin-btn ghost"
-                              onClick={() => handleDemote(entry, "consultant")}
+                              onClick={() => {
+                                const demoteTo = getDemoteRole(entry);
+                                handleDemote(entry, demoteTo);
+                              }}
                               disabled={actionByUser[entry.uid] === "demoting"}
                             >
                               {actionByUser[entry.uid] === "demoting"
                                 ? "Updating…"
-                                : "Demote to Consultant"}
+                                : `Demote to ${
+                                    ROLE_LABELS[getDemoteRole(entry)] ||
+                                    getDemoteRole(entry)
+                                  }`}
                             </button>
                           )}
                         {status === "revoked" ? (

@@ -16,17 +16,29 @@ import ClientProfileBuilder2Comp from "./ClientProfileBuilder2Comp";
 
 import "../profileBuilder.css";
 
+const shallowEqual = (a = {}, b = {}) => {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+};
+
 export default function ClientProfileBuilder() {
   const { profile } = useAuth();
   const location = useLocation();
   const baseProfile = useMemo(() => profile?.profile || {}, [profile]);
   const searchParams = new URLSearchParams(location.search);
   const wantsFull = searchParams.get("full") === "1";
+  const [hydratedProfile, setHydratedProfile] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   const computeStep = useCallback(() => {
     const lightDone = profile?.phaseLightCompleted || profile?.clientLightCompleted;
     const fullDone = profile?.phaseFullCompleted || profile?.clientFullCompleted;
-    if (!profile) return null; // wait until profile loads to avoid flicker
+    if (!profile) return 0; // render light form by default while loading profile
     if (fullDone) return 3;
     if (wantsFull && lightDone) return 2;
     if (lightDone) return 1; // keep user on light review until they opt into full
@@ -43,8 +55,8 @@ export default function ClientProfileBuilder() {
 
   // Store ALL form input
   const [lightData, setLightData] = useState(() => ({
-    fullName: baseProfile.fullName || "",
-    jobTitle: baseProfile.jobTitle || "",
+    fullName: baseProfile.fullName || profile?.fullName || "",
+    jobTitle: baseProfile.jobTitle || profile?.jobTitle || "",
     workEmail: baseProfile.workEmail || profile?.email || "",
     orgName: baseProfile.organizationName || "",
     orgType: baseProfile.organizationType || "",
@@ -69,7 +81,7 @@ export default function ClientProfileBuilder() {
 
   // Hydrate from stored profile when skipping directly to full flow
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || hydratedProfile) return;
 
     const contactMethodFromProfile =
       (baseProfile.contactMethods && baseProfile.contactMethods[0]) ||
@@ -136,7 +148,9 @@ export default function ClientProfileBuilder() {
       whatsapp: prev.whatsapp || hydratedFull.whatsapp,
       contactMethod: prev.contactMethod || hydratedFull.contactMethod,
     }));
-  }, [profile, baseProfile]);
+    setHydratedProfile(true);
+    setInitialLoaded(true);
+  }, [profile, baseProfile, hydratedProfile]);
 
   // Progress tracking
   const [lightFilled, setLightFilled] = useState(0);
@@ -152,6 +166,7 @@ export default function ClientProfileBuilder() {
     "Organization Name",
     "Organization Type",
     "Primary Industry",
+    "Sector (Subsector)",
     "Country",
     "Time Zone",
   ];
@@ -171,10 +186,6 @@ export default function ClientProfileBuilder() {
   const progressTotal = isFullMode ? fullLabels.length : lightLabels.length;
   const progressFilled = isFullMode ? fullFilled : lightFilled;
   const overallProgress = Math.round((progressFilled / progressTotal) * 100);
-
-  if (step === null) {
-    return null;
-  }
 
   const goToLightCompletion = () => {
     if (isLightComplete) setStep(1);
@@ -205,7 +216,7 @@ export default function ClientProfileBuilder() {
                 setLightFilled(filled);
                 setCompletedLightLabels(completedLabels);
                 setIsLightComplete(isComplete);
-                setLightData(values); // ⭐ store data
+                setLightData((prev) => (shallowEqual(prev, values) ? prev : values)); // ⭐ store data
           }}
         />
       </SectionWrapper>

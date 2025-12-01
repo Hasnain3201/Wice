@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   limit,
   onSnapshot,
@@ -60,6 +61,16 @@ export async function setUserAccountStatus(uid, status, metadata = {}) {
 export async function updateUserRole(uid, nextRole) {
   if (!uid) throw new Error("Missing uid for role update");
   if (!nextRole) throw new Error("Role is required");
+   // Load existing role so we can round-trip to the right non-admin role
+  const snapshot = await getDoc(doc(db, "users", uid));
+  const existing = snapshot.exists() ? snapshot.data() : {};
+  const currentRole =
+    existing.accountType ||
+    existing.role ||
+    existing.profile?.accountType ||
+    existing.profile?.role ||
+    null;
+
   const ref = doc(db, "users", uid);
   const payload = {
     accountType: nextRole,
@@ -70,6 +81,28 @@ export async function updateUserRole(uid, nextRole) {
   // Mirror the role change under the profile object for consistency with builder data
   payload["profile.accountType"] = nextRole;
   payload["profile.role"] = nextRole;
+
+  // Preserve the user's last non-admin role so demotion returns them to the right place
+  const previousRole =
+    existing.previousAccountType ||
+    existing.profile?.previousAccountType ||
+    currentRole;
+
+  if (nextRole === "admin") {
+    if (previousRole && previousRole !== "admin") {
+      payload.previousAccountType = previousRole;
+      payload["profile.previousAccountType"] = previousRole;
+      payload["profile.accountTypeBeforeAdmin"] =
+        existing.profile?.accountTypeBeforeAdmin || previousRole;
+    }
+  } else {
+    // Demoting out of admin (or switching between client/consultant)
+    if (previousRole && previousRole !== "admin") {
+      payload.previousAccountType = previousRole;
+      payload["profile.previousAccountType"] = previousRole;
+    }
+  }
+
   await updateDoc(ref, payload);
 }
 

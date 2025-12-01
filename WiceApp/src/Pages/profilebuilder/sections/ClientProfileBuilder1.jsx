@@ -21,6 +21,7 @@ const ORG_TYPE_OPTIONS = [
 ];
 
 export default function ClientProfileBuilder1({ onProgress, initialValues = {} }) {
+  const [dirty, setDirty] = useState(false);
   const [form, setForm] = useState({
     fullName: initialValues.fullName || "",
     jobTitle: initialValues.jobTitle || "",
@@ -45,6 +46,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
 
   const required = Object.keys(form);
   useEffect(() => {
+    if (dirty) return;
     setForm({
       fullName: initialValues.fullName || "",
       jobTitle: initialValues.jobTitle || "",
@@ -66,6 +68,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
     initialValues.sector,
     initialValues.country,
     initialValues.timeZone,
+    dirty,
   ]);
 
   const update = (e) => {
@@ -73,6 +76,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
 
     // Reset sector if industry changes
     if (name === "primaryIndustry") {
+      setDirty(true);
       setForm((prev) => ({
         ...prev,
         primaryIndustry: value,
@@ -81,6 +85,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
       return;
     }
 
+    setDirty(true);
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 

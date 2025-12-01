@@ -3,7 +3,11 @@ import "./SignUp.css";
 import WiceLogo from "../assets/Wice_logo.jpg";
 import { ArrowLeft } from "lucide-react";
 import { auth, db } from "../firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+} from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -62,6 +66,7 @@ export default function SignUp() {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(user, { displayName: fullName });
+      await sendEmailVerification(user);
 
       /* ⭐⭐ IMPORTANT CHANGE:
          Create root user fields + default profile + dashboard for each role
@@ -88,16 +93,17 @@ export default function SignUp() {
         { merge: true }
       );
 
-      // Refresh AuthContext user profile
+      // Refresh AuthContext user profile (will set accountType but user may be blocked until verified)
       await refreshProfile();
 
-      // Redirect user to the correct profile-builder intro
-      const destination =
-        accountType === "consultant"
-          ? "/consultant/profile-builder"
-          : "/client/profile-builder/intro";
-
-      navigate(destination);
+      // Force verification before allowing profile builder
+      navigate("/verify-email", {
+        state: {
+          email,
+          accountType,
+        },
+        replace: true,
+      });
 
     } catch (err) {
       console.error("Signup error:", err);

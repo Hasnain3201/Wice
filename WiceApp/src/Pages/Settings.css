@@ -67,3 +67,13 @@
   width: 16px;
   height: 16px;
 }
+
+.settings-error {
+  color: #b91c1c;
+  margin-top: 8px;
+}
+
+.settings-success {
+  color: #0f5132;
+  margin-top: 8px;
+}
