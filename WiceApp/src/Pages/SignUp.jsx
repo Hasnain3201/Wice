@@ -238,17 +238,6 @@ export default function SignUp() {
           </a>
         </p>
 
-        {/* Developer Test Button */}
-        <div style={{ marginTop: "1.5rem" }}>
-          <button
-            type="button"
-            className="signup-btn"
-            onClick={() => navigate("/test/profile-builder")}
-          >
-            Developer Test: Go to Profile Builder
-          </button>
-        </div>
-
       </div>
 
       {/* Terms Popup */}

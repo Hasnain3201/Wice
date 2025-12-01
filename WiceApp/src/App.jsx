@@ -179,9 +179,6 @@ export default function App() {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
 
-              {/* DEVELOPER TEST ROUTE — ALWAYS UNPROTECTED */}
-              <Route path="/test/profile-builder" element={<ProfileBuilder />} />
-
               {/* Public consultant profile view */}
               <Route path="/consultant/:uid" element={<ConsultantPublicProfile />} />
 
