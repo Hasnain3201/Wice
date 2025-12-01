@@ -44,6 +44,8 @@ export default function ProfileBuilder({ mode = "light" }) {
   // ⭐ GLOBAL PROFILE DATA FOR ALL PAGES
   const [profileData, setProfileData] = useState({
     fullName: "",
+    title: "",
+    location: "",
     pronouns: "",
     customPronouns: "",
     timeZone: "",
@@ -67,6 +69,8 @@ export default function ProfileBuilder({ mode = "light" }) {
     donorExperience: [],
     functionalExpertise: [],
     technicalSkillsByExpertise: {},
+    capabilitiesList: [],
+    skills: [],
     softwareTools: [],
     highestDegree: "",
     institution: "",
@@ -97,6 +101,8 @@ export default function ProfileBuilder({ mode = "light" }) {
         stored.fullName ||
         user?.displayName ||
         "",
+      title: prev.title || stored.title || userDoc.title || "",
+      location: prev.location || stored.location || userDoc.location || "",
       pronouns: prev.pronouns || stored.pronouns || "",
       customPronouns: prev.customPronouns || stored.customPronouns || "",
       timeZone: prev.timeZone || stored.timeZone || "",
@@ -150,6 +156,13 @@ export default function ProfileBuilder({ mode = "light" }) {
         stored.functionalSkillsByExpertise ||
         prev.technicalSkillsByExpertise ||
         {},
+      capabilitiesList:
+        (prev.capabilitiesList && prev.capabilitiesList.length
+          ? prev.capabilitiesList
+          : stored.capabilitiesList) ||
+        [],
+      skills:
+        (prev.skills && prev.skills.length ? prev.skills : stored.skills) || [],
       softwareTools: stored.softwareTools || prev.softwareTools || [],
       highestDegree: stored.highestDegree || prev.highestDegree || "",
       institution: stored.institution || prev.institution || "",

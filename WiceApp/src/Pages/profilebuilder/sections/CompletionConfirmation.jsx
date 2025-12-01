@@ -71,6 +71,17 @@ function formatEducation(entries) {
     .join("; ");
 }
 
+const hasContent = (value) => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === "object") return Object.keys(value).length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return true;
+  if (typeof value === "boolean") return true;
+  return Boolean(value);
+};
+
+const pickValue = (next, fallback) => (hasContent(next) ? next : fallback);
+
 export default function CompletionConfirmation({
   profileData,
   onBack,
@@ -78,7 +89,7 @@ export default function CompletionConfirmation({
   const [isChecked, setIsChecked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, profile: authProfile } = useAuth();
   const navigate = useNavigate();
 
   // ⭐ SAVE FULL PROFILE + SHOW POPUP + REDIRECT
@@ -86,71 +97,195 @@ export default function CompletionConfirmation({
     const uid = user?.uid;
     if (!uid) return;
 
-    const industries = normalizeList(profileData.industries);
-    const sectors = normalizeList(profileData.sectors);
-    const languages = normalizeList(profileData.languages);
-    const donorExperience = normalizeList(profileData.donorExperience);
-    const capabilities = normalizeList(profileData.capabilitiesList);
-    const certifications = normalizeList(profileData.certifications);
-    const softwareTools = normalizeList(profileData.softwareTools);
-    const securityClearances = normalizeList(profileData.securityClearances);
-    const experienceYears = parseExperienceBucket(
-      profileData.totalYearsExperience
-    );
-    const dailyRateNumber = Number(profileData.dailyRate);
-    const additionalEducation = profileData.additionalEducation || [];
-    const additionalFiles = profileData.additionalFiles || [];
+    const existingProfile = authProfile?.profile || {};
+    const existingFullName = authProfile?.fullName || "";
+    const existingTitle = authProfile?.title || existingProfile.title || "";
 
-  const payload = {
-      fullName: profileData.fullName?.trim() || "",
-      location: profileData.location || "",
-      country: profileData.country || "",
-      headline: profileData.oneLinerBio || "",
-      profile: {
-        fullName: profileData.fullName?.trim() || "",
-        pronouns: profileData.pronouns || "",
-        timeZone: profileData.timeZone || "",
-        location: profileData.location || "",
-        country: profileData.country || "",
-        oneLinerBio: profileData.oneLinerBio || "",
-        about: profileData.about || "",
-        totalYearsExperience: profileData.totalYearsExperience || "",
-        experienceBucket: profileData.totalYearsExperience || "",
-        experienceYears,
-        linkedinUrl: profileData.linkedinUrl || "",
-        industries,
-        sectors,
-        sectorsByIndustry: profileData.sectorsByIndustry || {},
-        subsectorsBySector: profileData.subsectorsBySector || {},
-        languages,
-        currency: profileData.currency || "USD",
-        dailyRate: Number.isFinite(dailyRateNumber) ? dailyRateNumber : null,
-        openToTravel:
-          profileData.openToTravel === "Yes"
-            ? true
-            : profileData.openToTravel === "No"
-            ? false
-            : profileData.openToTravel,
-        experienceRegions: profileData.experienceRegions || [],
-        experienceCountries: profileData.experienceCountries || [],
-        donorExperience,
-        functionalExpertise: profileData.functionalExpertise || [],
-        capabilitiesList: capabilities,
-        technicalSkillsByExpertise:
-          profileData.technicalSkillsByExpertise || {},
-        softwareTools,
-        highestDegree: profileData.highestDegree || "",
-        institution: profileData.institution || "",
-        certifications,
-        securityClearances,
-        additionalEducation,
-        resumeFile: profileData.resumeFile || "",
-        resumeFileName: profileData.resumeFileName || "",
-        resumeStoragePath: profileData.resumeStoragePath || "",
-        additionalFiles,
-      },
+    const industriesList = normalizeList(profileData.industries);
+    const industries =
+      industriesList.length > 0
+        ? industriesList
+        : normalizeList(existingProfile.industries);
+
+    const sectorsList = normalizeList(profileData.sectors);
+    const sectors =
+      sectorsList.length > 0 ? sectorsList : normalizeList(existingProfile.sectors);
+
+    const languagesList = normalizeList(profileData.languages);
+    const languages =
+      languagesList.length > 0
+        ? languagesList
+        : normalizeList(existingProfile.languages);
+
+    const donorExperienceList = normalizeList(profileData.donorExperience);
+    const donorExperience =
+      donorExperienceList.length > 0
+        ? donorExperienceList
+        : normalizeList(existingProfile.donorExperience);
+
+    const capabilitiesList = normalizeList(profileData.capabilitiesList);
+    const capabilities =
+      capabilitiesList.length > 0
+        ? capabilitiesList
+        : normalizeList(
+            existingProfile.capabilitiesList || existingProfile.capabilities
+          );
+
+    const certificationsList = normalizeList(profileData.certifications);
+    const certifications =
+      certificationsList.length > 0
+        ? certificationsList
+        : normalizeList(existingProfile.certifications);
+
+    const softwareToolsList = normalizeList(profileData.softwareTools);
+    const softwareTools =
+      softwareToolsList.length > 0
+        ? softwareToolsList
+        : normalizeList(existingProfile.softwareTools);
+
+    const securityClearancesList = normalizeList(profileData.securityClearances);
+    const securityClearances =
+      securityClearancesList.length > 0
+        ? securityClearancesList
+        : normalizeList(existingProfile.securityClearances);
+
+    const experienceBucket = pickValue(
+      profileData.totalYearsExperience,
+      existingProfile.experienceBucket || existingProfile.totalYearsExperience || ""
+    );
+    const experienceYears =
+      parseExperienceBucket(profileData.totalYearsExperience) ??
+      existingProfile.experienceYears ??
+      parseExperienceBucket(existingProfile.experienceBucket) ??
+      null;
+    const dailyRateNumber = Number(profileData.dailyRate);
+    const dailyRateValue = Number.isFinite(dailyRateNumber)
+      ? dailyRateNumber
+      : existingProfile.dailyRate ?? null;
+
+    const additionalEducation =
+      pickValue(profileData.additionalEducation, existingProfile.additionalEducation || []) || [];
+    const additionalFiles =
+      pickValue(profileData.additionalFiles, existingProfile.additionalFiles || []) || [];
+
+    const sectorsByIndustry = hasContent(profileData.sectorsByIndustry)
+      ? profileData.sectorsByIndustry
+      : existingProfile.sectorsByIndustry || {};
+    const subsectorsBySector = hasContent(profileData.subsectorsBySector)
+      ? profileData.subsectorsBySector
+      : existingProfile.subsectorsBySector || {};
+
+    const technicalSkillsByExpertise = hasContent(profileData.technicalSkillsByExpertise)
+      ? profileData.technicalSkillsByExpertise
+      : existingProfile.technicalSkillsByExpertise ||
+        existingProfile.functionalSkillsByExpertise ||
+        {};
+    const skillsList = hasContent(profileData.skills)
+      ? profileData.skills
+      : hasContent(profileData.capabilitiesList)
+        ? profileData.capabilitiesList
+        : hasContent(profileData.softwareTools)
+          ? profileData.softwareTools
+          : existingProfile.skills || [];
+
+    const experienceRegions =
+      pickValue(profileData.experienceRegions, existingProfile.experienceRegions || []) || [];
+    const experienceCountries =
+      pickValue(profileData.experienceCountries, existingProfile.experienceCountries || []) || [];
+
+    const openToTravelValue =
+      profileData.openToTravel === "Yes"
+        ? true
+        : profileData.openToTravel === "No"
+        ? false
+        : profileData.openToTravel;
+    const openToTravel =
+      openToTravelValue !== undefined && openToTravelValue !== null
+        ? openToTravelValue
+        : existingProfile.openToTravel ?? null;
+
+    const normalizedFullName = pickValue(
+      profileData.fullName?.trim(),
+      existingFullName
+    );
+    const normalizedTitle = pickValue(
+      profileData.title,
+      existingTitle
+    );
+    const headline = pickValue(
+      profileData.oneLinerBio,
+      authProfile?.headline || existingProfile.oneLinerBio || ""
+    );
+    const location = pickValue(
+      profileData.location,
+      existingProfile.location || authProfile?.location || ""
+    );
+    const country = pickValue(
+      profileData.country,
+      existingProfile.country || authProfile?.country || ""
+    );
+
+    const profilePayload = {
+      ...existingProfile,
+      fullName: normalizedFullName,
+      title: normalizedTitle,
+      pronouns: pickValue(profileData.pronouns, existingProfile.pronouns || ""),
+      timeZone: pickValue(profileData.timeZone, existingProfile.timeZone || ""),
+      location,
+      country,
+      oneLinerBio: headline,
+      about: pickValue(profileData.about, existingProfile.about || ""),
+      totalYearsExperience: pickValue(
+        profileData.totalYearsExperience,
+        existingProfile.totalYearsExperience || ""
+      ),
+      experienceBucket: experienceBucket || "",
+      experienceYears,
+      linkedinUrl: pickValue(profileData.linkedinUrl, existingProfile.linkedinUrl || ""),
+      industries,
+      sectors,
+      sectorsByIndustry,
+      subsectorsBySector,
+      languages,
+      currency: pickValue(profileData.currency, existingProfile.currency || "USD"),
+      dailyRate: dailyRateValue,
+      openToTravel,
+      experienceRegions,
+      experienceCountries,
+      donorExperience,
+      functionalExpertise: pickValue(
+        profileData.functionalExpertise,
+        existingProfile.functionalExpertise || []
+      ),
+      capabilitiesList: capabilities,
+      technicalSkillsByExpertise,
+      skills: skillsList,
+      softwareTools,
+      highestDegree: pickValue(profileData.highestDegree, existingProfile.highestDegree || ""),
+      institution: pickValue(profileData.institution, existingProfile.institution || ""),
+      certifications,
+      securityClearances,
+      additionalEducation,
+      resumeFile: pickValue(profileData.resumeFile, existingProfile.resumeFile || ""),
+      resumeFileName: pickValue(profileData.resumeFileName, existingProfile.resumeFileName || ""),
+      resumeStoragePath: pickValue(
+        profileData.resumeStoragePath,
+        existingProfile.resumeStoragePath || ""
+      ),
+      additionalFiles,
+    };
+
+    const payload = {
+      fullName: normalizedFullName,
+      title: normalizedTitle,
+      location,
+      country,
+      headline,
+      profile: profilePayload,
       phaseLightCompleted: true,
       phaseFullCompleted: true,
+      consultantLightCompleted: true,
+      consultantFullCompleted: true,
     };
 
     setSaving(true);
@@ -177,6 +312,7 @@ export default function CompletionConfirmation({
   // DISPLAY GROUPS (unchanged)
   const identityBasics = {
     "Full Name": profileData.fullName,
+    "Role / Title": profileData.title,
     Country: profileData.country,
     Location: profileData.location,
     Pronouns: profileData.pronouns,
@@ -212,6 +348,7 @@ export default function CompletionConfirmation({
   const professionalCapabilities = {
     "Functional Expertise": profileData.functionalExpertise?.join(", "),
     "Technical Skills": flattenList(profileData.technicalSkillsByExpertise),
+    Skills: profileData.skills?.join(", "),
     "Software & Tools": profileData.softwareTools?.join(", "),
   };
 

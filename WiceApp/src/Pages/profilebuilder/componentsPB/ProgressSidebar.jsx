@@ -7,17 +7,7 @@ export default function ProgressSidebar({
   completed,
   progress,
   onNavigate,
-  isFullProfileMode,  // ⭐ NEW CONTROL
 }) {
-  // Light profile pages (skip intro)
-  const light = sections.slice(1, 6);
-
-  // All full profile pages
-  const full = sections.slice(6);
-
-  // When in full mode, merge lists
-  const merged = [...light, ...full];
-
   const renderSectionItem = (sec) => {
     const isActive = sec === current;
     const isDone = completed.includes(sec);
@@ -38,25 +28,9 @@ export default function ProgressSidebar({
       <h3>Build Your Profile</h3>
       <ProgressBar progress={progress} />
 
-      {/* 🔵 MODE 1: USER HAS NOT YET CLICKED “COMPLETE FULL PROFILE” */}
-      {!isFullProfileMode && (
-        <>
-          <div className="phase-header">Light Profile</div>
-          <ul className="sidebar-list">
-            {light.map((sec) => renderSectionItem(sec))}
-          </ul>
-        </>
-      )}
-
-      {/* 🔵 MODE 2: USER CLICKED “COMPLETE FULL PROFILE NOW” */}
-      {isFullProfileMode && (
-        <>
-          {/* No headers */}
-          <ul className="sidebar-list">
-            {merged.map((sec) => renderSectionItem(sec))}
-          </ul>
-        </>
-      )}
+      <ul className="sidebar-list">
+        {sections.map((sec) => renderSectionItem(sec))}
+      </ul>
     </aside>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { query, collection, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -10,15 +10,9 @@ export default function CalendarPage() {
   const { user, role, profile } = useAuth();
   const name = profile?.fullName || user?.displayName || user?.email;
   const [confirmedBookings, setConfirmedBookings] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadConfirmedBookings = useCallback(async () => {
     if (!user?.uid) return;
-    loadConfirmedBookings();
-  }, [user, role]);
-
-  const loadConfirmedBookings = async () => {
-    setIsLoading(true);
     try {
       let bookingsQuery;
       if (role === 'consultant') {
@@ -42,10 +36,12 @@ export default function CalendarPage() {
       }
     } catch (err) {
       console.error('Error loading confirmed bookings:', err);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [role, user?.uid]);
+
+  useEffect(() => {
+    loadConfirmedBookings();
+  }, [loadConfirmedBookings]);
 
   return (
     <div className="dashboard-page">

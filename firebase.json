@@ -21,5 +21,11 @@
         "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
+  ],
+  "storage": [
+    {
+      "bucket": "wice-granthunt.firebasestorage.app",
+      "rules": "storage.rules"
+    }
   ]
 }

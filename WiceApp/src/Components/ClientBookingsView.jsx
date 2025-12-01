@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { Calendar, Clock, User, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
@@ -165,12 +165,7 @@ export default function ClientBookingsView({ clientId }) {
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
-    if (!clientId) return;
-    loadBookings();
-  }, [clientId]);
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -205,7 +200,12 @@ export default function ClientBookingsView({ clientId }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clientId]);
+
+  useEffect(() => {
+    if (!clientId) return;
+    loadBookings();
+  }, [clientId, loadBookings]);
 
   const handleCancelBooking = async (bookingId) => {
     if (!window.confirm('Are you sure you want to cancel this booking request?')) {

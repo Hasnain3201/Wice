@@ -17,6 +17,14 @@ export default function ClientProfileBuilder1Comp({
 
   const handleSaveLight = async () => {
     await saveUserProfile(user.uid, {
+      fullName: lightData.fullName,
+      jobTitle: lightData.jobTitle,
+      organizationName: lightData.orgName,
+      organizationType: lightData.orgType,
+      primaryIndustry: lightData.primaryIndustry,
+      sector: lightData.sector,
+      country: lightData.country,
+      timeZone: lightData.timeZone,
       profile: {
         fullName: lightData.fullName,
         jobTitle: lightData.jobTitle,
@@ -25,7 +33,7 @@ export default function ClientProfileBuilder1Comp({
         primaryIndustry: lightData.primaryIndustry,
         sector: lightData.sector,
         country: lightData.country,
-        contactMethods: [lightData.contactMethod],
+        timeZone: lightData.timeZone,
       },
       clientLightCompleted: true,
       phaseLightCompleted: true,
@@ -61,7 +69,10 @@ export default function ClientProfileBuilder1Comp({
 
       <SectionDropdown
         title="Contact Preferences"
-        data={{ "Preferred Method": lightData.contactMethod }}
+        data={{
+          "Time Zone": lightData.timeZone,
+          "Preferred Method": lightData.contactMethod,
+        }}
       />
 
       <div className="completion-actions">

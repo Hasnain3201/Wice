@@ -55,6 +55,25 @@ export default function IdentityBasics({ profileData, setProfileData }) {
         </>
       )}
 
+      <label>Role / Title *</label>
+      <input
+        type="text"
+        placeholder="e.g., Senior MEL Consultant"
+        required
+        value={profileData.title || ""}
+        onChange={(e) => update("title", e.target.value)}
+      />
+
+      <label>Location *</label>
+      <input
+        type="text"
+        placeholder="City, Country"
+        required
+        value={profileData.location || ""}
+        onChange={(e) => update("location", e.target.value)}
+        autoComplete="address-level2"
+      />
+
       <label>Time Zone *</label>
       <p className="description">
         Tell us where you are based so we can support time-zone friendly matching.

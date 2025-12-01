@@ -5,11 +5,17 @@ import {
   FUNCTIONAL_SKILLS,
   SOFTWARE_TOOLS,
 } from "../../../data/taxonomy";
+import skillsData from "../../../data/skillsData.js";
 
 const flattenSkills = (map = {}) =>
   Object.values(map)
     .flat()
     .filter(Boolean);
+
+const SKILL_OPTIONS = skillsData.map((skill) => ({
+  value: skill,
+  label: skill,
+}));
 
 export default function ProfessionalCapabilities({ profileData, setProfileData }) {
   const [showAllSkills, setShowAllSkills] = useState(false);
@@ -69,6 +75,11 @@ export default function ProfessionalCapabilities({ profileData, setProfileData }
     label: tool,
   }));
 
+  const selectedGeneralSkills = (profileData.skills || []).map((skill) => ({
+    value: skill,
+    label: skill,
+  }));
+
   const handleExpertiseChange = (values) => {
     const chosen = (values || []).map((opt) => opt.value);
     setProfileData((prev) => {
@@ -115,6 +126,13 @@ export default function ProfessionalCapabilities({ profileData, setProfileData }
     setProfileData((prev) => ({
       ...prev,
       softwareTools: (values || []).map((opt) => opt.value),
+    }));
+  };
+
+  const handleGeneralSkillsChange = (values) => {
+    setProfileData((prev) => ({
+      ...prev,
+      skills: (values || []).map((opt) => opt.value),
     }));
   };
 
@@ -172,9 +190,25 @@ export default function ProfessionalCapabilities({ profileData, setProfileData }
         onChange={handleSoftwareChange}
       />
 
+      <label>General Skills</label>
+      <Select
+        isMulti
+        options={SKILL_OPTIONS}
+        value={selectedGeneralSkills}
+        placeholder="Select skills"
+        onChange={handleGeneralSkillsChange}
+      />
+
       <p className="selected-info">
         <span className="label-light">Highlighted skills:</span>{" "}
-        {selectedSkills.length ? flattenSkills(profileData.technicalSkillsByExpertise).join(", ") : "None"}
+        {selectedSkills.length || selectedGeneralSkills.length
+          ? [
+              ...flattenSkills(profileData.technicalSkillsByExpertise || []),
+              ...(profileData.skills || []),
+            ]
+              .filter(Boolean)
+              .join(", ")
+          : "None"}
       </p>
     </div>
   );

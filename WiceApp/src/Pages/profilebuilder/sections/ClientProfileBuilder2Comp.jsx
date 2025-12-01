@@ -14,25 +14,36 @@ export default function ClientProfileBuilder2Comp({
 }) {
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, profile } = useAuth();
 
   const handleSubmit = async () => {
+    const existingProfile = profile?.profile || {};
     await saveUserProfile(user.uid, {
+      fullName: lightData.fullName,
+      jobTitle: lightData.jobTitle,
+      organizationName: lightData.orgName,
+      organizationType: lightData.orgType,
+      primaryIndustry: lightData.primaryIndustry,
+      sector: lightData.sector,
+      country: lightData.country,
+      timeZone: lightData.timeZone,
       profile: {
+        ...existingProfile,
         fullName: lightData.fullName,
         jobTitle: lightData.jobTitle,
         organizationName: lightData.orgName,
         organizationType: lightData.orgType,
         primaryIndustry: lightData.primaryIndustry,
+        sector: lightData.sector,
         country: lightData.country,
-        contactMethods: [lightData.contactMethod],
-
+        timeZone: lightData.timeZone,
+        contactMethods: fullData.contactMethod ? [fullData.contactMethod] : [],
         websiteUrl: fullData.website,
         supportSelections: fullData.supportAreas,
         engagementTypes: fullData.engagementTypes,
-        timeZone: fullData.timezone,
         phoneNumber: fullData.phone,
         whatsappNumber: fullData.whatsapp,
+        contactMethod: fullData.contactMethod,
       },
       clientFullCompleted: true,
       clientLightCompleted: true,
@@ -74,6 +85,7 @@ export default function ClientProfileBuilder2Comp({
       <SectionDropdown
         title="Contact Preferences"
         data={{
+          timeZone: lightData.timeZone,
           contactMethod: lightData.contactMethod,
         }}
       />
@@ -96,15 +108,7 @@ export default function ClientProfileBuilder2Comp({
 
       <SectionDropdown
         title="Time Zone"
-        data={{ timezone: fullData.timezone }}
-      />
-
-      <SectionDropdown
-        title="Phone & Whatsapp"
-        data={{
-          phone: fullData.phone,
-          whatsapp: fullData.whatsapp,
-        }}
+        data={{ timezone: lightData.timeZone }}
       />
 
       {/* CONFIRM CHECKBOX */}

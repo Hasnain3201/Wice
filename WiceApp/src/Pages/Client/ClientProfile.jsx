@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { saveUserProfile } from "../../services/userProfile.js";
+import { TIMEZONES, PREFERED_CONTACT_METHOD } from "../../data/taxonomy.js";
 import "../Consultant/ConsultantProfile.css";
 
 const ALL_SUPPORT_AREAS = [
@@ -23,6 +24,40 @@ const ALL_SUPPORT_AREAS = [
 ];
 
 const ENGAGEMENT_TYPES = ["Short term", "Long term", "Advisory", "Fractional"];
+const ORG_TYPE_OPTIONS = [
+  "NGO",
+  "Nonprofit",
+  "Social Enterprise",
+  "Private Company",
+  "Government Entity",
+  "UN Agency",
+  "Foundation",
+  "Academic Institution",
+];
+
+const normalizeKey = (value = "") =>
+  value.toString().trim().toLowerCase().replace(/[^a-z]/g, "");
+
+const normalizeEngagementLabel = (value) => {
+  const clean = (value || "").toString().trim();
+  if (!clean) return "";
+  return (
+    ENGAGEMENT_TYPES.find((option) => normalizeKey(option) === normalizeKey(clean)) ||
+    clean
+  );
+};
+
+const normalizeEngagementTypes = (values = []) =>
+  Array.from(
+    new Set(
+      (values || [])
+        .map(normalizeEngagementLabel)
+        .filter(Boolean)
+    )
+  );
+
+const dedupeList = (list = []) =>
+  Array.from(new Set((list || []).filter(Boolean)));
 
 export default function Profile() {
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -40,13 +75,14 @@ export default function Profile() {
     supportSelections: [], // NEW CLEAN FORMAT
     engagementTypes: [],
     timeZone: "",
-    contactMethods: [],
+    contactMethod: "",
     phoneNumber: "",
     whatsappNumber: "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [engagementInput, setEngagementInput] = useState("");
 
   const hasLightProfile = useMemo(
     () => Boolean(profile?.clientLightCompleted || profile?.phaseLightCompleted),
@@ -58,15 +94,32 @@ export default function Profile() {
         profile?.clientFullCompleted ||
           profile?.phaseFullCompleted ||
           (profile?.profile?.supportSelections || []).length ||
-          (profile?.profile?.engagementTypes || []).length ||
-          profile?.profile?.websiteUrl
+          (profile?.profile?.supportAreas || []).length ||
+          normalizeEngagementTypes(
+            profile?.profile?.engagementTypes || profile?.profile?.engagementOptions || []
+          ).length ||
+          (profile?.supportSelections || []).length ||
+          normalizeEngagementTypes(profile?.engagementTypes || []).length ||
+          profile?.profile?.websiteUrl ||
+          profile?.profile?.website ||
+          profile?.websiteUrl ||
+          profile?.profile?.phoneNumber ||
+          profile?.profile?.whatsappNumber
       ),
     [
       profile?.clientFullCompleted,
       profile?.phaseFullCompleted,
       profile?.profile?.supportSelections,
+      profile?.profile?.supportAreas,
       profile?.profile?.engagementTypes,
+      profile?.profile?.engagementOptions,
       profile?.profile?.websiteUrl,
+      profile?.profile?.website,
+      profile?.supportSelections,
+      profile?.engagementTypes,
+      profile?.websiteUrl,
+      profile?.profile?.phoneNumber,
+      profile?.profile?.whatsappNumber,
     ]
   );
 
@@ -76,22 +129,37 @@ export default function Profile() {
   useEffect(() => {
     if (!profile || !user) return;
     const stored = profile.profile || {};
+    const normalizedEngagements = normalizeEngagementTypes(
+      stored.engagementTypes ||
+        stored.engagementOptions ||
+        stored.engagement_types ||
+        profile?.engagementTypes ||
+        []
+    );
+    const supportSelections = dedupeList(
+      stored.supportSelections || stored.supportAreas || profile?.supportSelections || []
+    );
 
     setForm((prev) => ({
       ...prev,
       fullName: stored.fullName || profile.fullName || "",
       jobTitle: stored.jobTitle || profile.jobTitle || "",
-      workEmail: stored.workEmail || user.email || "",
+      workEmail: stored.workEmail || profile.workEmail || user.email || "",
       organizationName: stored.organizationName || profile.organizationName || "",
       organizationType: stored.organizationType || profile.organizationType || "",
       primaryIndustry: stored.primaryIndustry || profile.primaryIndustry || "",
       sector: stored.sector || profile.sector || "",
       country: stored.country || profile.country || "",
-      websiteUrl: stored.websiteUrl || profile.websiteUrl || "",
-      supportSelections: stored.supportSelections || profile.supportSelections || [],
-      engagementTypes: stored.engagementTypes || profile.engagementTypes || [],
+      websiteUrl: stored.websiteUrl || stored.website || profile.websiteUrl || "",
+      supportSelections,
+      engagementTypes: normalizedEngagements,
       timeZone: stored.timeZone || profile.timeZone || "",
-      contactMethods: stored.contactMethods || profile.contactMethods || [],
+      contactMethod:
+        (stored.contactMethods && stored.contactMethods[0]) ||
+        (profile.contactMethods && profile.contactMethods[0]) ||
+        stored.contactMethod ||
+        profile.contactMethod ||
+        "",
       phoneNumber: stored.phoneNumber || profile.phoneNumber || "",
       whatsappNumber: stored.whatsappNumber || profile.whatsappNumber || "",
     }));
@@ -99,14 +167,6 @@ export default function Profile() {
 
   const change = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  };
-
-  const toggleContactMethod = (method) => {
-    setForm((prev) => {
-      const set = new Set(prev.contactMethods);
-      set.has(method) ? set.delete(method) : set.add(method);
-      return { ...prev, contactMethods: [...set] };
-    });
   };
 
   const filteredAreas = ALL_SUPPORT_AREAS.filter((area) =>
@@ -133,11 +193,33 @@ export default function Profile() {
   };
 
   const toggleEngagementType = (type) => {
+    const canonical = normalizeEngagementLabel(type);
+    if (!canonical) return;
     setForm((prev) => {
-      const set = new Set(prev.engagementTypes || []);
-      set.has(type) ? set.delete(type) : set.add(type);
-      return { ...prev, engagementTypes: [...set] };
+      const set = new Set(normalizeEngagementTypes(prev.engagementTypes));
+      set.has(canonical) ? set.delete(canonical) : set.add(canonical);
+      return { ...prev, engagementTypes: Array.from(set) };
     });
+  };
+
+  const addEngagementType = () => {
+    const canonical = normalizeEngagementLabel(engagementInput);
+    if (!canonical) return;
+    setForm((prev) => ({
+      ...prev,
+      engagementTypes: normalizeEngagementTypes([...(prev.engagementTypes || []), canonical]),
+    }));
+    setEngagementInput("");
+  };
+
+  const removeEngagementType = (type) => {
+    const canonical = normalizeEngagementLabel(type);
+    setForm((prev) => ({
+      ...prev,
+      engagementTypes: normalizeEngagementTypes(prev.engagementTypes).filter(
+        (t) => normalizeKey(t) !== normalizeKey(canonical)
+      ),
+    }));
   };
 
   const handleSave = async (event) => {
@@ -158,16 +240,35 @@ export default function Profile() {
       primaryIndustry: form.primaryIndustry || existingProfile.primaryIndustry || "",
       sector: form.sector || existingProfile.sector || "",
       country: form.country || existingProfile.country || "",
-      contactMethods: form.contactMethods || [],
+      timeZone: form.timeZone || existingProfile.timeZone || "",
+      contactMethods: form.contactMethod
+        ? [form.contactMethod]
+        : existingProfile.contactMethods ||
+          (existingProfile.contactMethod ? [existingProfile.contactMethod] : []),
     };
 
     if (hasFullProfile) {
-      nextProfile.websiteUrl = form.websiteUrl || "";
-      nextProfile.supportSelections = form.supportSelections || [];
-      nextProfile.engagementTypes = form.engagementTypes || [];
-      nextProfile.timeZone = form.timeZone || "";
-      nextProfile.phoneNumber = form.phoneNumber || "";
-      nextProfile.whatsappNumber = form.whatsappNumber || "";
+      const normalizedEngagements =
+        normalizeEngagementTypes(
+          form.engagementTypes.length
+            ? form.engagementTypes
+            : existingProfile.engagementTypes ||
+              existingProfile.engagementOptions ||
+              []
+        ) || [];
+
+      nextProfile.websiteUrl =
+        form.websiteUrl || existingProfile.websiteUrl || existingProfile.website || "";
+      nextProfile.supportSelections = dedupeList(
+        (form.supportSelections && form.supportSelections.length
+          ? form.supportSelections
+          : existingProfile.supportSelections || existingProfile.supportAreas) || []
+      );
+      nextProfile.engagementTypes = normalizedEngagements;
+      nextProfile.timeZone = form.timeZone || existingProfile.timeZone || "";
+      nextProfile.phoneNumber = form.phoneNumber || existingProfile.phoneNumber || "";
+      nextProfile.whatsappNumber =
+        form.whatsappNumber || existingProfile.whatsappNumber || "";
     }
 
     try {
@@ -194,18 +295,6 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  const heroStats = [
-    { label: "Industry", value: form.primaryIndustry || "—" },
-    { label: "Country", value: form.country || "—" },
-    {
-      label: "Contact methods",
-      value:
-        form.contactMethods.length > 0
-          ? form.contactMethods.join(", ")
-          : "—",
-    },
-  ];
-
   return (
     <main className="profile-form-page">
       <section className="profile-form-hero">
@@ -213,14 +302,6 @@ export default function Profile() {
           <p className="profile-eyebrow">Client profile</p>
           <h1>Tell consultants what you need</h1>
           <p>Keep these details accurate so WICE can match you with the right experts.</p>
-        </div>
-        <div className="profile-form-hero__stats">
-          {heroStats.map((stat) => (
-            <article key={stat.label}>
-              <span className="stat-label">{stat.label}</span>
-              <span className="stat-value">{stat.value}</span>
-            </article>
-          ))}
         </div>
       </section>
 
@@ -233,7 +314,7 @@ export default function Profile() {
                 You’ve completed the light profile. Add full details so consultants see everything.
               </p>
             </div>
-            <a className="banner-link" href="/client/profile-builder">
+            <a className="banner-link" href="/client/profile-builder?full=1">
               Continue profile
             </a>
           </div>
@@ -277,14 +358,11 @@ export default function Profile() {
             <label className="label">Organization Type *</label>
             <select className="input" value={form.organizationType} onChange={change("organizationType")}>
               <option value="">Select</option>
-              <option value="NGO">NGO</option>
-              <option value="Nonprofit">Nonprofit</option>
-              <option value="Social Enterprise">Social Enterprise</option>
-              <option value="Private Company">Private Company</option>
-              <option value="Government Entity">Government Entity</option>
-              <option value="UN Agency">UN Agency</option>
-              <option value="Foundation">Foundation</option>
-              <option value="Academic Institution">Academic Institution</option>
+              {ORG_TYPE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -392,20 +470,67 @@ export default function Profile() {
 
             <div className="settings-col settings-col--full" style={{ marginTop: 16 }}>
               <label className="label">Preferred Engagement Types</label>
-              <div className="pill-row">
-                {ENGAGEMENT_TYPES.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`pill-toggle ${
-                      form.engagementTypes.includes(type) ? "pill-active" : ""
-                    }`}
-                    onClick={() => toggleEngagementType(type)}
-                  >
-                    {type}
-                  </button>
-                ))}
+              <div className="engagement-chip-row">
+                {ENGAGEMENT_TYPES.map((type) => {
+                  const isActive = form.engagementTypes.includes(type);
+                  return (
+                    <label
+                      key={type}
+                      className={`engagement-chip ${isActive ? "engagement-chip--active" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="visually-hidden"
+                        checked={isActive}
+                        onChange={() => toggleEngagementType(type)}
+                      />
+                      <span>{type}</span>
+                    </label>
+                  );
+                })}
               </div>
+
+              <div className="engagement-input-row">
+                <input
+                  className="input"
+                  list="engagement-options"
+                  placeholder="Add another engagement type"
+                  value={engagementInput}
+                  onChange={(e) => setEngagementInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addEngagementType();
+                    }
+                  }}
+                />
+                <datalist id="engagement-options">
+                  {ENGAGEMENT_TYPES.map((type) => (
+                    <option key={type} value={type} />
+                  ))}
+                </datalist>
+                <button type="button" className="ghost-btn" onClick={addEngagementType}>
+                  Add
+                </button>
+              </div>
+
+              {form.engagementTypes.length > 0 && (
+                <div className="engagement-chip-row" style={{ marginTop: 10 }}>
+                  {form.engagementTypes.map((type) => (
+                    <div key={type} className="engagement-chip engagement-chip--active">
+                      <span>{type}</span>
+                      <button
+                        type="button"
+                        className="engagement-chip-remove"
+                        aria-label={`Remove ${type}`}
+                        onClick={() => removeEngagementType(type)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -418,27 +543,30 @@ export default function Profile() {
         <div className="settings-row">
           <div className="settings-col">
             <label className="label">Time Zone</label>
-            <input className="input" value={form.timeZone} onChange={change("timeZone")} />
+            <select className="input" value={form.timeZone} onChange={change("timeZone")}>
+              <option value="">Select a time zone</option>
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="settings-col">
             <label className="label">Preferred Contact Method</label>
-            <div className="pill-row">
-              {["Email", "Phone", "WhatsApp"].map((method) => (
-                <button
-                  key={method}
-                  type="button"
-                  className={`pill-toggle ${
-                    form.contactMethods.includes(method)
-                      ? "pill-active"
-                      : ""
-                  }`}
-                  onClick={() => toggleContactMethod(method)}
-                >
+            <select
+              className="input"
+              value={form.contactMethod}
+              onChange={change("contactMethod")}
+            >
+              <option value="">Select</option>
+              {PREFERED_CONTACT_METHOD.map((method) => (
+                <option key={method} value={method}>
                   {method}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </div>
 

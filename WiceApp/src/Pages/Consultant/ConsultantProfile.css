@@ -12,6 +12,7 @@
   flex-wrap: wrap;
   gap: 24px;
   justify-content: space-between;
+  align-items: center;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
   border: 1px solid rgba(79, 70, 229, 0.15);
   margin-bottom: 5px;
@@ -35,10 +36,15 @@
 }
 
 .profile-form-hero__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  min-width: 280px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.profile-form-hero__stats article {
+  text-align: right;
+  min-width: 120px;
 }
 
 .profile-form-card {
@@ -54,6 +60,7 @@
   text-transform: uppercase;
   color: #94a3b8;
   letter-spacing: 0.08em;
+  display: block;
 }
 
 .stat-value {

@@ -4,7 +4,6 @@ import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 export default function LoginCard({
   onSubmit,
-  forgotPath,
   identifierLabel = "Email Address",
   identifierType = "email",
   identifierName = "email",

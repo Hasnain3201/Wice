@@ -6,7 +6,19 @@ import {
   INDUSTRY_SECTORS,
   GEOGRAPHIC_EXPERIENCE,
   PREFERED_CONTACT_METHOD,
+  TIMEZONES,
 } from "../../../data/taxonomy.js";
+
+const ORG_TYPE_OPTIONS = [
+  "NGO",
+  "Nonprofit",
+  "Social Enterprise",
+  "Private Company",
+  "Government Entity",
+  "UN Agency",
+  "Foundation",
+  "Academic Institution",
+];
 
 export default function ClientProfileBuilder1({ onProgress, initialValues = {} }) {
   const [form, setForm] = useState({
@@ -18,7 +30,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
     primaryIndustry: initialValues.primaryIndustry || "",
     sector: initialValues.sector || "",
     country: initialValues.country || "",
-    contactMethod: initialValues.contactMethod || "", // now “Preferred Contact Method”
+    timeZone: initialValues.timeZone || "",
   });
 
   // Build taxonomy lists
@@ -42,7 +54,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
       primaryIndustry: initialValues.primaryIndustry || "",
       sector: initialValues.sector || "",
       country: initialValues.country || "",
-      contactMethod: initialValues.contactMethod || "",
+      timeZone: initialValues.timeZone || "",
     });
   }, [
     initialValues.fullName,
@@ -53,7 +65,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
     initialValues.primaryIndustry,
     initialValues.sector,
     initialValues.country,
-    initialValues.contactMethod,
+    initialValues.timeZone,
   ]);
 
   const update = (e) => {
@@ -85,7 +97,7 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
     primaryIndustry: "Primary Industry",
     sector: "Sector (Subsector)",
     country: "Country",
-    contactMethod: "Preferred Contact Method", // updated label
+    timeZone: "Time Zone",
   };
 
   const completedLabels = filledKeys.map((k) => labelMap[k]);
@@ -109,13 +121,24 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
       {["fullName", "jobTitle", "workEmail", "orgName", "orgType"].map((field) => (
         <div key={field}>
           <label>{labelMap[field]} *</label>
-          <input
-            name={field}
-            type="text"
-            value={form[field]}
-            onChange={update}
-            required
-          />
+          {field === "orgType" ? (
+            <select name="orgType" value={form.orgType} onChange={update} required>
+              <option value="">Select organization type</option>
+              {ORG_TYPE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              name={field}
+              type="text"
+              value={form[field]}
+              onChange={update}
+              required
+            />
+          )}
         </div>
       ))}
 
@@ -172,22 +195,24 @@ export default function ClientProfileBuilder1({ onProgress, initialValues = {} }
         </datalist>
       </div>
 
-      {/* Preferred Contact Method */}
+      {/* Time Zone */}
       <div>
-        <label>Preferred Contact Method *</label>
-        <input
-          list="contact-list"
-          name="contactMethod"
-          value={form.contactMethod}
+        <label>Time Zone *</label>
+        <select
+          name="timeZone"
+          value={form.timeZone}
           onChange={update}
           required
-        />
-        <datalist id="contact-list">
-          {PREFERED_CONTACT_METHOD.map((method) => (
-            <option key={method} value={method} />
+        >
+          <option value="">Select time zone</option>
+          {TIMEZONES.map((tz) => (
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
           ))}
-        </datalist>
+        </select>
       </div>
+
     </div>
   );
 }

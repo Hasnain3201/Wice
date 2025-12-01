@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { Calendar, Clock, User, Mail, MessageSquare, Check, X } from 'lucide-react';
@@ -178,12 +178,7 @@ export default function BookingRequestsManager({ consultantId }) {
   const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState(null);
 
-  useEffect(() => {
-    if (!consultantId) return;
-    loadBookings();
-  }, [consultantId]);
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -220,7 +215,11 @@ export default function BookingRequestsManager({ consultantId }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [consultantId]);
+  useEffect(() => {
+    if (!consultantId) return;
+    loadBookings();
+  }, [consultantId, loadBookings]);
 
   const handleConfirm = async (bookingId) => {
     setProcessingId(bookingId);

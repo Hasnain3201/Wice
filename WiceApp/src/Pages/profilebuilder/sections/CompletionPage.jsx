@@ -50,59 +50,130 @@ function flattenMapValues(map = {}) {
     .filter(Boolean);
 }
 
+const hasContent = (value) => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === "object") return Object.keys(value).length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return true;
+  if (typeof value === "boolean") return true;
+  return Boolean(value);
+};
+
+const pickValue = (next, fallback) => (hasContent(next) ? next : fallback);
+
 export default function CompletionPage({ profileData, onNextFull, onSave }) {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, profile: authProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const normalizePayload = () => {
-    const industries = normalizeList(profileData.industries);
+    const existingProfile = authProfile?.profile || {};
+    const existingFullName = authProfile?.fullName || "";
+    const existingHeadline = authProfile?.headline || "";
+    const existingTitle = authProfile?.title || existingProfile.title || "";
+    const existingLocation = authProfile?.location || existingProfile.location || "";
+
+    const industriesList = normalizeList(profileData.industries);
+    const industries =
+      industriesList.length > 0 ? industriesList : normalizeList(existingProfile.industries);
+
     const sectorsMap = profileData.sectorsByIndustry || {};
     const subsectorMap = profileData.subsectorsBySector || {};
     const sectorList = flattenMapValues(sectorsMap);
     const subsectorList = flattenMapValues(subsectorMap);
-    const languages = normalizeList(profileData.languages);
+
+    const sectors =
+      sectorList.length > 0 ? sectorList : normalizeList(existingProfile.sectors);
+    const subsectors =
+      subsectorList.length > 0
+        ? subsectorList
+        : flattenMapValues(existingProfile.subsectorsBySector || {}) ||
+          existingProfile.subsectors ||
+          [];
+
+    const languagesList = normalizeList(profileData.languages);
+    const languages =
+      languagesList.length > 0 ? languagesList : normalizeList(existingProfile.languages);
+
     const openToTravelValue =
       profileData.openToTravel === "Yes"
         ? true
         : profileData.openToTravel === "No"
         ? false
         : null;
-    const experienceBucket = profileData.totalYearsExperience || "";
-    const experienceYears = parseExperienceBucket(experienceBucket);
+
+    const experienceBucket =
+      pickValue(
+        profileData.totalYearsExperience,
+        existingProfile.experienceBucket || existingProfile.totalYearsExperience || ""
+      ) || "";
+    const experienceYears =
+      parseExperienceBucket(experienceBucket) ??
+      existingProfile.experienceYears ??
+      null;
     const dailyRateNumber = Number(profileData.dailyRate);
+
     const pronounsValue =
       profileData.pronouns === "Self describe"
         ? profileData.customPronouns || ""
         : profileData.pronouns || "";
+
+    const normalizedFullName = pickValue(
+      profileData.fullName?.trim(),
+      existingFullName
+    );
+
+    const sectorsByIndustry = hasContent(sectorsMap)
+      ? sectorsMap
+      : existingProfile.sectorsByIndustry || {};
+    const subsectorsBySector = hasContent(subsectorMap)
+      ? subsectorMap
+      : existingProfile.subsectorsBySector || {};
+
     return {
-      fullName: profileData.fullName?.trim() || "",
-      headline: profileData.oneLinerBio || "",
+      fullName: normalizedFullName,
+      title: pickValue(profileData.title, existingTitle),
+      location: pickValue(profileData.location, existingLocation),
+      headline: pickValue(profileData.oneLinerBio, existingHeadline),
       profile: {
-        fullName: profileData.fullName?.trim() || "",
-        pronouns: pronounsValue,
-        customPronouns: profileData.pronouns === "Self describe" ? profileData.customPronouns || "" : "",
-        timeZone: profileData.timeZone || "",
-        oneLinerBio: profileData.oneLinerBio || "",
-        about: profileData.about || "",
-        totalYearsExperience: profileData.totalYearsExperience || "",
+        ...existingProfile,
+        fullName: normalizedFullName,
+        title: pickValue(profileData.title, existingProfile.title || ""),
+        location: pickValue(profileData.location, existingProfile.location || ""),
+        pronouns: pickValue(pronounsValue, existingProfile.pronouns || ""),
+        customPronouns:
+          profileData.pronouns === "Self describe"
+            ? pickValue(profileData.customPronouns, existingProfile.customPronouns || "")
+            : existingProfile.customPronouns || "",
+        timeZone: pickValue(profileData.timeZone, existingProfile.timeZone || ""),
+        oneLinerBio: pickValue(profileData.oneLinerBio, existingProfile.oneLinerBio || ""),
+        about: pickValue(profileData.about, existingProfile.about || ""),
+        totalYearsExperience: pickValue(
+          profileData.totalYearsExperience,
+          existingProfile.totalYearsExperience || ""
+        ),
         experienceBucket,
         experienceYears,
-        linkedinUrl: profileData.linkedinUrl || "",
-        industries,
-        sectors: sectorList,
-        sectorsByIndustry: sectorsMap,
-        subsectorsBySector: subsectorMap,
-        subsectors: subsectorList,
-        languages,
-        currency: profileData.currency || "USD",
-        dailyRate: Number.isFinite(dailyRateNumber) ? dailyRateNumber : null,
-        availabilityStatus: profileData.availabilityStatus || "",
+        linkedinUrl: pickValue(profileData.linkedinUrl, existingProfile.linkedinUrl || ""),
+        industries: industries || [],
+        sectors: sectors || [],
+        sectorsByIndustry,
+        subsectorsBySector,
+        subsectors: subsectors || [],
+        languages: languages || [],
+        currency: pickValue(profileData.currency, existingProfile.currency || "USD"),
+        dailyRate: Number.isFinite(dailyRateNumber)
+          ? dailyRateNumber
+          : existingProfile.dailyRate ?? null,
+        availabilityStatus: pickValue(
+          profileData.availabilityStatus,
+          existingProfile.availabilityStatus || ""
+        ),
         availabilityNote:
           profileData.availabilityStatus === "not_currently_available"
             ? profileData.availabilityNote || ""
-            : "",
-        openToTravel: openToTravelValue,
+            : existingProfile.availabilityNote || "",
+        openToTravel: openToTravelValue ?? existingProfile.openToTravel ?? null,
       },
     };
   };
@@ -126,6 +197,7 @@ export default function CompletionPage({ profileData, onNextFull, onSave }) {
       await saveUserProfile(uid, {
         ...payload,
         phaseLightCompleted: true,
+        consultantLightCompleted: true,
       });
       if (typeof refreshProfile === "function") {
         await refreshProfile();
@@ -152,6 +224,8 @@ export default function CompletionPage({ profileData, onNextFull, onSave }) {
 
   const identityBasics = {
     "Full Name": profileData.fullName,
+    "Role / Title": profileData.title,
+    Location: profileData.location,
     Pronouns:
       profileData.pronouns === "Self describe"
         ? profileData.customPronouns || ""

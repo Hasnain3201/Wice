@@ -16,7 +16,7 @@ const firebaseConfig = {
 };
 
 if (!firebaseConfig.storageBucket && firebaseConfig.projectId) {
-  firebaseConfig.storageBucket = `${firebaseConfig.projectId}.appspot.com`;
+  firebaseConfig.storageBucket = `${firebaseConfig.projectId}.firebasestorage.app`;
 }
 
 if (import.meta.env.DEV) {

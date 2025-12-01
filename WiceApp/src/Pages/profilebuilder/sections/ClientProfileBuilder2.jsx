@@ -1,24 +1,25 @@
 // src/Pages/profilebuilder/ClientProfileBuilder2.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../profileBuilder.css";
-import { TIMEZONES } from "../../../data/taxonomy.js";
 
-export default function ClientProfileBuilder2({ onProgress, initialValues = {} }) {
+export default function ClientProfileBuilder2({ onProgress, initialValues = {}, registerValidator }) {
+  const supportInputRef = useRef(null);
+  const engagementInputRef = useRef(null);
   const [form, setForm] = useState({
     website: initialValues.website || "",
     supportAreas: initialValues.supportAreas || [],
     engagementTypes: initialValues.engagementTypes || [],
-    timezone: initialValues.timezone || "",
     phone: initialValues.phone || "",
     whatsapp: initialValues.whatsapp || "",
+    contactMethod: initialValues.contactMethod || "",
   });
 
   const update = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const addMulti = (field, value) => {
+  const addMulti = (field, value, inputRef) => {
     if (!value.trim()) return;
     setForm((prev) => ({
       ...prev,
@@ -26,6 +27,9 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
         ? prev[field]
         : [...prev[field], value],
     }));
+    if (inputRef?.current) {
+      inputRef.current.value = "";
+    }
   };
 
   const removeMulti = (field, value) => {
@@ -66,22 +70,24 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
       website: initialValues.website || "",
       supportAreas: initialValues.supportAreas || [],
       engagementTypes: initialValues.engagementTypes || [],
-      timezone: initialValues.timezone || "",
       phone: initialValues.phone || "",
       whatsapp: initialValues.whatsapp || "",
+      contactMethod: initialValues.contactMethod || "",
     });
   }, [
     initialValues.website,
     initialValues.supportAreas,
     initialValues.engagementTypes,
-    initialValues.timezone,
     initialValues.phone,
     initialValues.whatsapp,
+    initialValues.contactMethod,
   ]);
 
   const filledKeys = allFields.filter((key) => {
     const v = form[key];
-    return Array.isArray(v) ? v.length > 0 : v.trim() !== "";
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === "string") return v.trim() !== "";
+    return Boolean(v);
   });
 
   const filledCount = filledKeys.length;
@@ -89,10 +95,10 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
   const labelMap = {
     website: "Website URL",
     supportAreas: "Support Areas Needed",
-    engagementTypes: "Preferred Engagement Types",
-    timezone: "Time Zone",
+    engagementTypes: "Engagement Types",
     phone: "Phone Number",
     whatsapp: "Whatsapp",
+    contactMethod: "Preferred Contact Method",
   };
 
   const completedLabels = filledKeys.map((k) => labelMap[k]);
@@ -106,6 +112,27 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
     });
   }, [form, filledCount, completedLabels, onProgress]);
 
+  useEffect(() => {
+    if (!registerValidator) return;
+    registerValidator(() => {
+      const hasWebsite = (form.website || "").trim() !== "";
+      const hasSupport = Array.isArray(form.supportAreas) && form.supportAreas.length > 0;
+      const hasEngagements =
+        Array.isArray(form.engagementTypes) && form.engagementTypes.length > 0;
+      const hasPhone = (form.phone || "").trim() !== "";
+      const hasWhatsapp = (form.whatsapp || "").trim() !== "";
+      const hasContactMethod = (form.contactMethod || "").trim() !== "";
+      return (
+        hasWebsite &&
+        hasSupport &&
+        hasEngagements &&
+        hasPhone &&
+        hasWhatsapp &&
+        hasContactMethod
+      );
+    });
+  }, [registerValidator, form]);
+
   return (
     <div className="section">
       <h2>Full Profile</h2>
@@ -117,9 +144,10 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
       <label>Support Areas Needed</label>
 
       <input
+        ref={supportInputRef}
         list="support-list"
         placeholder="Search and add…"
-        onChange={(e) => addMulti("supportAreas", e.target.value)}
+        onChange={(e) => addMulti("supportAreas", e.target.value, supportInputRef)}
       />
 
       <datalist id="support-list">
@@ -131,7 +159,7 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
       {/* Tags */}
       <div className="tags-container">
         {form.supportAreas.map((item) => (
-          <span key={item} className="tag">
+          <span key={item} className="pill-chip">
             {item}
             <button onClick={() => removeMulti("supportAreas", item)}>×</button>
           </span>
@@ -142,9 +170,10 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
       <label>Preferred Engagement Types</label>
 
       <input
+        ref={engagementInputRef}
         list="engagement-list"
         placeholder="Search and add…"
-        onChange={(e) => addMulti("engagementTypes", e.target.value)}
+        onChange={(e) => addMulti("engagementTypes", e.target.value, engagementInputRef)}
       />
 
       <datalist id="engagement-list">
@@ -156,30 +185,23 @@ export default function ClientProfileBuilder2({ onProgress, initialValues = {} }
       {/* Tags */}
       <div className="tags-container">
         {form.engagementTypes.map((item) => (
-          <span key={item} className="tag">
+          <span key={item} className="pill-chip">
             {item}
             <button onClick={() => removeMulti("engagementTypes", item)}>×</button>
           </span>
         ))}
       </div>
 
-      {/* ------------------ TIME ZONE (SEARCHABLE SINGLE) ------------------ */}
-      <label>Time Zone</label>
-      <input
-        list="timezone-list"
-        name="timezone"
-        value={form.timezone}
-        onChange={update}
-        placeholder="Search timezone…"
-      />
-
-      <datalist id="timezone-list">
-        {TIMEZONES.map((tz) => (
-          <option key={tz} value={tz} />
+      <label>Preferred Contact Method</label>
+      <select name="contactMethod" value={form.contactMethod} onChange={update}>
+        <option value="">Select</option>
+        {["Email", "Phone", "WhatsApp"].map((method) => (
+          <option key={method} value={method}>
+            {method}
+          </option>
         ))}
-      </datalist>
+      </select>
 
-      {/* ------------------ PHONE + WHATSAPP ------------------ */}
       <label>Phone Number</label>
       <input name="phone" value={form.phone} onChange={update} />
 

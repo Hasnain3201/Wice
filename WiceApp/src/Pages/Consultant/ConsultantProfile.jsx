@@ -277,7 +277,13 @@ export default function ConsultantProfile() {
     // degree
     const degreeValue = profileMap.highestDegree || "";
     const degreeOpt =
-      DEGREE_OPTIONS.find((o) => o.label === degreeValue) || null;
+      DEGREE_OPTIONS.find((o) => o.label === degreeValue) ||
+      (degreeValue
+        ? {
+            value: degreeValue,
+            label: degreeValue,
+          }
+        : null);
 
     // additional files (array of URLs or strings)
     const additionalFromDb = profileMap.additionalFiles || [];
@@ -305,7 +311,7 @@ export default function ConsultantProfile() {
       availabilityStatus,
       availabilityNote,
       openToTravel: !!profileMap.openToTravel,
-      highestDegree: degreeOpt?.label || "",
+      highestDegree: degreeOpt?.label || degreeValue || "",
       institution: profileMap.institution || "",
       resumeFile: profileMap.resumeFile || "",
       resumeFileName: profileMap.resumeFileName || "",
@@ -607,13 +613,6 @@ export default function ConsultantProfile() {
   const aboutChars = form.about.length;
   const oneLinerChars = form.oneLinerBio.length;
 
-  const availabilityLabel =
-    form.availabilityStatus === "available_now"
-      ? "Available now"
-      : form.availabilityStatus === "not_currently_available"
-        ? form.availabilityNote || "Not currently available"
-        : "—";
-
   const currencyLabel =
     form.currency || profile?.profile?.currency || "USD";
 
@@ -631,10 +630,6 @@ export default function ConsultantProfile() {
         ? `${currencyLabel} ${form.dailyRate}`
         : "—",
     },
-    {
-      label: "Availability",
-      value: availabilityLabel,
-    },
   ];
   return (
     <main className="profile-form-page">
@@ -642,7 +637,7 @@ export default function ConsultantProfile() {
         <div>
           <p className="profile-eyebrow">Consultant profile</p>
           <h1>Your expertise at a glance</h1>
-          <p>Keep this profile fresh so clients can quickly understand your availability.</p>
+          <p>Keep this profile fresh so clients can quickly understand your fit.</p>
         </div>
         <div className="profile-form-hero__stats">
           {heroStats.map((stat) => (

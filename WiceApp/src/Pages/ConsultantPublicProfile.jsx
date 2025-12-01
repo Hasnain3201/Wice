@@ -74,8 +74,6 @@ export default function ConsultantPublicProfile() {
 
     const resumeUrl = profile.resumeFile || profile.resumeUrl || null;
 
-    const calComLink = profile.calComLink || null; // IMPORTANT
-
     const locationLine = [consultant.location, consultant.country]
         .filter(Boolean)
         .join(", ");

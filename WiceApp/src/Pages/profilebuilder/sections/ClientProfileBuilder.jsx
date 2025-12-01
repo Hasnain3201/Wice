@@ -1,6 +1,7 @@
 // src/Pages/profilebuilder/ClientProfileBuilder.jsx
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import ProgressSidebar from "../componentsPB/ProgressSidebar";
 import SectionWrapper from "../componentsPB/SectionWrapper";
@@ -17,8 +18,28 @@ import "../profileBuilder.css";
 
 export default function ClientProfileBuilder() {
   const { profile } = useAuth();
+  const location = useLocation();
   const baseProfile = useMemo(() => profile?.profile || {}, [profile]);
-  const [step, setStep] = useState(0);
+  const searchParams = new URLSearchParams(location.search);
+  const wantsFull = searchParams.get("full") === "1";
+
+  const computeStep = useCallback(() => {
+    const lightDone = profile?.phaseLightCompleted || profile?.clientLightCompleted;
+    const fullDone = profile?.phaseFullCompleted || profile?.clientFullCompleted;
+    if (!profile) return null; // wait until profile loads to avoid flicker
+    if (fullDone) return 3;
+    if (wantsFull && lightDone) return 2;
+    if (lightDone) return 1; // keep user on light review until they opt into full
+    return 0;
+  }, [profile, wantsFull]);
+
+  const [step, setStep] = useState(() => computeStep());
+
+  useEffect(() => {
+    const next = computeStep();
+    if (next === null) return;
+    setStep(next);
+  }, [computeStep]);
 
   // Store ALL form input
   const [lightData, setLightData] = useState(() => ({
@@ -30,6 +51,7 @@ export default function ClientProfileBuilder() {
     primaryIndustry: baseProfile.primaryIndustry || "",
     sector: baseProfile.sector || "",
     country: baseProfile.country || "",
+    timeZone: baseProfile.timeZone || "",
     contactMethod: (baseProfile.contactMethods || [])[0] || "",
   }));
 
@@ -37,10 +59,84 @@ export default function ClientProfileBuilder() {
     website: baseProfile.websiteUrl || "",
     supportAreas: baseProfile.supportSelections || [],
     engagementTypes: baseProfile.engagementTypes || [],
-    timezone: baseProfile.timeZone || "",
     phone: baseProfile.phoneNumber || "",
     whatsapp: baseProfile.whatsappNumber || "",
+    contactMethod:
+      (baseProfile.contactMethods && baseProfile.contactMethods[0]) ||
+      baseProfile.contactMethod ||
+      "",
   }));
+
+  // Hydrate from stored profile when skipping directly to full flow
+  useEffect(() => {
+    if (!profile) return;
+
+    const contactMethodFromProfile =
+      (baseProfile.contactMethods && baseProfile.contactMethods[0]) ||
+      (profile.contactMethods && profile.contactMethods[0]) ||
+      baseProfile.contactMethod ||
+      profile.contactMethod ||
+      "";
+
+    const hydratedLight = {
+      fullName: baseProfile.fullName || profile.fullName || "",
+      jobTitle: baseProfile.jobTitle || profile.jobTitle || "",
+      workEmail: baseProfile.workEmail || profile.workEmail || profile.email || "",
+      orgName: baseProfile.organizationName || profile.organizationName || "",
+      orgType: baseProfile.organizationType || profile.organizationType || "",
+      primaryIndustry: baseProfile.primaryIndustry || profile.primaryIndustry || "",
+      sector: baseProfile.sector || profile.sector || "",
+      country: baseProfile.country || profile.country || "",
+      timeZone: baseProfile.timeZone || profile.timeZone || "",
+      contactMethod: contactMethodFromProfile,
+    };
+
+    setLightData((prev) => ({
+      fullName: prev.fullName || hydratedLight.fullName,
+      jobTitle: prev.jobTitle || hydratedLight.jobTitle,
+      workEmail: prev.workEmail || hydratedLight.workEmail,
+      orgName: prev.orgName || hydratedLight.orgName,
+      orgType: prev.orgType || hydratedLight.orgType,
+      primaryIndustry: prev.primaryIndustry || hydratedLight.primaryIndustry,
+      sector: prev.sector || hydratedLight.sector,
+      country: prev.country || hydratedLight.country,
+      timeZone: prev.timeZone || hydratedLight.timeZone,
+      contactMethod: prev.contactMethod || hydratedLight.contactMethod,
+    }));
+
+    const hydratedFull = {
+      website:
+        baseProfile.websiteUrl || baseProfile.website || profile.websiteUrl || "",
+      supportAreas:
+        baseProfile.supportSelections ||
+        baseProfile.supportAreas ||
+        profile.supportSelections ||
+        [],
+      engagementTypes:
+        baseProfile.engagementTypes ||
+        baseProfile.engagementOptions ||
+        profile.engagementTypes ||
+        [],
+      phone: baseProfile.phoneNumber || profile.phoneNumber || "",
+      whatsapp: baseProfile.whatsappNumber || profile.whatsappNumber || "",
+      contactMethod: contactMethodFromProfile,
+    };
+
+    setFullData((prev) => ({
+      website: prev.website || hydratedFull.website,
+      supportAreas:
+        (prev.supportAreas && prev.supportAreas.length
+          ? prev.supportAreas
+          : hydratedFull.supportAreas) || [],
+      engagementTypes:
+        (prev.engagementTypes && prev.engagementTypes.length
+          ? prev.engagementTypes
+          : hydratedFull.engagementTypes) || [],
+      phone: prev.phone || hydratedFull.phone,
+      whatsapp: prev.whatsapp || hydratedFull.whatsapp,
+      contactMethod: prev.contactMethod || hydratedFull.contactMethod,
+    }));
+  }, [profile, baseProfile]);
 
   // Progress tracking
   const [lightFilled, setLightFilled] = useState(0);
@@ -57,27 +153,28 @@ export default function ClientProfileBuilder() {
     "Organization Type",
     "Primary Industry",
     "Country",
-    "Contact Method",
+    "Time Zone",
   ];
 
   const fullLabels = [
     "Website URL",
     "Support Areas Needed",
     "Engagement Types",
-    "Time Zone",
     "Phone Number",
     "Whatsapp",
+    "Preferred Contact Method",
   ];
 
-  const mergedLabels = [...lightLabels, ...fullLabels];
   const isFullMode = step >= 2;
+  const shownSections = isFullMode ? fullLabels : lightLabels;
+  const completedSidebar = isFullMode ? completedFullLabels : completedLightLabels;
+  const progressTotal = isFullMode ? fullLabels.length : lightLabels.length;
+  const progressFilled = isFullMode ? fullFilled : lightFilled;
+  const overallProgress = Math.round((progressFilled / progressTotal) * 100);
 
-  const shownSections = isFullMode ? mergedLabels : lightLabels;
-  const completedSidebar = [...completedLightLabels, ...completedFullLabels];
-
-  const overallProgress = Math.round(
-    ((lightFilled + fullFilled) / mergedLabels.length) * 100
-  );
+  if (step === null) {
+    return null;
+  }
 
   const goToLightCompletion = () => {
     if (isLightComplete) setStep(1);
@@ -159,7 +256,6 @@ export default function ClientProfileBuilder() {
         sections={shownSections}
         completed={completedSidebar}
         progress={overallProgress}
-        isFullProfileMode={isFullMode}
       />
 
       <div className="form-section">{currentPage}</div>
