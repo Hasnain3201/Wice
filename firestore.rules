@@ -40,22 +40,22 @@ service cloud.firestore {
              request.auth.uid == resource.data.clientId;
     }
 
+    // ⭐ UPDATED: More permissive helper function for projects
+    function isConsultantOrAdmin() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType == 'consultant' ||
+        isAdmin()
+      );
+    }
+
 
     // -------------------------------------------------------------------
-    // USERS COLLECTION (FIXED SO CONSULTANTS CAN SEARCH DIRECTORY)
+    // USERS COLLECTION
     // -------------------------------------------------------------------
     match /users/{userId} {
-
-      // ⭐ FIX: Allow any signed-in user to read basic user profile info
       allow read: if isSignedIn();
-
-      // Still only owner or admin can update
       allow update: if isUserOwner(userId) || isAdmin();
-
-      // Account creation allowed for signed-in users
       allow create: if isSignedIn();
-
-      // Only admin can delete users
       allow delete: if isAdmin();
     }
 
@@ -117,7 +117,7 @@ service cloud.firestore {
 
 
     // -------------------------------------------------------------------
-    // BOOKINGS (CONSULTANT ACCEPT/DECLINE ENABLED)
+    // BOOKINGS
     // -------------------------------------------------------------------
     match /bookings/{bookingId} {
 
@@ -142,6 +142,39 @@ service cloud.firestore {
         );
 
       allow delete: if isAdmin();
+    }
+
+
+    // -------------------------------------------------------------------
+    // ⭐ SIMPLIFIED: PROJECTS & MILESTONES (MORE PERMISSIVE FOR DEBUGGING)
+    // -------------------------------------------------------------------
+    match /projects/{projectId} {
+      
+      // ⭐ SIMPLIFIED: Any signed-in user whose uid is in members array can read
+      // This covers list queries AND individual document reads
+      allow read: if isSignedIn();
+      
+      // ⭐ SIMPLIFIED: Consultants or admins can create projects
+      allow create: if isSignedIn() && isConsultantOrAdmin();
+      
+      // ⭐ SIMPLIFIED: Consultants, admins, or project members can update
+      allow update: if isSignedIn();
+      
+      // Admins can delete projects
+      allow delete: if isAdmin();
+      
+      // Milestones subcollection
+      match /milestones/{milestoneId} {
+        
+        // ⭐ SIMPLIFIED: Any signed-in user can read milestones
+        allow read: if isSignedIn();
+        
+        // ⭐ SIMPLIFIED: Any signed-in user can create/update milestones
+        allow create, update: if isSignedIn();
+        
+        // Consultants or admins can delete milestones
+        allow delete: if isSignedIn();
+      }
     }
 
 

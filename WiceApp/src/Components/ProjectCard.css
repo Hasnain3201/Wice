@@ -9,16 +9,26 @@
   padding-right: 20px;
 }
 
+.project-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
 /* HEADER */
 .project-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
+  padding-right: 12px 20px;
   cursor: pointer;
   background-color: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   min-height: 42px;
+  transition: background-color 0.2s ease;
+}
+
+.project-header:hover {
+  background-color: #f3f4f6;
 }
 
 .project-card.open .project-header {
@@ -32,21 +42,115 @@
   margin: 0;
 }
 
+.toggle-icon {
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
 /* --- TIMELINE --- */
 .timeline-container {
   position: relative;
   width: 100%;
-  margin-top: 55px; /* Increased spacing between header and milestone titles */
+  margin-top: 30px;
   margin-bottom: 40px;
   padding: 0 50px;
-  height: 120px;
+  min-height: 140px;
   box-sizing: border-box;
 }
 
+.timeline-header {
+  margin-bottom: 20px;
+}
 
+.timeline-dates {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.timeline-start-date,
+.timeline-end-date {
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.set-end-date-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.set-end-date-btn:hover {
+  background: #059669;
+}
+
+.end-date-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.end-date-form input[type="date"] {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  flex: 1;
+}
+
+.end-date-form .form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.end-date-form button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.end-date-form button[type="submit"] {
+  background: #10b981;
+  color: white;
+}
+
+.end-date-form button[type="submit"]:hover {
+  background: #059669;
+}
+
+.end-date-form button[type="button"] {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.end-date-form button[type="button"]:hover {
+  background: #d1d5db;
+}
+
+/* Timeline line - horizontally centered in container */
 .timeline-line {
   position: absolute;
-  top: 50%;
+  top: 70px;
   left: 50px;
   right: 50px;
   height: 4px;
@@ -56,61 +160,79 @@
 }
 
 .timeline-points {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
+  position: 100px;
+  height: 140px;
   z-index: 2;
-  height: 100%;
 }
 
-/* Dots centered on the blue line */
+/* Milestone items - positioned at timeline height */
+.milestone-item {
+  position: absolute;
+  top: 70px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+/* Dot - centered on the timeline line */
 .milestone-dot {
   width: 18px;
   height: 18px;
   border-radius: 50%;
   border: 2px solid #3b82f6;
   background-color: #fff;
-  margin: 0 auto;
-  position: relative;
-  top: calc(50% - 9px);
-  z-index: 3;
+  position: absolute;
+  top: -7px;
+  left: 0;
+  z-index: 4;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .milestone-dot.filled {
   background-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
-/* Alternate milestone labels */
-.milestone-item {
+.milestone-dot:hover {
+  transform: scale(1.3);
+}
+
+/* Info positioned relative to the milestone item */
+.milestone-info {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 140px;
   text-align: center;
-  position: relative;
-  flex: 1;
 }
 
+/* Top milestones - labels above */
 .milestone-item.top .milestone-info {
-  position: absolute;
-  bottom: 58px;
+  bottom: 18px;
 }
 
+/* Bottom milestones - labels below */
 .milestone-item.bottom .milestone-info {
-  position: absolute;
-  top: 58px;
+  top: 18px;
 }
 
 /* Labels + dates */
 .milestone-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #111827;
   white-space: nowrap;
   font-weight: 500;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .milestone-date {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #6b7280;
   margin-top: 2px;
+  white-space: nowrap;
 }
 
 /* ADD MILESTONE */
@@ -122,6 +244,103 @@
   border-radius: 6px;
   padding: 8px 14px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-btn:hover {
+  background: #2563eb;
+}
+
+.finish-btn {
+  margin: 10px 30px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+}
+
+.finish-btn:hover {
+  background: #059669;
+}
+
+.finish-project-form {
+  margin: 20px 30px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 2px solid #10b981;
+  border-radius: 8px;
+}
+
+.finish-project-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.finish-project-form input[type="date"] {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #10b981;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.finish-project-form .form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.finish-project-form button[type="submit"] {
+  background: #10b981;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.finish-project-form button[type="submit"]:hover {
+  background: #059669;
+}
+
+.finish-project-form button[type="button"] {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.finish-project-form button[type="button"]:hover {
+  background: #d1d5db;
+}
+
+.archived-banner {
+  margin: 20px 30px;
+  padding: 12px 16px;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: #92400e;
+}
+
+.archived-icon {
+  font-size: 1.3rem;
 }
 
 .add-milestone-form {
@@ -129,12 +348,23 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
 }
 
 .add-milestone-form input {
   padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.add-milestone-form input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+}
+
+.add-milestone-form input[type="datetime-local"] {
+  width: auto;
 }
 
 .add-actions {
@@ -142,9 +372,31 @@
   gap: 10px;
 }
 
+.add-actions button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.add-actions button[type="submit"] {
+  background: #3b82f6;
+  color: white;
+}
+
+.add-actions button[type="submit"]:hover {
+  background: #2563eb;
+}
+
 .add-actions .cancel {
   background: #e5e7eb;
   color: #111827;
+}
+
+.add-actions .cancel:hover {
+  background: #d1d5db;
 }
 
 /* FILE UPLOAD */
@@ -153,13 +405,98 @@
   padding: 0 30px;
 }
 
-.file-upload ul {
+.file-upload h3 {
+  font-size: 1.1rem;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.file-upload input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.file-upload input[type="file"]:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.file-upload input[type="file"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uploading-text {
+  margin-top: 8px;
+  color: #3b82f6;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* FILE LISTS */
+.file-lists {
+  margin-top: 20px;
+  padding: 0 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.file-section h4 {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.file-section ul {
   margin-top: 10px;
   list-style: none;
   padding-left: 0;
 }
 
-/* CHAT TITLE */
+.file-section li {
+  padding: 8px 10px;
+  margin: 5px 0;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-link {
+  color: #1e40af;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.file-link:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.file-meta {
+  color: #6b7280;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 4px;
+}
+
+.no-files {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* PROJECT MEMBERS / CHAT TITLE */
 .project-members {
   margin-top: 30px;
   padding: 0 30px;
@@ -174,6 +511,7 @@
 .members {
   color: #9ca3af;
   font-size: 0.9rem;
+  font-weight: normal;
 }
 
 /* CHAT SECTION */
@@ -190,22 +528,46 @@
   margin-bottom: 10px;
 }
 
+.chat-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  border-radius: 8px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 8px;
+}
+
 .message {
   padding: 8px 10px;
   margin: 5px 0;
   border-radius: 10px;
   max-width: 75%;
+  word-wrap: break-word;
+  display: inline-block;
 }
 
 .message.sent {
   background-color: #3b82f6;
   color: white;
   margin-left: auto;
+  display: block;
+  text-align: right;
 }
 
 .message.received {
   background-color: #dbeafe;
   color: #111827;
+  margin-right: auto;
+  display: block;
+}
+
+.message strong {
+  font-weight: 600;
 }
 
 .chat-input {
@@ -215,9 +577,16 @@
 
 .chat-input input {
   flex: 1;
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 .chat-input button {
@@ -227,4 +596,34 @@
   border-radius: 6px;
   padding: 8px 16px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.chat-input button:hover {
+  background-color: #2563eb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .timeline-container {
+    padding: 0 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .timeline-line {
+    left: 20px;
+    right: 20px;
+  }
+
+  .file-lists {
+    grid-template-columns: 1fr;
+  }
+
+  .milestone-item.top .milestone-info,
+  .milestone-item.bottom .milestone-info {
+    max-width: 100px;
+    font-size: 0.8rem;
+  }
 }

@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "wice-ebdc7"
-  }
+    "default": "wice-granthunt"
+  },
+  "targets": {},
+  "etags": {}
 }
