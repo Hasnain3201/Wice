@@ -1,0 +1,78 @@
+/* Help page container */
+
+   .help-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Title */
+
+  .help-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  
+  /* Labels */
+
+  .help-label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  
+  /* Input + Text area (shared) */
+
+  .help-input,
+  .help-textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    outline: none;
+    transition: border 0.2s ease, background 0.2s ease;
+    background: #ffffff;  /* FIX: white background */
+    color: #000000;       /* black text */
+  }
+  
+  /* Focus State */
+
+  .help-input:focus,
+  .help-textarea:focus {
+    border-color: #4b8df8;
+  }
+  
+  /* Text area specific */
+
+  .help-textarea {
+    height: 140px;
+    resize: vertical;
+  }
+  
+  /* Submit button */
+  
+  .help-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    background: #0077ff;
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .help-button:hover {
+    background: #005fcc;
+  }
+  
