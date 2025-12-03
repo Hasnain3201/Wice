@@ -40,7 +40,6 @@ service cloud.firestore {
              request.auth.uid == resource.data.clientId;
     }
 
-    // ⭐ UPDATED: More permissive helper function for projects
     function isConsultantOrAdmin() {
       return request.auth != null && (
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType == 'consultant' ||
@@ -49,9 +48,7 @@ service cloud.firestore {
     }
 
 
-    // -------------------------------------------------------------------
-    // USERS COLLECTION
-    // -------------------------------------------------------------------
+    // USERS --------------------------------------
     match /users/{userId} {
       allow read: if isSignedIn();
       allow update: if isUserOwner(userId) || isAdmin();
@@ -59,25 +56,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-
-    // -------------------------------------------------------------------
-    // GRANTS
-    // -------------------------------------------------------------------
+    // GRANTS -------------------------------------
     match /grants/{grantId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // -------------------------------------------------------------------
-    // ADMIN LOGS
-    // -------------------------------------------------------------------
+    // ADMIN LOGS ---------------------------------
     match /adminActions/{logId} {
       allow read, write: if isAdmin();
     }
 
-    // -------------------------------------------------------------------
-    // SAVED COLLECTIONS
-    // -------------------------------------------------------------------
+    // SAVED COLLECTIONS --------------------------
     match /savedCollections/{userId} {
       allow read: if isSignedIn() &&
                     (request.auth.uid == userId || isAdmin());
@@ -85,9 +75,7 @@ service cloud.firestore {
                      request.auth.uid == userId;
     }
 
-    // -------------------------------------------------------------------
-    // CHATS & MESSAGES
-    // -------------------------------------------------------------------
+    // CHATS & MESSAGES ---------------------------
     match /chats/{chatId} {
       allow create: if isSignedIn();
       allow read: if isAdmin() ||
@@ -105,20 +93,14 @@ service cloud.firestore {
       }
     }
 
-
-    // -------------------------------------------------------------------
-    // AVAILABILITIES
-    // -------------------------------------------------------------------
+    // AVAILABILITIES -----------------------------
     match /availabilities/{userId} {
       allow read: if true;
       allow write: if isSignedIn() &&
                    (request.auth.uid == userId || isAdmin());
     }
 
-
-    // -------------------------------------------------------------------
-    // BOOKINGS
-    // -------------------------------------------------------------------
+    // BOOKINGS -----------------------------------
     match /bookings/{bookingId} {
 
       allow create: if isSignedIn();
@@ -145,42 +127,31 @@ service cloud.firestore {
     }
 
 
-    // -------------------------------------------------------------------
-    // ⭐ SIMPLIFIED: PROJECTS & MILESTONES (MORE PERMISSIVE FOR DEBUGGING)
-    // -------------------------------------------------------------------
+    // PROJECTS -----------------------------------
     match /projects/{projectId} {
       
-      // ⭐ SIMPLIFIED: Any signed-in user whose uid is in members array can read
-      // This covers list queries AND individual document reads
       allow read: if isSignedIn();
-      
-      // ⭐ SIMPLIFIED: Consultants or admins can create projects
       allow create: if isSignedIn() && isConsultantOrAdmin();
-      
-      // ⭐ SIMPLIFIED: Consultants, admins, or project members can update
       allow update: if isSignedIn();
-      
-      // Admins can delete projects
       allow delete: if isAdmin();
       
       // Milestones subcollection
       match /milestones/{milestoneId} {
-        
-        // ⭐ SIMPLIFIED: Any signed-in user can read milestones
         allow read: if isSignedIn();
-        
-        // ⭐ SIMPLIFIED: Any signed-in user can create/update milestones
         allow create, update: if isSignedIn();
-        
-        // Consultants or admins can delete milestones
         allow delete: if isSignedIn();
+      }
+
+      // ⭐️ FILES subcollection (REQUIRED FIX)
+      match /files/{fileId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn();
       }
     }
 
 
-    // -------------------------------------------------------------------
-    // DEFAULT: DENY EVERYTHING ELSE
-    // -------------------------------------------------------------------
+    // DEFAULT DENY --------------------------------
     match /{document=**} {
       allow read, write: if false;
     }

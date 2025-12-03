@@ -1,9 +1,17 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    // Allow users to upload files for projects
+    match /projectFiles/{projectId}/{fileName} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Existing rules (users + profiles)
     match /users/{uid}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+
     match /profiles/{uid}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }

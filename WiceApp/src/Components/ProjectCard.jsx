@@ -1,18 +1,40 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
   Timestamp,
   doc,
-  updateDoc 
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { db } from "../firebase";
 import { useChat } from "../context/ChatContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./ProjectCard.css";
+
+// Helper to choose an icon based on file extension
+const getFileIcon = (fileName = "") => {
+  const ext = (fileName.split(".").pop() || "").toLowerCase();
+
+  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext)) return "🖼️";
+  if (ext === "pdf") return "📕";
+  if (["doc", "docx"].includes(ext)) return "📘";
+  if (["xls", "xlsx", "csv"].includes(ext)) return "📊";
+  if (["ppt", "pptx", "key"].includes(ext)) return "📙";
+  if (["zip", "rar", "7z"].includes(ext)) return "🗜️";
+  if (["txt", "md"].includes(ext)) return "📄";
+  return "📁";
+};
 
 export default function ProjectCard({ project }) {
   const { role, user, profile } = useAuth();
@@ -27,6 +49,10 @@ export default function ProjectCard({ project }) {
   const [projectEndDate, setProjectEndDate] = useState(null);
   const [showEndDateForm, setShowEndDateForm] = useState(false);
   const [showFinishForm, setShowFinishForm] = useState(false);
+
+  // delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   // Initialize chat
   useEffect(() => {
@@ -53,20 +79,38 @@ export default function ProjectCard({ project }) {
   useEffect(() => {
     if (!project.id) return;
 
-    const q = query(
+    const qMilestones = query(
       collection(db, `projects/${project.id}/milestones`),
-      orderBy("date", "asc") // Order by date instead of order field
+      orderBy("date", "asc")
     );
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const loadedMilestones = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+    const unsub = onSnapshot(qMilestones, (snapshot) => {
+      const loadedMilestones = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
         // Convert Firestore Timestamp to readable date
-        date: doc.data().date?.toDate?.() || new Date(),
-        completedAt: doc.data().completedAt?.toDate?.() || null,
+        date: docSnap.data().date?.toDate?.() || new Date(),
+        completedAt: docSnap.data().completedAt?.toDate?.() || null,
       }));
       setMilestones(loadedMilestones);
+    });
+
+    return unsub;
+  }, [project.id]);
+
+  // Load project files in real-time
+  useEffect(() => {
+    if (!project.id) return;
+
+    const filesRef = collection(db, `projects/${project.id}/files`);
+    const qFiles = query(filesRef, orderBy("uploadedAt", "desc"));
+
+    const unsub = onSnapshot(qFiles, (snapshot) => {
+      const files = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setUploadedFiles(files);
     });
 
     return unsub;
@@ -78,10 +122,10 @@ export default function ProjectCard({ project }) {
 
     const startDate = milestones[0].date.getTime();
     const hasEndDate = projectEndDate !== null;
-    
+
     // If no end date, use the latest milestone date and expand to 75% of visual timeline
     // If end date exists, use it for 100% of visual timeline
-    const endDate = hasEndDate 
+    const endDate = hasEndDate
       ? projectEndDate.getTime()
       : milestones[milestones.length - 1].date.getTime();
 
@@ -90,10 +134,11 @@ export default function ProjectCard({ project }) {
 
     return milestones.map((milestone) => {
       const milestoneTime = milestone.date.getTime();
-      const progress = totalDuration > 0 
-        ? ((milestoneTime - startDate) / totalDuration) * timelineMultiplier
-        : 0;
-      
+      const progress =
+        totalDuration > 0
+          ? ((milestoneTime - startDate) / totalDuration) * timelineMultiplier
+          : 0;
+
       return {
         ...milestone,
         position: Math.max(0, Math.min(progress, 1)), // Clamp between 0 and 1
@@ -107,6 +152,9 @@ export default function ProjectCard({ project }) {
     () => profile?.fullName || user?.displayName || user?.email || "Unknown User",
     [profile?.fullName, user?.displayName, user?.email]
   );
+
+  const canDeleteFile = (file) =>
+    file.uploadedByName === displayName || role === "consultant";
 
   // Add new milestone to Firebase
   const handleAddMilestone = async (event) => {
@@ -146,7 +194,11 @@ export default function ProjectCard({ project }) {
     }
 
     try {
-      const milestoneRef = doc(db, `projects/${project.id}/milestones`, milestone.id);
+      const milestoneRef = doc(
+        db,
+        `projects/${project.id}/milestones`,
+        milestone.id
+      );
       await updateDoc(milestoneRef, {
         completed: !milestone.completed,
         completedAt: !milestone.completed ? Timestamp.now() : null,
@@ -192,8 +244,10 @@ export default function ProjectCard({ project }) {
     }
 
     try {
-      const finishDate = Timestamp.fromDate(new Date(event.target.finishDate.value));
-      
+      const finishDate = Timestamp.fromDate(
+        new Date(event.target.finishDate.value)
+      );
+
       // Add "Project Finished" milestone
       await addDoc(collection(db, `projects/${project.id}/milestones`), {
         title: "Project Finished",
@@ -222,14 +276,81 @@ export default function ProjectCard({ project }) {
     }
   };
 
-  const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files || []).map((file) => ({
-      name: file.name,
-      uploadedByName: displayName,
-      uploadedByRole: role,
-      date: new Date().toLocaleString(),
-    }));
-    setUploadedFiles((prev) => [...prev, ...files]);
+  // FILE UPLOAD: upload to Storage + save metadata in Firestore
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    const storage = getStorage();
+    const filesCollectionRef = collection(db, `projects/${project.id}/files`);
+
+    for (const file of files) {
+      const storagePath = `projectFiles/${project.id}/${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, storagePath);
+
+      try {
+        // Upload file bytes
+        await uploadBytes(storageRef, file);
+
+        // Get download URL
+        const url = await getDownloadURL(storageRef);
+
+        // Save metadata (includes who + when + storagePath)
+        await addDoc(filesCollectionRef, {
+          name: file.name,
+          url,
+          storagePath,
+          uploadedByName: displayName,
+          uploadedByRole: role,
+          uploadedAt: Timestamp.now(),
+        });
+      } catch (error) {
+        console.error("File upload error:", error);
+        alert("Failed to upload one of the files. Please try again.");
+      }
+    }
+
+    // Clear the input so same file can be selected again if needed
+    event.target.value = "";
+  };
+
+  // Delete file: open confirm modal
+  const handleRequestDeleteFile = (file) => {
+    setFileToDelete(file);
+    setShowDeleteModal(true);
+  };
+
+  const handleCancelDeleteFile = () => {
+    setFileToDelete(null);
+    setShowDeleteModal(false);
+  };
+
+  const handleConfirmDeleteFile = async () => {
+    if (!fileToDelete) return;
+
+    const storage = getStorage();
+
+    try {
+      // Delete Firestore document
+      const fileDocRef = doc(
+        db,
+        `projects/${project.id}/files`,
+        fileToDelete.id
+      );
+      await deleteDoc(fileDocRef);
+
+      // Delete from Storage if we have a path
+      if (fileToDelete.storagePath) {
+        const fileRef = ref(storage, fileToDelete.storagePath);
+        await deleteObject(fileRef);
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      alert("Failed to remove file. Please try again.");
+    } finally {
+      setFileToDelete(null);
+      setShowDeleteModal(false);
+    }
   };
 
   const handleSendMsg = async () => {
@@ -238,12 +359,19 @@ export default function ProjectCard({ project }) {
     setInputMsg("");
   };
 
-  const myFiles = uploadedFiles.filter((file) => file.uploadedByName === displayName);
-  const theirFiles = uploadedFiles.filter((file) => file.uploadedByName !== displayName);
+  const myFiles = uploadedFiles.filter(
+    (file) => file.uploadedByName === displayName
+  );
+  const theirFiles = uploadedFiles.filter(
+    (file) => file.uploadedByName !== displayName
+  );
 
   return (
     <div className={`project-card ${isOpen ? "open" : ""}`}>
-      <div className="project-header" onClick={() => setIsOpen((open) => !open)}>
+      <div
+        className="project-header"
+        onClick={() => setIsOpen((open) => !open)}
+      >
         <h2 className="project-title">{project.name}</h2>
         <span className="toggle-icon">{isOpen ? "▾" : "▸"}</span>
       </div>
@@ -254,7 +382,7 @@ export default function ProjectCard({ project }) {
             <div className="timeline-header">
               <div className="timeline-dates">
                 <span className="timeline-start-date">
-                  {calculateMilestonePositions.length > 0 
+                  {calculateMilestonePositions.length > 0
                     ? calculateMilestonePositions[0].date.toLocaleDateString()
                     : "Start"}
                 </span>
@@ -264,8 +392,8 @@ export default function ProjectCard({ project }) {
                   </span>
                 )}
                 {!projectEndDate && role === "consultant" && (
-                  <button 
-                    className="set-end-date-btn" 
+                  <button
+                    className="set-end-date-btn"
                     onClick={() => setShowEndDateForm(true)}
                     title="Set project end date"
                   >
@@ -280,14 +408,25 @@ export default function ProjectCard({ project }) {
                 <input
                   type="date"
                   name="endDate"
-                  min={calculateMilestonePositions.length > 0 
-                    ? calculateMilestonePositions[calculateMilestonePositions.length - 1].date.toISOString().split('T')[0]
-                    : new Date().toISOString().split('T')[0]}
+                  min={
+                    calculateMilestonePositions.length > 0
+                      ? calculateMilestonePositions[
+                        calculateMilestonePositions.length - 1
+                      ].date
+                        .toISOString()
+                        .split("T")[0]
+                      : new Date().toISOString().split("T")[0]
+                  }
                   required
                 />
                 <div className="form-actions">
                   <button type="submit">Set Date</button>
-                  <button type="button" onClick={() => setShowEndDateForm(false)}>Cancel</button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEndDateForm(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </form>
             )}
@@ -297,14 +436,22 @@ export default function ProjectCard({ project }) {
               {calculateMilestonePositions.map((milestone, index) => (
                 <div
                   key={milestone.id}
-                  className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"}`}
+                  className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"
+                    }`}
                   style={{ left: `${milestone.position * 100}%` }}
                 >
-                  <div 
-                    className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"}`}
+                  <div
+                    className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"
+                      }`}
                     onClick={() => handleToggleMilestone(milestone)}
-                    style={{ cursor: role === "consultant" ? "pointer" : "default" }}
-                    title={role === "consultant" ? "Click to toggle completion" : ""}
+                    style={{
+                      cursor: role === "consultant" ? "pointer" : "default",
+                    }}
+                    title={
+                      role === "consultant"
+                        ? "Click to toggle completion"
+                        : ""
+                    }
                   />
                   <div className="milestone-info">
                     <p className="milestone-label">
@@ -333,7 +480,10 @@ export default function ProjectCard({ project }) {
                     placeholder="Milestone name..."
                     value={newMilestone.title}
                     onChange={(event) =>
-                      setNewMilestone((prev) => ({ ...prev, title: event.target.value }))
+                      setNewMilestone((prev) => ({
+                        ...prev,
+                        title: event.target.value,
+                      }))
                     }
                     required
                   />
@@ -341,24 +491,36 @@ export default function ProjectCard({ project }) {
                     type="datetime-local"
                     value={newMilestone.date}
                     onChange={(event) =>
-                      setNewMilestone((prev) => ({ ...prev, date: event.target.value }))
+                      setNewMilestone((prev) => ({
+                        ...prev,
+                        date: event.target.value,
+                      }))
                     }
                     required
                   />
                   <div className="add-actions">
                     <button type="submit">Save</button>
-                    <button type="button" className="cancel" onClick={() => setShowAddForm(false)}>
+                    <button
+                      type="button"
+                      className="cancel"
+                      onClick={() => setShowAddForm(false)}
+                    >
                       Cancel
                     </button>
                   </div>
                 </form>
               )}
 
-              {projectEndDate && project.status !== "archived" && !showFinishForm && (
-                <button className="finish-btn" onClick={() => setShowFinishForm(true)}>
-                  ✓ Mark Project as Finished
-                </button>
-              )}
+              {projectEndDate &&
+                project.status !== "archived" &&
+                !showFinishForm && (
+                  <button
+                    className="finish-btn"
+                    onClick={() => setShowFinishForm(true)}
+                  >
+                    ✓ Mark Project as Finished
+                  </button>
+                )}
 
               {showFinishForm && (
                 <form className="finish-project-form" onSubmit={handleFinishProject}>
@@ -366,12 +528,21 @@ export default function ProjectCard({ project }) {
                   <input
                     type="date"
                     name="finishDate"
-                    min={projectEndDate ? projectEndDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                    min={
+                      projectEndDate
+                        ? projectEndDate.toISOString().split("T")[0]
+                        : new Date().toISOString().split("T")[0]
+                    }
                     required
                   />
                   <div className="form-actions">
                     <button type="submit">Finish & Archive Project</button>
-                    <button type="button" onClick={() => setShowFinishForm(false)}>Cancel</button>
+                    <button
+                      type="button"
+                      onClick={() => setShowFinishForm(false)}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </form>
               )}
@@ -385,21 +556,47 @@ export default function ProjectCard({ project }) {
             </div>
           )}
 
+          {/* FILE UPLOAD */}
           <div className="file-upload">
             <h3>Project Files</h3>
             <input type="file" multiple onChange={handleFileUpload} />
           </div>
 
+          {/* FILE LISTS */}
           <div className="file-lists">
             <div className="file-section">
               <h4>My Files</h4>
               {myFiles.length > 0 ? (
                 <ul>
-                  {myFiles.map((file, index) => (
-                    <li key={`${file.name}-${index}`} className="my-file">
-                      📄 {file.name}{" "}
+                  {myFiles.map((file) => (
+                    <li key={file.id} className="my-file">
+                      <div className="file-row">
+                        <span className="file-icon">{getFileIcon(file.name)}</span>
+
+                        <a
+                          className="file-link"
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ flex: 1, marginLeft: "8px" }}
+                        >
+                          {file.name}
+                        </a>
+
+                        {canDeleteFile(file) && (
+                          <button
+                            type="button"
+                            className="file-delete-btn"
+                            onClick={() => handleRequestDeleteFile(file)}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+
                       <span className="file-meta">
-                        (uploaded by {file.uploadedByName} — {file.date})
+                        Uploaded by {file.uploadedByName} —{" "}
+                        {file.uploadedAt?.toDate?.().toLocaleString() || ""}
                       </span>
                     </li>
                   ))}
@@ -413,11 +610,32 @@ export default function ProjectCard({ project }) {
               <h4>Team Uploaded Files</h4>
               {theirFiles.length > 0 ? (
                 <ul>
-                  {theirFiles.map((file, index) => (
-                    <li key={`${file.name}-${index}`} className="their-file">
-                      📎 {file.name}{" "}
+                  {theirFiles.map((file) => (
+                    <li key={file.id} className="their-file">
+                      <div className="file-row">
+                        <span className="file-icon">{getFileIcon(file.name)}</span>
+                        <a
+                          className="file-link"
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {file.name}
+                        </a>
+                        {canDeleteFile(file) && (
+                          <button
+                            type="button"
+                            className="file-delete-btn"
+                            onClick={() => handleRequestDeleteFile(file)}
+                            aria-label="Remove file"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
                       <span className="file-meta">
-                        (uploaded by {file.uploadedByName} — {file.date})
+                        Uploaded by {file.uploadedByName} —{" "}
+                        {file.uploadedAt?.toDate?.().toLocaleString() || ""}
                       </span>
                     </li>
                   ))}
@@ -428,11 +646,32 @@ export default function ProjectCard({ project }) {
             </div>
           </div>
 
+          {/* DELETE CONFIRM MODAL */}
+          {showDeleteModal && fileToDelete && (
+            <div className="file-delete-modal-overlay">
+              <div className="file-delete-modal">
+                <p>
+                  Are you sure you want to remove this file from your project's
+                  files?
+                </p>
+                <div className="modal-actions">
+                  <button type="button" onClick={handleConfirmDeleteFile}>
+                    Yes, remove
+                  </button>
+                  <button type="button" onClick={handleCancelDeleteFile}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="project-members">
             <h3 className="chat-title">
               Project Group Chat{" "}
               <span className="members">
-                ({calculateMilestonePositions.length} milestone{calculateMilestonePositions.length !== 1 ? "s" : ""})
+                ({calculateMilestonePositions.length} milestone
+                {calculateMilestonePositions.length !== 1 ? "s" : ""})
               </span>
             </h3>
           </div>
@@ -443,9 +682,8 @@ export default function ProjectCard({ project }) {
                 chatMessages.map((message) => (
                   <div
                     key={message.id}
-                    className={`message ${
-                      message.senderId === user?.uid ? "sent" : "received"
-                    }`}
+                    className={`message ${message.senderId === user?.uid ? "sent" : "received"
+                      }`}
                   >
                     <strong>{message.senderName}:</strong> {message.text}
                   </div>
@@ -459,7 +697,9 @@ export default function ProjectCard({ project }) {
                 type="text"
                 value={inputMsg}
                 onChange={(event) => setInputMsg(event.target.value)}
-                onKeyPress={(event) => event.key === "Enter" && handleSendMsg()}
+                onKeyPress={(event) =>
+                  event.key === "Enter" && handleSendMsg()
+                }
                 placeholder="Type a message..."
               />
               <button type="button" onClick={handleSendMsg}>

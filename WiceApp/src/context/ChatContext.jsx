@@ -38,9 +38,9 @@ function extractChat(doc) {
     updatedAt: convertTimestamp(raw.updatedAt),
     lastMessage: raw.lastMessage
       ? {
-          ...raw.lastMessage,
-          createdAt: convertTimestamp(raw.lastMessage.createdAt),
-        }
+        ...raw.lastMessage,
+        createdAt: convertTimestamp(raw.lastMessage.createdAt),
+      }
       : null,
   };
 }
@@ -94,7 +94,7 @@ export function ChatProvider({ children }) {
 
     if (!user?.uid) {
       setLoading(false);
-      return () => {};
+      return () => { };
     }
 
     setLastRead(loadLastRead(user.uid));
@@ -179,14 +179,26 @@ export function ChatProvider({ children }) {
   const createProjectChat = useCallback(
     async (projectId, projectName, participantList = []) => {
       if (!currentUserMeta) throw new Error("User must be signed in to create chats.");
+
+      // Flatten participants into metadata objects the chat can use
       const participants = [
         currentUserMeta,
-        ...participantList.filter((p) => p?.uid && p.uid !== currentUserMeta.uid),
+        ...participantList.filter(
+          (p) => p?.uid && p.uid !== currentUserMeta.uid
+        ),
       ];
+
+      // Extract just the user IDs for Firestore security rules
+      const participantIds = participants.map((p) => p.uid);
+
+      // Ensure the chat document is created WITH participantIds
       const chat = await ensureProjectChat(projectId, {
         name: projectName,
-        participants,
+        participants,        // stored for UI use
+        participantIds,      // REQUIRED by Firestore rules
+        updatedAt: new Date(),
       });
+
       return chat;
     },
     [currentUserMeta]
