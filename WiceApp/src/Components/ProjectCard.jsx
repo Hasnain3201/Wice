@@ -438,7 +438,7 @@ export default function ProjectCard({ project }) {
                   key={milestone.id}
                   className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"
                     }`}
-                  style={{ left: `${milestone.position * 100}%` }}
+                  style={{left: index === 0 ? "4%" : `${milestone.position * 100}%`,}}
                 >
                   <div
                     className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"
