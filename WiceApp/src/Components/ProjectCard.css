@@ -150,9 +150,9 @@
 /* Timeline line - horizontally centered in container */
 .timeline-line {
   position: absolute;
-  top: 120px;
-  left: 50px;
-  right: 50px;
+  top: 70px;
+  left: 0px;
+  right: 0px;
   height: 4px;
   background-color: #3b82f6;
   border-radius: 4px;
@@ -710,4 +710,8 @@
 
 .file-delete-btn:hover {
   color: #ff0000;
+}
+
+.timeline-wrapper{
+  position: relative;
 }

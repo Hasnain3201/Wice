@@ -430,40 +430,41 @@ export default function ProjectCard({ project }) {
                 </div>
               </form>
             )}
-
-            <div className="timeline-line"></div>
-            <div className="timeline-points">
-              {calculateMilestonePositions.map((milestone, index) => (
-                <div
-                  key={milestone.id}
-                  className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"
-                    }`}
-                  style={{left: index === 0 ? "0%" : `${milestone.position * 100}%`,}}
-                >
+            <div className="timeline-wrapper">
+              <div className="timeline-line"></div>
+              <div className="timeline-points">
+                {calculateMilestonePositions.map((milestone, index) => (
                   <div
-                    className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"
+                    key={milestone.id}
+                    className={`milestone-item ${index % 2 === 0 ? "top" : "bottom"
                       }`}
-                    onClick={() => handleToggleMilestone(milestone)}
-                    style={{
-                      cursor: role === "consultant" ? "pointer" : "default",
-                    }}
-                    title={
-                      role === "consultant"
-                        ? "Click to toggle completion"
-                        : ""
-                    }
-                  />
-                  <div className="milestone-info">
-                    <p className="milestone-label">
-                      {milestone.title}
-                      {milestone.completed && " ✓"}
-                    </p>
-                    <p className="milestone-date">
-                      {milestone.date.toLocaleDateString()}
-                    </p>
+                    style={{left: index === 0 ? "0%" : `${milestone.position * 100}%`,}}
+                  >
+                    <div
+                      className={`milestone-dot ${milestone.completed ? "filled" : "unfilled"
+                        }`}
+                      onClick={() => handleToggleMilestone(milestone)}
+                      style={{
+                        cursor: role === "consultant" ? "pointer" : "default",
+                      }}
+                      title={
+                        role === "consultant"
+                          ? "Click to toggle completion"
+                          : ""
+                      }
+                    />
+                    <div className="milestone-info">
+                      <p className="milestone-label">
+                        {milestone.title}
+                        {milestone.completed && " ✓"}
+                      </p>
+                      <p className="milestone-date">
+                        {milestone.date.toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
