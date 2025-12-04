@@ -13,6 +13,7 @@ import {
   Bookmark,
   Calendar,
   HelpCircle,
+  AlertCircle,
   LogOut,
 } from "lucide-react";
 import "./SideNav.css";
@@ -26,13 +27,12 @@ export default function SideNav() {
   const hasUnreadChats = unreadChatIds.length > 0;
 
   const links = useMemo(() => {
-    // ⭐ CONSULTANT — NO SAVED
+    // ⭐ CONSULTANT – NO SAVED
     if (role === "consultant") {
       return [
         { to: "/consultant/portal", label: "Home", icon: Home },
         { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
-        // ❌ Removed Saved
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
@@ -41,13 +41,13 @@ export default function SideNav() {
       ];
     }
 
-    // ⭐ CLIENT — KEEP SAVED
+    // ⭐ CLIENT – KEEP SAVED
     if (role === "client") {
       return [
         { to: "/client/home", label: "Home", icon: Home },
         { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
-        { to: "/saved", label: "Saved", icon: Bookmark }, // ⭐ YES
+        { to: "/saved", label: "Saved", icon: Bookmark },
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
         { to: "/calendar", label: "Calendar", icon: Calendar },
@@ -57,14 +57,16 @@ export default function SideNav() {
       ];
     }
 
-    // ⭐ ADMIN — KEEP SAVED
+    // ⭐ ADMIN – KEEP SAVED + ADD ADMIN HELP
     if (role === "admin") {
       return [
         { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { to: "/granthunt", label: "GrantHunt", icon: Search },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
         { to: "/chat", label: "Chat", icon: MessageSquare },
-        { to: "/saved", label: "Saved", icon: Bookmark }, // ⭐ YES
+        { to: "/saved", label: "Saved", icon: Bookmark },
+        { to: "/admin/help", label: "Help Tickets", icon: AlertCircle }, // ⭐ NEW
+        { to: "/settings", label: "Settings", icon: Settings },
       ];
     }
 
@@ -101,7 +103,7 @@ export default function SideNav() {
           );
         })}
 
-        {/* Help (hidden for admin only) */}
+        {/* Help (hidden for admin, they use /admin/help instead) */}
         {role !== "admin" && (
           <NavLink
             to="/help"
