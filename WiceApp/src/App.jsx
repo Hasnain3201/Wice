@@ -33,10 +33,12 @@ import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import ConsultantPublicProfile from "./Pages/ConsultantPublicProfile.jsx";
 import VerifyEmail from "./Pages/VerifyEmail.jsx";
+import HelpPage from "./Pages/Help.jsx"; // Updated to correct location
 
 // Admin
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashboardPage.jsx";
+import AdminHelpManagement from "./Pages/Admin/AdminHelpManagement.jsx";
 
 // Consultant Profile Builder
 import ProfileBuilder from "./Pages/profilebuilder/ProfileBuilder.jsx";
@@ -78,7 +80,7 @@ function HomePage() {
           </div>
           <div className="rule" />
           <p className="signup">
-            Don’t have an account? <Link to="/signup" className="link">Sign up</Link>
+            Don't have an account? <Link to="/signup" className="link">Sign up</Link>
           </p>
         </section>
         <section className="right">
@@ -100,7 +102,7 @@ function DashboardLayout({ children }) {
   );
 }
 
-// ⭐⭐⭐ FIXED VERSION — THIS IS THE ONLY CHANGE YOU NEEDED ⭐⭐⭐
+// ⭐⭐⭐ FIXED VERSION – THIS IS THE ONLY CHANGE YOU NEEDED ⭐⭐⭐
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   const { role, user, loading, profile } = useAuth();
   const location = typeof window !== "undefined" ? window.location.pathname : "";
@@ -254,6 +256,7 @@ export default function App() {
                 { path: "/projects", element: <ProjectsHome />, roles: ["client", "consultant"] },
                 { path: "/calendar", element: <CalendarPage />, roles: ["client", "consultant"] },
                 { path: "/settings", element: <Settings />, roles: ["client", "consultant", "admin"] },
+                { path: "/help", element: <HelpPage />, roles: ["client", "consultant", "admin"] },
               ].map(({ path, element, roles }) => (
                 <Route
                   key={path}
@@ -370,6 +373,22 @@ export default function App() {
                     element={
                       <DashboardLayout>
                         <AdminDashboard />
+                      </DashboardLayout>
+                    }
+                  />
+                }
+              />
+
+              {/* Admin Help Management */}
+              <Route
+                path="/admin/help"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["admin"]}
+                    fallback="/admin/login"
+                    element={
+                      <DashboardLayout>
+                        <AdminHelpManagement />
                       </DashboardLayout>
                     }
                   />

@@ -1,78 +1,195 @@
-/* Help page container */
+/* Help page container - WIDER */
 
-   .help-container {
-    max-width: 600px;
-    margin: 40px auto;
+.help-container {
+  max-width: 900px; /* Increased from 600px */
+  margin: 40px auto;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: Arial, sans-serif;
+}
+
+/* Title */
+
+.help-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.help-description {
+  text-align: center;
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Labels */
+
+.help-label {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 14px;
+  color: #333;
+}
+
+/* Category buttons container */
+
+.help-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+/* Individual category button - styled like submit button with HORIZONTAL layout */
+
+.help-category-btn {
+  flex: 1;
+  min-width: calc(33.333% - 7px); /* 3 columns */
+  display: flex;
+  flex-direction: row; /* Changed from column to row */
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between icon and text */
+  padding: 14px 16px;
+  background: var(--category-color);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap; /* Keeps text on one line */
+  filter:brightness(0.75);
+}
+
+.help-category-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.05);
+}
+
+.help-category-btn.active {
+  filter: brightness(1.00);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) inset;
+  transform: translateY(0);
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Icon doesn't shrink */
+}
+
+.category-icon svg {
+  display: block;
+}
+
+.category-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  flex-shrink: 0; /* Text always visible */
+}
+
+/* Input + Text area (shared) */
+
+.help-input,
+.help-textarea {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  outline: none;
+  transition: border 0.2s ease, background 0.2s ease;
+  background: #ffffff;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+/* Focus State */
+
+.help-input:focus,
+.help-textarea:focus {
+  border-color: #4b8df8;
+  box-shadow: 0 0 0 3px rgba(75, 141, 248, 0.1);
+}
+
+/* Text area specific */
+
+.help-textarea {
+  height: 160px;
+  resize: vertical;
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Submit button */
+
+.help-button {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #0077ff;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.help-button:hover:not(:disabled) {
+  background: #005fcc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.help-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 900px) {
+  .help-container {
+    max-width: 700px;
+    padding: 28px;
+  }
+}
+
+@media (max-width: 700px) {
+  .help-container {
+    max-width: 100%;
+    margin: 20px;
     padding: 24px;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    font-family: Arial, sans-serif;
   }
   
-  /* Title */
+  .help-category-btn {
+    min-width: calc(50% - 5px); /* 2 columns on tablet */
+  }
+}
 
-  .help-title {
-    text-align: center;
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 24px;
+@media (max-width: 500px) {
+  .help-categories {
+    flex-direction: column;
   }
   
-  /* Labels */
-
-  .help-label {
-    display: block;
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 6px;
+  .help-category-btn {
+    min-width: 100%; /* Full width on mobile */
   }
-  
-  /* Input + Text area (shared) */
-
-  .help-input,
-  .help-textarea {
-    width: 100%;
-    padding: 12px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    margin-bottom: 18px;
-    outline: none;
-    transition: border 0.2s ease, background 0.2s ease;
-    background: #ffffff;  /* FIX: white background */
-    color: #000000;       /* black text */
-  }
-  
-  /* Focus State */
-
-  .help-input:focus,
-  .help-textarea:focus {
-    border-color: #4b8df8;
-  }
-  
-  /* Text area specific */
-
-  .help-textarea {
-    height: 140px;
-    resize: vertical;
-  }
-  
-  /* Submit button */
-  
-  .help-button {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    background: #0077ff;
-    border: none;
-    border-radius: 10px;
-    color: #ffffff;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  
-  .help-button:hover {
-    background: #005fcc;
-  }
-  
+}
