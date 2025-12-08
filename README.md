@@ -64,6 +64,61 @@ firebase deploy --only functions
 - Build: `npm run build` (inside `WiceApp`)
 - Preview production build: `npm run preview` (inside `WiceApp`)
 
+## WICE App – Local Setup & Handoff Guide (using existing Firebase project)
+1) Install tools  
+   - VS Code: https://code.visualstudio.com/  
+   - Node.js (LTS): https://nodejs.org/ (close/reopen terminal after install)  
+   - Git: macOS `xcode-select --install` (or https://git-scm.com/download/mac); Windows https://git-scm.com/download/win
+
+2) Download the code  
+   ```bash
+   git clone https://github.com/<your-repo>/Wice.git
+   cd Wice/WiceApp
+   ```
+
+3) Install project dependencies  
+   ```bash
+   npm install
+   ```
+   (Only run `npm install` in `functions/` if you plan to work on Cloud Functions.)
+
+4) Configure Firebase CLI (same Firebase project)  
+   ```bash
+   npm install -g firebase-tools
+   firebase --version
+   firebase login
+   firebase use wice-granthunt
+   # one-time, from repo root:
+   cd /Users/<yourname>/Wice
+   firebase deploy --only storage
+   ```
+   If you see a bucket error, ensure `wice-granthunt.firebasestorage.app` exists in Firebase Console → Storage.
+
+5) Add environment variables (`WiceApp/.env.local`)  
+   ```
+   VITE_FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
+   VITE_FIREBASE_AUTH_DOMAIN=wice-granthunt.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=wice-granthunt
+   VITE_FIREBASE_STORAGE_BUCKET=wice-granthunt.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=820103276782
+   VITE_FIREBASE_APP_ID=1:820103276782:web:81ca17f5f00b0a92a92bff
+   VITE_FIREBASE_MEASUREMENT_ID=G-CFQX982R49
+   VITE_PROTECTED_ADMIN_EMAIL=admin@wice.org
+
+   FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
+   FIREBASE_PROJECT_ID=wice-granthunt
+   FIREBASE_IMPORT_EMAIL=admin@wice.org
+   FIREBASE_IMPORT_PASSWORD=WICEllc@025!!
+   ```
+   Save the file. The primary admin (`admin@wice.org`) already exists; no need to recreate it.
+
+6) Run the app locally  
+   ```bash
+   cd WiceApp
+   npm run dev
+   ```
+   Open the printed URL (e.g., http://localhost:5173) in your browser.
+
 ## Deployment (frontend)
 Build and deploy however you host static assets (Firebase Hosting, Netlify, Vercel, etc.):
 ```bash
