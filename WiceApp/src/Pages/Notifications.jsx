@@ -14,8 +14,8 @@ export default function Notifications() {
       );
 
       // Sort logic:
-      // 1️⃣ Unviewed (false) stay at top in their original order (index)
-      // 2️⃣ Viewed (true) go to bottom, also in their original order
+      // Unviewed items stay at top in their original order (index)
+      // Viewed items go to bottom, also in their original order
       return [...updated].sort((a, b) => {
         if (a.viewed === b.viewed) {
           return a.index - b.index; // maintain original order within groups

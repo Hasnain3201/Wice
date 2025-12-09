@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Settings,
   Briefcase,
-  Bell,
   Bookmark,
   Calendar,
   HelpCircle,
@@ -27,11 +26,10 @@ export default function SideNav() {
   const hasUnreadChats = unreadChatIds.length > 0;
 
   const links = useMemo(() => {
-    // ⭐ CONSULTANT – NO SAVED
+    // Consultant navigation
     if (role === "consultant") {
       return [
         { to: "/consultant/portal", label: "Home", icon: Home },
-        { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/projects", label: "Projects", icon: Briefcase },
@@ -41,11 +39,10 @@ export default function SideNav() {
       ];
     }
 
-    // ⭐ CLIENT – KEEP SAVED
+    // Client navigation
     if (role === "client") {
       return [
         { to: "/client/home", label: "Home", icon: Home },
-        { to: "/notifications", label: "Notifications", icon: Bell },
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
         { to: "/saved", label: "Saved", icon: Bookmark },
         { to: "/chat", label: "Chat", icon: MessageSquare },
@@ -57,7 +54,7 @@ export default function SideNav() {
       ];
     }
 
-    // ⭐ ADMIN – KEEP SAVED + ADD ADMIN HELP
+    // Admin navigation
     if (role === "admin") {
       return [
         { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -65,7 +62,7 @@ export default function SideNav() {
         { to: "/marketplace", label: "Marketplace", icon: LayoutDashboard },
         { to: "/chat", label: "Chat", icon: MessageSquare },
         { to: "/saved", label: "Saved", icon: Bookmark },
-        { to: "/admin/help", label: "Help Tickets", icon: AlertCircle }, // ⭐ NEW
+        { to: "/admin/help", label: "Help Tickets", icon: AlertCircle },
         { to: "/settings", label: "Settings", icon: Settings },
       ];
     }

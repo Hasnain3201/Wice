@@ -54,7 +54,7 @@ export default function ClientProfileBuilder2Comp({
 
     alert("Your full profile has been saved!");
 
-    // ⭐ REDIRECT TO CLIENT HOME
+    // Redirect to client home
     navigate("/client/home");
   };
 

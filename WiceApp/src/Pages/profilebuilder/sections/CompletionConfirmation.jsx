@@ -92,7 +92,7 @@ export default function CompletionConfirmation({
   const { user, refreshProfile, profile: authProfile } = useAuth();
   const navigate = useNavigate();
 
-  // ⭐ SAVE FULL PROFILE + SHOW POPUP + REDIRECT
+  // Save full profile, show confirmation, then redirect
   async function handleSubmitProfile() {
     const uid = user?.uid;
     if (!uid) return;

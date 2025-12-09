@@ -41,7 +41,7 @@ export default function ProfileBuilder({ mode = "light" }) {
   const [currentSection, setCurrentSection] = useState(sections[0]);
   const [completed, setCompleted] = useState([]);
 
-  // ⭐ GLOBAL PROFILE DATA FOR ALL PAGES
+  // Global profile data shared across sections
   const [profileData, setProfileData] = useState({
     fullName: "",
     title: "",
@@ -301,7 +301,7 @@ export default function ProfileBuilder({ mode = "light" }) {
           </SectionWrapper>
         );
 
-      // ⭐ FULL PROFILE PAGES
+      // Full profile pages
       case "Experience Snapshot":
         return (
           <SectionWrapper {...props}>

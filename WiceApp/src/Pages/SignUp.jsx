@@ -68,7 +68,7 @@ export default function SignUp() {
       await updateProfile(user, { displayName: fullName });
       await sendEmailVerification(user);
 
-      /* ⭐⭐ IMPORTANT CHANGE:
+      /* IMPORTANT CHANGE:
          Create root user fields + default profile + dashboard for each role
       */
       const baseDoc = {
@@ -80,10 +80,10 @@ export default function SignUp() {
         createdAt: serverTimestamp(),
       };
 
-      // ⭐⭐ THIS FUNCTION builds correct defaults for each role
+      // This function builds correct defaults for each role
       const defaults = buildDefaultUserData(accountType);
 
-      // ⭐ Merge base fields + defaults safely into Firestore
+      // Merge base fields + defaults safely into Firestore
       await setDoc(
         doc(db, "users", user.uid),
         {

@@ -16,7 +16,7 @@ service firebase.storage {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // ⭐ ADD THIS — Help Ticket Files ⭐
+    // Help Ticket Files
     match /helpTickets/{ticketId}/{fileName} {
 
       // Upload allowed ONLY if signed in

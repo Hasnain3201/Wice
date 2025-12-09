@@ -18,7 +18,6 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { db } from "../firebase";
-import { useChat } from "../context/ChatContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./ProjectCard.css";
 
@@ -38,10 +37,8 @@ const getFileIcon = (fileName = "") => {
 
 export default function ProjectCard({ project }) {
   const { role, user, profile } = useAuth();
-  const { messages, sendMessage, createProjectChat } = useChat();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [inputMsg, setInputMsg] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newMilestone, setNewMilestone] = useState({ title: "", date: "" });
@@ -53,12 +50,6 @@ export default function ProjectCard({ project }) {
   // delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
-
-  // Initialize chat
-  useEffect(() => {
-    if (!user?.uid) return;
-    createProjectChat(project.id, project.name, project.members || []);
-  }, [createProjectChat, project.id, project.name, project.members, user?.uid]);
 
   // Load project end date from Firebase
   useEffect(() => {
@@ -145,8 +136,6 @@ export default function ProjectCard({ project }) {
       };
     });
   }, [milestones, projectEndDate]);
-
-  const chatMessages = messages[project.id] || [];
 
   const displayName = useMemo(
     () => profile?.fullName || user?.displayName || user?.email || "Unknown User",
@@ -351,12 +340,6 @@ export default function ProjectCard({ project }) {
       setFileToDelete(null);
       setShowDeleteModal(false);
     }
-  };
-
-  const handleSendMsg = async () => {
-    if (!inputMsg.trim()) return;
-    await sendMessage(project.id, inputMsg);
-    setInputMsg("");
   };
 
   const myFiles = uploadedFiles.filter(
@@ -667,47 +650,6 @@ export default function ProjectCard({ project }) {
             </div>
           )}
 
-          <div className="project-members">
-            <h3 className="chat-title">
-              Project Group Chat{" "}
-              <span className="members">
-                ({calculateMilestonePositions.length} milestone
-                {calculateMilestonePositions.length !== 1 ? "s" : ""})
-              </span>
-            </h3>
-          </div>
-
-          <div className="chat-section">
-            <div className="chat-box">
-              {chatMessages.length > 0 ? (
-                chatMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`message ${message.senderId === user?.uid ? "sent" : "received"
-                      }`}
-                  >
-                    <strong>{message.senderName}:</strong> {message.text}
-                  </div>
-                ))
-              ) : (
-                <p className="no-files">No messages yet.</p>
-              )}
-            </div>
-            <div className="chat-input">
-              <input
-                type="text"
-                value={inputMsg}
-                onChange={(event) => setInputMsg(event.target.value)}
-                onKeyPress={(event) =>
-                  event.key === "Enter" && handleSendMsg()
-                }
-                placeholder="Type a message..."
-              />
-              <button type="button" onClick={handleSendMsg}>
-                Send
-              </button>
-            </div>
-          </div>
         </>
       )}
     </div>

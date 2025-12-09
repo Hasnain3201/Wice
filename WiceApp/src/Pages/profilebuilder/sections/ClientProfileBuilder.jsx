@@ -216,7 +216,8 @@ export default function ClientProfileBuilder() {
                 setLightFilled(filled);
                 setCompletedLightLabels(completedLabels);
                 setIsLightComplete(isComplete);
-                setLightData((prev) => (shallowEqual(prev, values) ? prev : values)); // ⭐ store data
+                // Persist light profile data between steps
+                setLightData((prev) => (shallowEqual(prev, values) ? prev : values));
           }}
         />
       </SectionWrapper>
@@ -243,7 +244,8 @@ export default function ClientProfileBuilder() {
           onProgress={({ filled, completedLabels, values }) => {
             setFullFilled(filled);
             setCompletedFullLabels(completedLabels);
-            setFullData(values); // ⭐ store data
+            // Persist full profile data between steps
+            setFullData(values);
           }}
         />
       </SectionWrapper>

@@ -48,7 +48,7 @@ service cloud.firestore {
       );
     }
 
-    // ✅ NEW: helper to check if current user owns a help ticket
+  // Helper to check if current user owns a help ticket
     function isHelpTicketOwner(ticketId) {
       return request.auth != null &&
              get(/databases/$(database)/documents/helpTickets/$(ticketId)).data.userId == request.auth.uid;
@@ -158,7 +158,7 @@ service cloud.firestore {
     }
 
 
-    // ⭐⭐⭐ HELP TICKETS (UPDATED) ⭐⭐⭐
+    // Help tickets (updated)
     match /helpTickets/{ticketId} {
 
       // Any signed-in user can submit a ticket
@@ -181,7 +181,7 @@ service cloud.firestore {
                       .changedKeys()
                       .hasOnly(["status", "updatedAt", "hasResponse"]);
 
-      // ❌ No one can delete tickets via client (admins included)
+      // No one can delete tickets via client (admins included)
       // (No `allow delete` here → default deny)
 
 

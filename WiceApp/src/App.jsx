@@ -28,7 +28,6 @@ import Chat from "./Pages/Chat/Chat.jsx";
 import ProjectsHome from "./Pages/ProjectsPage/ProjectsHome.jsx";
 import Settings from "./Pages/Settings.jsx";
 import Saved from "./Pages/Saved.jsx";
-import Notifications from "./Pages/Notifications.jsx";
 import CalendarPage from "./Pages/Calendar.jsx";
 import BillingClientSide from "./Pages/Client/BillingClientSide.jsx";
 import ConsultantPublicProfile from "./Pages/ConsultantPublicProfile.jsx";
@@ -102,7 +101,7 @@ function DashboardLayout({ children }) {
   );
 }
 
-// ⭐⭐⭐ FIXED VERSION – THIS IS THE ONLY CHANGE YOU NEEDED ⭐⭐⭐
+// Protected routing flow for role checks and profile builder gating
 function ProtectedRoute({ allowedRoles, fallback = "/", element }) {
   const { role, user, loading, profile } = useAuth();
   const location = typeof window !== "undefined" ? window.location.pathname : "";
@@ -250,7 +249,6 @@ export default function App() {
               {/* Shared Pages */}
               {[
                 { path: "/marketplace", element: <Marketplace />, roles: ["client", "consultant", "admin"] },
-                { path: "/notifications", element: <Notifications />, roles: ["client", "consultant"] },
                 { path: "/saved", element: <Saved />, roles: ["client", "admin"] },
                 { path: "/chat", element: <Chat />, roles: ["client", "consultant", "admin"] },
                 { path: "/projects", element: <ProjectsHome />, roles: ["client", "consultant"] },
