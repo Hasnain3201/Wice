@@ -1,7 +1,7 @@
 /* Help page container - WIDER */
 
 .help-container {
-  max-width: 900px; /* Increased from 600px */
+  max-width: 900px;
   margin: 40px auto;
   padding: 32px;
   background: #ffffff;
@@ -10,21 +10,212 @@
   font-family: Arial, sans-serif;
 }
 
-/* Title */
+/* Header */
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
 
 .help-title {
-  text-align: center;
+  text-align: left;
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .help-description {
-  text-align: center;
+  text-align: left;
   font-size: 15px;
   color: #666;
-  margin-bottom: 32px;
+  margin: 0;
   line-height: 1.6;
+}
+
+/* Primary action button */
+
+.help-primary-button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #0077ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.help-primary-button:hover {
+  background: #005fcc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Tabs */
+
+.help-tabs {
+  display: inline-flex;
+  border-radius: 999px;
+  background: #f4f5f7;
+  padding: 4px;
+  margin: 12px 0 20px 0;
+}
+
+.help-tab {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.help-tab.active {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.help-tab-count {
+  font-size: 12px;
+  background: #e5edff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* Ticket list */
+
+.help-tickets-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.help-ticket-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.15s ease, transform 0.1s ease,
+    border-color 0.15s ease;
+}
+
+.help-ticket-item:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  border-color: #d0d7ff;
+  transform: translateY(-1px);
+}
+
+.help-ticket-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.help-ticket-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.help-ticket-icon svg {
+  display: block;
+}
+
+.help-ticket-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.help-ticket-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.help-ticket-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.help-ticket-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.help-ticket-category::before {
+  content: "• ";
+}
+
+.help-ticket-date {
+  white-space: nowrap;
+}
+
+/* Status badge */
+
+.help-status-badge {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.help-status-badge.unsolved {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+.help-status-badge.solved {
+  background: #ecfdf3;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+/* Empty state */
+
+.help-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px dashed #e5e7eb;
 }
 
 /* Labels */
@@ -43,20 +234,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
-/* Individual category button - styled like submit button with HORIZONTAL layout */
+/* Individual category button */
 
 .help-category-btn {
   flex: 1;
-  min-width: calc(33.333% - 7px); /* 3 columns */
+  min-width: calc(33.333% - 7px);
   display: flex;
-  flex-direction: row; /* Changed from column to row */
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Space between icon and text */
-  padding: 14px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   background: var(--category-color);
   border: none;
   border-radius: 10px;
@@ -66,18 +257,18 @@
   color: white;
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  white-space: nowrap; /* Keeps text on one line */
-  filter:brightness(0.75);
+  white-space: nowrap;
+  filter: brightness(0.8);
 }
 
 .help-category-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  filter: brightness(1.05);
+  filter: brightness(1);
 }
 
 .help-category-btn.active {
-  filter: brightness(1.00);
+  filter: brightness(1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) inset;
   transform: translateY(0);
 }
@@ -86,7 +277,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Icon doesn't shrink */
+  flex-shrink: 0;
 }
 
 .category-icon svg {
@@ -94,22 +285,22 @@
 }
 
 .category-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-align: left;
-  flex-shrink: 0; /* Text always visible */
+  flex-shrink: 0;
 }
 
-/* Input + Text area (shared) */
+/* Input + Text area */
 
 .help-input,
 .help-textarea {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   outline: none;
   transition: border 0.2s ease, background 0.2s ease;
   background: #ffffff;
@@ -117,15 +308,11 @@
   box-sizing: border-box;
 }
 
-/* Focus State */
-
 .help-input:focus,
 .help-textarea:focus {
   border-color: #4b8df8;
   box-shadow: 0 0 0 3px rgba(75, 141, 248, 0.1);
 }
-
-/* Text area specific */
 
 .help-textarea {
   height: 160px;
@@ -138,8 +325,8 @@
 
 .help-button {
   width: 100%;
-  padding: 16px;
-  font-size: 16px;
+  padding: 14px;
+  font-size: 15px;
   font-weight: 600;
   background: #0077ff;
   border: none;
@@ -163,12 +350,320 @@
   box-shadow: none;
 }
 
-/* Responsive adjustments */
+/* Modal overlay */
+
+.help-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.help-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+}
+
+.help-modal-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.help-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.help-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.help-modal-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.help-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Ticket details */
+
+.help-ticket-detail-section {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.help-detail-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.help-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.help-detail-label {
+  font-weight: 600;
+  color: #4b5563;
+  min-width: 80px;
+}
+
+.help-detail-value {
+  color: #111827;
+}
+
+/* Status row + buttons */
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resolve-button {
+  padding: 6px 12px;
+  background: #10b981;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.4);
+}
+
+.resolve-button:hover {
+  background: #0e9f6e;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.5);
+}
+
+.resolve-button-outline {
+  background: #ffffff;
+  color: #16a34a;
+  border: 1px solid #16a34a;
+  box-shadow: none;
+}
+
+.resolve-button-outline:hover {
+  background: #ecfdf3;
+}
+
+/* Ticket message */
+
+.help-ticket-message {
+  margin-bottom: 16px;
+}
+
+.help-ticket-message h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.help-ticket-message p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #111827;
+  white-space: pre-wrap;
+}
+
+/* Files + responses */
+
+.help-ticket-files,
+.help-ticket-responses {
+  margin-bottom: 16px;
+}
+
+.help-ticket-files h4,
+.help-ticket-responses h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.help-subtle-text {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.help-files-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.help-files-list li {
+  margin-bottom: 6px;
+}
+
+.help-file-link {
+  font-size: 14px;
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.help-file-link:hover {
+  text-decoration: underline;
+}
+
+.help-responses-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.help-response {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  background: #f9fafb;
+}
+
+.help-response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.help-response-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.help-response-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.help-response-message {
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.5;
+}
+
+/* Attachments (new ticket form) */
+
+.help-attachments-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.help-attach-button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.help-attach-button:hover {
+  background: #eef2ff;
+  border-color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.help-attachments-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.help-attachment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.help-attachment-name {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.help-attachment-remove {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0 2px;
+}
+
+.help-attachment-remove:hover {
+  color: #111827;
+}
+
+/* Responsive */
 
 @media (max-width: 900px) {
   .help-container {
     max-width: 700px;
-    padding: 28px;
+    padding: 24px;
+  }
+
+  .help-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .help-primary-button {
+    align-self: stretch;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
   }
 }
 
@@ -176,11 +671,15 @@
   .help-container {
     max-width: 100%;
     margin: 20px;
-    padding: 24px;
+    padding: 20px;
   }
-  
+
   .help-category-btn {
-    min-width: calc(50% - 5px); /* 2 columns on tablet */
+    min-width: calc(50% - 5px);
+  }
+
+  .help-ticket-title {
+    white-space: normal;
   }
 }
 
@@ -188,8 +687,22 @@
   .help-categories {
     flex-direction: column;
   }
-  
+
   .help-category-btn {
-    min-width: 100%; /* Full width on mobile */
+    min-width: 100%;
+  }
+
+  .help-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .help-tab {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .help-modal {
+    max-height: 95vh;
   }
 }
