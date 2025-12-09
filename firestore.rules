@@ -1,10 +1,15 @@
-rules_version = '2';
+rules_version = '2'; 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --------- HELPERS ----------
+    // ---------- COMMON HELPERS ----------
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function docIsPublicConsultant(docData) {
+      return docData.accountType == 'consultant' &&
+             docData.phaseLightCompleted == true;
     }
 
     function docHasAdminRole(userDoc) {
@@ -26,8 +31,31 @@ service cloud.firestore {
              request.auth.uid == userId;
     }
 
+    function isConsultantForBooking() {
+      return request.auth != null &&
+             request.auth.uid == resource.data.consultantId;
+    }
 
-    // -------- USERS ----------
+    function isClientForBooking() {
+      return request.auth != null &&
+             request.auth.uid == resource.data.clientId;
+    }
+
+    function isConsultantOrAdmin() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType == 'consultant' ||
+        isAdmin()
+      );
+    }
+
+    // ✅ NEW: helper to check if current user owns a help ticket
+    function isHelpTicketOwner(ticketId) {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/helpTickets/$(ticketId)).data.userId == request.auth.uid;
+    }
+
+
+    // USERS --------------------------------------
     match /users/{userId} {
       allow read: if isSignedIn();
       allow update: if isUserOwner(userId) || isAdmin();
@@ -35,18 +63,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // -------- GRANTS ----------
+    // GRANTS -------------------------------------
     match /grants/{grantId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // -------- ADMIN LOGS ----------
+    // ADMIN LOGS ---------------------------------
     match /adminActions/{logId} {
       allow read, write: if isAdmin();
     }
 
-    // -------- SAVED COLLECTIONS ----------
+    // SAVED COLLECTIONS --------------------------
     match /savedCollections/{userId} {
       allow read: if isSignedIn() &&
                     (request.auth.uid == userId || isAdmin());
@@ -54,43 +82,50 @@ service cloud.firestore {
                      request.auth.uid == userId;
     }
 
-    // -------- CHATS ----------
+    // CHATS & MESSAGES ---------------------------
     match /chats/{chatId} {
       allow create: if isSignedIn();
       allow read: if isAdmin() ||
-                  resource.data.participantIds.hasAny([request.auth.uid]);
+                  (request.auth != null &&
+                   resource.data.participantIds.hasAny([request.auth.uid]));
       allow update, delete: if isAdmin() ||
-                             resource.data.participantIds.hasAny([request.auth.uid]);
+                            (request.auth != null &&
+                             resource.data.participantIds.hasAny([request.auth.uid]));
 
       match /messages/{messageId} {
         allow read, write: if isAdmin() ||
-          get(/databases/$(database)/documents/chats/$(chatId))
-            .data.participantIds.hasAny([request.auth.uid]);
+                           (request.auth != null &&
+                            get(/databases/$(database)/documents/chats/$(chatId))
+                              .data.participantIds.hasAny([request.auth.uid]));
       }
     }
 
-    // -------- AVAILABILITIES ----------
+    // AVAILABILITIES -----------------------------
     match /availabilities/{userId} {
       allow read: if true;
       allow write: if isSignedIn() &&
                    (request.auth.uid == userId || isAdmin());
     }
 
-    // -------- BOOKINGS ----------
+    // BOOKINGS -----------------------------------
     match /bookings/{bookingId} {
+
       allow create: if isSignedIn();
 
       allow read: if isSignedIn() &&
-        (resource.data.clientId == request.auth.uid ||
-         resource.data.consultantId == request.auth.uid ||
+        (isClientForBooking() ||
+         isConsultantForBooking() ||
          isAdmin());
 
       allow update: if isSignedIn() &&
         (
-          (resource.data.consultantId == request.auth.uid &&
-           (request.resource.data.status == 'confirmed' ||
-            request.resource.data.status == 'declined')) ||
-          (resource.data.clientId == request.auth.uid &&
+          (isConsultantForBooking() &&
+           (
+             request.resource.data.status == 'confirmed' ||
+             request.resource.data.status == 'declined'
+           )
+          ) ||
+          (isClientForBooking() &&
            request.resource.data.status == 'cancelled') ||
           isAdmin()
         );
@@ -98,88 +133,84 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // -------- PROJECTS ----------
+
+    // PROJECTS -----------------------------------
     match /projects/{projectId} {
+      
       allow read: if isSignedIn();
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && isConsultantOrAdmin();
       allow update: if isSignedIn();
       allow delete: if isAdmin();
-
+      
+      // Milestones subcollection
       match /milestones/{milestoneId} {
-        allow read, create, update, delete: if isSignedIn();
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn();
+        allow delete: if isSignedIn();
       }
 
+      // Files subcollection
       match /files/{fileId} {
-        allow read, create, update, delete: if isSignedIn();
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn();
       }
     }
 
 
-    // ⭐⭐⭐ HELP TICKETS (FULLY LOCKED DOWN TO YOUR SPECS) ⭐⭐⭐
+    // ⭐⭐⭐ HELP TICKETS (UPDATED) ⭐⭐⭐
     match /helpTickets/{ticketId} {
 
-      // Create allowed
+      // Any signed-in user can submit a ticket
       allow create: if isSignedIn();
 
-      // Read rules
+      // Admin reads ALL tickets; user reads ONLY their own
       allow read: if isAdmin() ||
-                  request.auth.uid == resource.data.userId;
+                  (isSignedIn() && request.auth.uid == resource.data.userId);
 
-      // ---------- USER UPDATE RIGHTS ----------
-      // User may ONLY change the "status" field (resolve / undo)
-      allow update: if request.auth.uid == resource.data.userId &&
+      // USER: may update ONLY "status" (resolve / undo) on their own ticket
+      allow update: if isSignedIn() &&
+                    request.auth.uid == resource.data.userId &&
                     request.resource.data.diff(resource.data)
                       .changedKeys()
                       .hasOnly(["status"]);
 
-      // ---------- ADMIN UPDATE RIGHTS ----------
-      // Admin may NOT modify user input fields (subject, message, etc.)
-      // Admin may NOT change status
-      // Admin may only update system metadata fields like "hasResponse"
+      // ADMIN: may update ONLY system fields (not user-input fields)
       allow update: if isAdmin() &&
-        request.resource.data.diff(resource.data)
-          .changedKeys()
-          .hasOnly(["hasResponse", "updatedAt"]);
+                    request.resource.data.diff(resource.data)
+                      .changedKeys()
+                      .hasOnly(["status", "updatedAt", "hasResponse"]);
 
-      // NO ONE can delete tickets
-      allow delete: if false;
+      // ❌ No one can delete tickets via client (admins included)
+      // (No `allow delete` here → default deny)
 
 
-      // ---------- FILES SUBCOLLECTION ----------
+      // ---------- FILES under each help ticket ----------
       match /files/{fileId} {
 
-        // Owner uploads files
-        allow create: if request.auth.uid == resource.data.userId;
+        // Owner can upload/delete files for their own ticket
+        allow create: if isHelpTicketOwner(ticketId);
+        allow delete: if isHelpTicketOwner(ticketId);
 
-        // Owner or admin can read files
-        allow read: if request.auth.uid == resource.data.userId || isAdmin();
-
-        // Nobody deletes files
-        allow delete: if false;
-        allow update: if false;
+        // Admin can view files; owner can view their own
+        allow read: if isHelpTicketOwner(ticketId) || isAdmin();
       }
 
 
-      // ---------- RESPONSES SUBCOLLECTION ----------
+      // ---------- RESPONSES under each help ticket ----------
       match /responses/{responseId} {
 
-        // Admin creates responses
-        allow create: if isAdmin();
+        // Admin creates / edits / deletes responses
+        allow create, update, delete: if isAdmin();
 
-        // User or admin may read
+        // Owner can read responses for their ticket; admin can read all
         allow read: if isAdmin() ||
-                    request.auth.uid == resource.data.userId;
-
-        // Admin may update metadata (rare)
-        allow update: if isAdmin();
-
-        // NO deletion of responses
-        allow delete: if false;
+                    (isHelpTicketOwner(ticketId));
       }
     }
 
 
-    // -------- DEFAULT DENY ----------
+    // DEFAULT DENY --------------------------------
     match /{document=**} {
       allow read, write: if false;
     }

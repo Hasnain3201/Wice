@@ -1,7 +1,7 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
+
     // Allow users to upload files for projects
     match /projectFiles/{projectId}/{fileName} {
       allow read, write: if request.auth != null;
@@ -14,6 +14,22 @@ service firebase.storage {
 
     match /profiles/{uid}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ⭐ ADD THIS — Help Ticket Files ⭐
+    match /helpTickets/{ticketId}/{fileName} {
+
+      // Upload allowed ONLY if signed in
+      allow create: if request.auth != null;
+
+      // File READ allowed only for signed in users
+      allow read: if request.auth != null;
+
+      // No deleting allowed
+      allow delete: if false;
+
+      // No updating allowed
+      allow update: if false;
     }
   }
 }
