@@ -55,6 +55,12 @@ npm run dev
 ```
 Open the printed URL (e.g., http://localhost:5173) in your browser. Ensure Firebase Auth allowed domains include `localhost`.
 
+## Test Credentials
+- Client: `client@gmail.com / Client123`
+- Consultant: `consultant@gmail.com / Consultant123`
+- Admin: `admin@wice.org / WICEllc@025!!`
+- Client (dummy): `dummy@gmail.com / Test123`
+
 ## Cloud Functions (optional)
 ```bash
 cd functions
