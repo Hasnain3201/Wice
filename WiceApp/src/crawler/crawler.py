@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from urllib.parse import urljoin, urlparse
 from collections import deque
 import os
@@ -8,7 +9,11 @@ from openai import OpenAI
 
 FILE_NAME = "links.txt"
 OUTPUT_FILE = "output.txt"
-API_KEY = "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"
+
+load_dotenv("../../.env.local")
+
+API_KEY = os.getenv("OPENAI_API_KEY")
+
 client = OpenAI(api_key=API_KEY)
 MAX_PAGES = 50
 
@@ -64,21 +69,46 @@ def crawl(startURL, outFile = "output.txt"):
 
 
 def GPTify(text):
-
     prompt = f"""
-    Extract all grants mentioned in the following text and return them in JSON with fields:
-    name, short_description, deadline, amount, link, and tags (3–5 relevant ones).
-    If information is missing, put null.
-    Text:
+    Extract all grants mentioned in the following text and return **ONLY** valid JavaScript code.
+    
+    Format the output exactly as:
+
+    export const grants = [
+      {{
+        id: <int>,
+        title: "<title>",
+        agency: "<agency or null>",
+        region: "<region or null>",
+        type: "<Grant | Challenge | Fellowship | RFP | null>",
+        sectors: ["<sector1>", "<sector2>", ...],
+        amount: "<amount or null>",
+        deadline: "<deadline or null>",
+        url: "<url or null>",
+        summary: "<1–2 sentence summary>",
+        eligibility: "<eligibility or null>",
+        notes: "<notes or null>",
+      }},
+      ...
+    ];
+
+    - Ensure valid JS syntax.
+    - Do NOT include explanations, markdown, or backticks.
+    - If information is missing, use null.
+    - Sectors must be an array of strings.
+    - IDs should start at 1 and increment.
+    
+    TEXT:
     {text}
     """
-    
+
     resp = client.chat.completions.create(
         model="gpt-4.1",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
     return resp.choices[0].message.content
+
 
 
 def main():
@@ -92,9 +122,9 @@ def main():
     for i, link in enumerate(links, start=1):
         print(f"\n=== [{i}/{len(links)}] Processing: {link} ===")
 
-        crawl(link, out_file=OUTPUT_FILE)
+        crawl(link, outFile=OUTPUT_FILE)
 
-        # 2) read scraped text
+        # 2 read scraped text
         if not os.path.exists(OUTPUT_FILE):
             print("No output.txt generated, skipping GPT step.")
             continue
@@ -104,8 +134,12 @@ def main():
 
         try:
             model_output = GPTify(scraped_text)
-            print("🔁 Model output:")
-            print(model_output)
+            output_path = "../data/grants.js"
+
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(model_output)
+
+            print(f"✅ Saved grants to {output_path}")
         except Exception as e:
             print(f"Error calling OpenAI: {e}")
 
