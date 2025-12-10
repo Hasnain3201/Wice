@@ -4,6 +4,81 @@ import { doc, getDoc, collection, addDoc, query, where, getDocs } from 'firebase
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Duration options in minutes
+const DURATION_OPTIONS = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '1 hour' },
+];
+
+// ============ TIMEZONE UTILITIES (built-in, no separate file needed) ============
+const getBrowserTimezone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (err) {
+    return 'UTC';
+  }
+};
+
+const convertTimeBetweenTimezones = (timeInHours, fromTimezone, toTimezone, date) => {
+  if (!fromTimezone || !toTimezone || fromTimezone === toTimezone) {
+    return timeInHours;
+  }
+
+  try {
+    const hours = Math.floor(timeInHours);
+    const minutes = Math.round((timeInHours % 1) * 60);
+    const dateTimeString = `${date}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    const sourceDate = new Date(dateTimeString);
+    
+    const sourceTimeString = sourceDate.toLocaleString('en-US', {
+      timeZone: fromTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+    
+    const [datePart, timePart] = sourceTimeString.split(', ');
+    const [month, day, year] = datePart.split('/');
+    const properDateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`;
+    const properDate = new Date(properDateString);
+    
+    const targetTimeString = properDate.toLocaleString('en-US', {
+      timeZone: toTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    
+    const [targetHours, targetMinutes] = targetTimeString.split(':').map(Number);
+    return targetHours + (targetMinutes / 60);
+  } catch (err) {
+    console.error('Timezone conversion error:', err);
+    return timeInHours;
+  }
+};
+
+const getTimezoneAbbr = (timezone) => {
+  if (!timezone) return '';
+  try {
+    const date = new Date();
+    const formatted = date.toLocaleString('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'short',
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
+  } catch (err) {
+    return timezone.split('/').pop().replace(/_/g, ' ');
+  }
+};
+// =====================================================================================
+
 const styles = {
   overlay: {
     position: 'fixed',
@@ -81,6 +156,15 @@ const styles = {
     fontSize: 14,
     color: '#64748b',
   },
+  timezoneNote: {
+    fontSize: 12,
+    color: '#1e40af',
+    marginTop: 8,
+    fontStyle: 'italic',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
   dayGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
@@ -128,6 +212,30 @@ const styles = {
     borderRadius: 6,
     fontSize: 14,
     fontFamily: 'system-ui',
+  },
+  durationSection: {
+    marginBottom: 24,
+  },
+  durationGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: 8,
+  },
+  durationBtn: {
+    padding: '10px 12px',
+    border: '1px solid #e5e7eb',
+    borderRadius: 6,
+    textAlign: 'center',
+    cursor: 'pointer',
+    fontSize: 13,
+    backgroundColor: '#fff',
+    transition: 'all 0.2s',
+    fontWeight: 500,
+  },
+  durationBtnSelected: {
+    backgroundColor: '#1e293b',
+    color: '#fff',
+    border: '1px solid #1e293b',
   },
   timeSlotGrid: {
     display: 'grid',
@@ -230,17 +338,30 @@ const styles = {
   },
 };
 
-export default function BookingModal({ isOpen, onClose, consultantId, clientId, clientName, clientEmail }) {
+export default function BookingModal({ 
+  isOpen, 
+  onClose, 
+  consultantId, 
+  clientId, 
+  clientName, 
+  clientEmail,
+  clientTimezone // Pass from your useAuth profile: profile?.timeZone
+}) {
   const [availability, setAvailability] = useState(null);
+  const [consultantTimezone, setConsultantTimezone] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDuration, setSelectedDuration] = useState(30); // Default 30 minutes
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [consultantInfo, setConsultantInfo] = useState(null);
+
+  // Get client timezone with fallback to browser timezone
+  const effectiveClientTimezone = clientTimezone || getBrowserTimezone();
 
   // Load consultant availability and existing bookings
   useEffect(() => {
@@ -258,7 +379,7 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
           setError('This consultant has not set their availability yet.');
         }
 
-        // Load consultant info
+        // Load consultant info including timezone
         const userDoc = await getDoc(doc(db, 'users', consultantId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
@@ -266,6 +387,9 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
             name: userData.fullName || 'Consultant',
             title: userData.title || userData.profile?.title || '',
           });
+          // Get consultant's timezone from profile
+          const ctz = userData.timeZone || userData.profile?.timeZone || null;
+          setConsultantTimezone(ctz);
         }
 
         // Load existing bookings for this consultant
@@ -288,20 +412,37 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
     loadData();
   }, [isOpen, consultantId]);
 
-  // Generate time slots for selected day
+  // Generate time slots based on selected day, date, and duration
   const generateTimeSlots = () => {
-    if (!selectedDay || !availability) return [];
-
+    if (!selectedDay || !availability || !selectedDate) return [];
+    
     const dayBlock = availability.blocks?.find(b => b.day === selectedDay);
     if (!dayBlock) return [];
 
-    const slots = [];
-    let current = dayBlock.start;
+    let start = dayBlock.start;
+    let end = dayBlock.end;
+
+    // Convert consultant's availability to client's timezone if both are available
+    const needsConversion = consultantTimezone && effectiveClientTimezone && 
+                           consultantTimezone !== effectiveClientTimezone;
     
-    while (current < dayBlock.end) {
-      const next = current + 0.5; // 30-minute slots
-      slots.push({ start: current, end: next });
-      current = next;
+    if (needsConversion) {
+      start = convertTimeBetweenTimezones(start, consultantTimezone, effectiveClientTimezone, selectedDate);
+      end = convertTimeBetweenTimezones(end, consultantTimezone, effectiveClientTimezone, selectedDate);
+    }
+
+    const slots = [];
+    const durationInHours = selectedDuration / 60;
+    let current = start;
+
+    // Generate slots every 15 minutes, but each slot length = selected duration
+    while (current + durationInHours <= end) {
+      slots.push({
+        start: current,
+        end: current + durationInHours,
+        duration: selectedDuration,
+      });
+      current += 0.25; // 15-minute increments for slot starts
     }
 
     return slots;
@@ -309,19 +450,48 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
 
   const timeSlots = generateTimeSlots();
 
-  // Check if a time slot is already booked
+  // Check if a time slot conflicts with existing bookings
   const isSlotBooked = (slot) => {
     if (!selectedDate) return false;
     
-    return bookedSlots.some(booking => 
-      booking.date === selectedDate &&
-      booking.day === selectedDay &&
-      booking.startTime === slot.start &&
-      booking.endTime === slot.end
-    );
+    return bookedSlots.some(booking => {
+      if (booking.date !== selectedDate || booking.day !== selectedDay) return false;
+      
+      // Check for overlap: new slot starts before existing ends AND new slot ends after existing starts
+      const existingStart = booking.startTime;
+      const existingEnd = booking.endTime;
+      const newStart = slot.start;
+      const newEnd = slot.end;
+      
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
   };
 
-  // Get available days
+  // Get available days with times converted for display
+  const getAvailableDaysDisplay = () => {
+    if (!availability?.blocks) return [];
+    
+    const needsConversion = consultantTimezone && effectiveClientTimezone && 
+                           consultantTimezone !== effectiveClientTimezone;
+    
+    return availability.blocks.map(block => {
+      let displayStart = block.start;
+      let displayEnd = block.end;
+      
+      if (needsConversion && selectedDate) {
+        displayStart = convertTimeBetweenTimezones(block.start, consultantTimezone, effectiveClientTimezone, selectedDate);
+        displayEnd = convertTimeBetweenTimezones(block.end, consultantTimezone, effectiveClientTimezone, selectedDate);
+      }
+      
+      return {
+        day: block.day,
+        start: displayStart,
+        end: displayEnd,
+      };
+    });
+  };
+
+  const availableDaysDisplay = getAvailableDaysDisplay();
   const availableDays = availability?.blocks?.map(b => b.day) || [];
 
   // Handle day selection
@@ -350,6 +520,12 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
     }
   };
 
+  // Handle duration selection
+  const handleDurationSelect = (duration) => {
+    setSelectedDuration(duration);
+    setSelectedTimeSlot(null); // Reset time slot when duration changes
+  };
+
   // Handle time slot selection
   const handleTimeSlotSelect = (slot) => {
     if (isSlotBooked(slot)) return;
@@ -359,16 +535,31 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
   // Format time for display
   const formatTime = (t) => {
     const h = Math.floor(t);
-    const m = (t % 1) * 60;
+    const m = Math.round((t % 1) * 60);
     const ampm = h >= 12 ? 'pm' : 'am';
     const h12 = h % 12 || 12;
     return `${h12}:${m.toString().padStart(2, '0')}${ampm}`;
   };
 
+  // Convert client's selected time back to consultant's timezone for storage
+  const convertBackToConsultantTime = (clientTime) => {
+    const needsConversion = consultantTimezone && effectiveClientTimezone && 
+                           consultantTimezone !== effectiveClientTimezone;
+    
+    if (!needsConversion) return clientTime;
+    
+    return convertTimeBetweenTimezones(
+      clientTime, 
+      effectiveClientTimezone, 
+      consultantTimezone, 
+      selectedDate
+    );
+  };
+
   // Handle booking submission
   const handleBooking = async () => {
     if (!selectedDate || !selectedTimeSlot || !clientId) {
-      setError('Please select a date and time slot.');
+      setError('Please select a date, duration, and time slot.');
       return;
     }
 
@@ -376,6 +567,10 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
     setError('');
 
     try {
+      // Convert times back to consultant's timezone for storage
+      const startTimeToStore = convertBackToConsultantTime(selectedTimeSlot.start);
+      const endTimeToStore = convertBackToConsultantTime(selectedTimeSlot.end);
+
       const bookingData = {
         consultantId,
         clientId,
@@ -383,8 +578,14 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
         clientEmail: clientEmail || '',
         day: selectedDay,
         date: selectedDate,
-        startTime: selectedTimeSlot.start,
-        endTime: selectedTimeSlot.end,
+        startTime: startTimeToStore,  // Stored in consultant's timezone
+        endTime: endTimeToStore,      // Stored in consultant's timezone
+        duration: selectedDuration,
+        consultantTimezone: consultantTimezone || 'UTC',
+        clientTimezone: effectiveClientTimezone,
+        // Store display times for reference
+        clientDisplayStart: selectedTimeSlot.start,
+        clientDisplayEnd: selectedTimeSlot.end,
         status: 'pending',
         notes: notes.trim(),
         createdAt: new Date().toISOString(),
@@ -394,7 +595,6 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
 
       await addDoc(collection(db, 'bookings'), bookingData);
       
-      // Success - close modal
       alert('Booking request sent! The consultant will review and confirm your appointment.');
       onClose();
     } catch (err) {
@@ -408,6 +608,7 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
   const handleCancel = () => {
     setSelectedDay(null);
     setSelectedDate('');
+    setSelectedDuration(30);
     setSelectedTimeSlot(null);
     setNotes('');
     setError('');
@@ -421,6 +622,9 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
   };
 
   if (!isOpen) return null;
+
+  const showTimezoneNote = consultantTimezone && effectiveClientTimezone && 
+                          consultantTimezone !== effectiveClientTimezone;
 
   return (
     <div style={styles.overlay} onClick={handleCancel}>
@@ -443,11 +647,16 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
                   {consultantInfo.title && (
                     <div style={styles.consultantTitle}>{consultantInfo.title}</div>
                   )}
+                  {showTimezoneNote && (
+                    <div style={styles.timezoneNote}>
+                      🌍 Times shown in your timezone ({getTimezoneAbbr(effectiveClientTimezone)})
+                    </div>
+                  )}
                 </div>
               )}
 
               <p style={styles.subtitle}>
-                Select a day, then choose a date and time slot to request an appointment.
+                Select a day, choose your desired duration, then pick a date and time.
               </p>
 
               {/* Step 1: Select Day */}
@@ -456,7 +665,7 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
                 <div style={styles.dayGrid}>
                   {DAYS.map((day) => {
                     const isAvailable = availableDays.includes(day);
-                    const dayBlock = availability?.blocks?.find(b => b.day === day);
+                    const dayBlock = availableDaysDisplay.find(b => b.day === day);
                     const isSelected = selectedDay === day;
                     
                     return (
@@ -502,38 +711,72 @@ export default function BookingModal({ isOpen, onClose, consultantId, clientId, 
                 </div>
               )}
 
-              {/* Step 3: Select Time Slot */}
+              {/* Step 3: Select Duration */}
               {selectedDay && selectedDate && (
-                <div>
-                  <label style={styles.label}>Step 3: Select a time slot</label>
-                  <div style={styles.timeSlotGrid}>
-                    {timeSlots.map((slot, idx) => {
-                      const booked = isSlotBooked(slot);
-                      const selected = selectedTimeSlot?.start === slot.start;
-                      
-                      return (
-                        <div
-                          key={idx}
-                          style={{
-                            ...styles.timeSlot,
-                            ...(selected && styles.timeSlotSelected),
-                            ...(booked && styles.timeSlotBooked),
-                          }}
-                          onClick={() => handleTimeSlotSelect(slot)}
-                        >
-                          {formatTime(slot.start)} - {formatTime(slot.end)}
-                          {booked && <div style={{ fontSize: 11 }}>Booked</div>}
-                        </div>
-                      );
-                    })}
+                <div style={styles.durationSection}>
+                  <label style={styles.label}>Step 3: Select duration</label>
+                  <div style={styles.durationGrid}>
+                    {DURATION_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        style={{
+                          ...styles.durationBtn,
+                          ...(selectedDuration === option.value && styles.durationBtnSelected),
+                        }}
+                        onClick={() => handleDurationSelect(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
+                </div>
+              )}
+
+              {/* Step 4: Select Time Slot */}
+              {selectedDay && selectedDate && selectedDuration && (
+                <div>
+                  <label style={styles.label}>Step 4: Select a time slot</label>
+                  {timeSlots.length === 0 ? (
+                    <p style={styles.errorText}>
+                      No {selectedDuration}-minute slots available on this date. Try a different duration or date.
+                    </p>
+                  ) : (
+                    <div style={styles.timeSlotGrid}>
+                      {timeSlots.map((slot, idx) => {
+                        const booked = isSlotBooked(slot);
+                        const selected = selectedTimeSlot?.start === slot.start && 
+                                       selectedTimeSlot?.end === slot.end;
+                        
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              ...styles.timeSlot,
+                              ...(selected && styles.timeSlotSelected),
+                              ...(booked && styles.timeSlotBooked),
+                            }}
+                            onClick={() => handleTimeSlotSelect(slot)}
+                          >
+                            {formatTime(slot.start)}
+                            {booked && <div style={{ fontSize: 11, marginTop: 2 }}>Booked</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Selected slot confirmation */}
               {selectedTimeSlot && selectedDate && (
                 <div style={styles.selectedSlotInfo}>
-                  <strong>Selected:</strong> {selectedDay}, {selectedDate} at {formatTime(selectedTimeSlot.start)} - {formatTime(selectedTimeSlot.end)}
+                  <strong>Selected:</strong> {selectedDay}, {selectedDate} at {formatTime(selectedTimeSlot.start)} - {formatTime(selectedTimeSlot.end)} ({selectedDuration} min)
+                  {showTimezoneNote && (
+                    <div style={{ marginTop: 4, fontSize: 12 }}>
+                      Your timezone: {getTimezoneAbbr(effectiveClientTimezone)}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -1,4 +1,4 @@
-rules_version = '2'; 
+rules_version = '2';  
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -48,12 +48,11 @@ service cloud.firestore {
       );
     }
 
-  // Helper to check if current user owns a help ticket
+    // Helper to check if current user owns a help ticket
     function isHelpTicketOwner(ticketId) {
       return request.auth != null &&
              get(/databases/$(database)/documents/helpTickets/$(ticketId)).data.userId == request.auth.uid;
     }
-
 
     // USERS --------------------------------------
     match /users/{userId} {
@@ -112,10 +111,18 @@ service cloud.firestore {
 
       allow create: if isSignedIn();
 
-      allow read: if isSignedIn() &&
-        (isClientForBooking() ||
-         isConsultantForBooking() ||
-         isAdmin());
+      // ⭐⭐⭐ ONLY CHANGE MADE: allow clients to read consultant availability ⭐⭐⭐
+      allow read: if isSignedIn() && (
+        isClientForBooking() ||
+        isConsultantForBooking() ||
+        isAdmin() ||
+        (
+          // Allow read when the query filters by consultantId,
+          // enabling clients to load availability safely.
+          request.query.consultantId != null &&
+          request.query.consultantId == resource.data.consultantId
+        )
+      );
 
       allow update: if isSignedIn() &&
         (
@@ -133,7 +140,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-
     // PROJECTS -----------------------------------
     match /projects/{projectId} {
       
@@ -142,14 +148,12 @@ service cloud.firestore {
       allow update: if isSignedIn();
       allow delete: if isAdmin();
       
-      // Milestones subcollection
       match /milestones/{milestoneId} {
         allow read: if isSignedIn();
         allow create, update: if isSignedIn();
         allow delete: if isSignedIn();
       }
 
-      // Files subcollection
       match /files/{fileId} {
         allow read: if isSignedIn();
         allow create: if isSignedIn();
@@ -157,58 +161,36 @@ service cloud.firestore {
       }
     }
 
-
-    // Help tickets (updated)
+    // HELP TICKETS --------------------------------
     match /helpTickets/{ticketId} {
 
-      // Any signed-in user can submit a ticket
       allow create: if isSignedIn();
 
-      // Admin reads ALL tickets; user reads ONLY their own
       allow read: if isAdmin() ||
                   (isSignedIn() && request.auth.uid == resource.data.userId);
 
-      // USER: may update ONLY "status" (resolve / undo) on their own ticket
       allow update: if isSignedIn() &&
                     request.auth.uid == resource.data.userId &&
                     request.resource.data.diff(resource.data)
                       .changedKeys()
                       .hasOnly(["status"]);
 
-      // ADMIN: may update ONLY system fields (not user-input fields)
       allow update: if isAdmin() &&
                     request.resource.data.diff(resource.data)
                       .changedKeys()
                       .hasOnly(["status", "updatedAt", "hasResponse"]);
 
-      // No one can delete tickets via client (admins included)
-      // (No `allow delete` here → default deny)
-
-
-      // ---------- FILES under each help ticket ----------
       match /files/{fileId} {
-
-        // Owner can upload/delete files for their own ticket
         allow create: if isHelpTicketOwner(ticketId);
         allow delete: if isHelpTicketOwner(ticketId);
-
-        // Admin can view files; owner can view their own
         allow read: if isHelpTicketOwner(ticketId) || isAdmin();
       }
 
-
-      // ---------- RESPONSES under each help ticket ----------
       match /responses/{responseId} {
-
-        // Admin creates / edits / deletes responses
         allow create, update, delete: if isAdmin();
-
-        // Owner can read responses for their ticket; admin can read all
-        allow read: if isAdmin() ||
-                    (isHelpTicketOwner(ticketId));
+        allow read: if isAdmin() || isHelpTicketOwner(ticketId);
       }
     }
-
 
     // DEFAULT DENY --------------------------------
     match /{document=**} {

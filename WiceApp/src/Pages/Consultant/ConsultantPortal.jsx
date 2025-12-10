@@ -1,131 +1,251 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./ConsultantPortal.css";
-import { CalendarDays, Briefcase, MessageSquare, Target } from "lucide-react";
+import { 
+  CalendarDays, 
+  FolderKanban, 
+  MessageSquare, 
+  LifeBuoy,
+  CalendarClock 
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useChat } from "../../context/ChatContext.jsx";
+import { useNavigate } from "react-router-dom";
+import { collection, query, where, onSnapshot, Timestamp } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const METRIC_ICONS = {
-  engagements: Briefcase,
-  upcomingSessions: CalendarDays,
-  openProposals: Target,
+  openProjects: FolderKanban,
   unreadMessages: MessageSquare,
+  openHelpTickets: LifeBuoy,
+  upcomingMeetings: CalendarDays,
+  meetingsPendingApproval: CalendarClock,
 };
 
 const METRIC_LABELS = {
-  engagements: "Active Engagements",
-  upcomingSessions: "Upcoming Sessions",
-  openProposals: "Open Proposals",
+  openProjects: "Open Projects",
   unreadMessages: "Unread Messages",
+  openHelpTickets: "Open Help Tickets",
+  upcomingMeetings: "Upcoming Meetings",
+  meetingsPendingApproval: "Meetings Pending Approval",
+};
+
+const METRIC_ROUTES = {
+  openProjects: "/projects",
+  unreadMessages: "/chat",
+  openHelpTickets: "/help",
+  upcomingMeetings: "/calendar",
+  meetingsPendingApproval: "/calendar",
 };
 
 export default function ConsultantPortal() {
-  const { profile, user } = useAuth();
+  const { user } = useAuth();
+  const { unreadChatIds } = useChat();
+  const navigate = useNavigate();
+  
+  const [metrics, setMetrics] = useState({
+    openProjects: 0,
+    unreadMessages: 0,
+    openHelpTickets: 0,
+    upcomingMeetings: 0,
+    meetingsPendingApproval: 0,
+  });
 
-  const name = profile?.fullName || user?.displayName || "Consultant";
-  const dashboard = profile?.dashboardConsultant || {};
-  const metrics = dashboard.metrics || {};
-  const upcomingConsultations = dashboard.upcoming || [];
-  const pipeline = dashboard.pipeline || [];
+  // Real-time listener for open projects (where user is in members array and not archived)
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const projectsQuery = query(
+      collection(db, "projects"),
+      where("members", "array-contains", user.uid)
+    );
+
+    const unsubscribe = onSnapshot(
+      projectsQuery,
+      (snapshot) => {
+        // Filter for non-archived projects
+        const activeProjects = snapshot.docs.filter(doc => {
+          const data = doc.data();
+          return !data.archived && data.status !== "archived";
+        });
+        
+        setMetrics((prev) => ({
+          ...prev,
+          openProjects: activeProjects.length,
+        }));
+      },
+      (error) => {
+        console.error("Error listening to projects:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Real-time listener for open help tickets
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const ticketsQuery = query(
+      collection(db, "helpTickets"),
+      where("userId", "==", user.uid),
+      where("status", "==", "unsolved")
+    );
+
+    const unsubscribe = onSnapshot(
+      ticketsQuery,
+      (snapshot) => {
+        setMetrics((prev) => ({
+          ...prev,
+          openHelpTickets: snapshot.size,
+        }));
+      },
+      (error) => {
+        console.error("Error listening to help tickets:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Real-time listener for upcoming confirmed meetings (within 2 weeks)
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const now = new Date();
+    const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    // Query for confirmed bookings where this user is the consultant
+    const upcomingMeetingsQuery = query(
+      collection(db, "bookings"),
+      where("consultantId", "==", user.uid),
+      where("confirmedAt", "!=", null) // This checks if the meeting is confirmed
+    );
+
+    const unsubscribe = onSnapshot(
+      upcomingMeetingsQuery,
+      (snapshot) => {
+        // Filter for meetings within the next 2 weeks
+        const upcomingCount = snapshot.docs.filter(doc => {
+          const data = doc.data();
+          
+          // Convert startTime to Date if it's a Timestamp
+          let startTime;
+          if (data.startTime && typeof data.startTime.toDate === 'function') {
+            startTime = data.startTime.toDate();
+          } else if (data.startTime instanceof Date) {
+            startTime = data.startTime;
+          } else if (typeof data.startTime === 'number') {
+            startTime = new Date(data.startTime);
+          } else {
+            return false;
+          }
+          
+          // Check if meeting is within the next 2 weeks
+          return startTime >= now && startTime <= twoWeeksFromNow;
+        }).length;
+        
+        setMetrics((prev) => ({
+          ...prev,
+          upcomingMeetings: upcomingCount,
+        }));
+      },
+      (error) => {
+        console.error("Error listening to upcoming meetings:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Real-time listener for meetings pending approval
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const pendingMeetingsQuery = query(
+      collection(db, "bookings"),
+      where("consultantId", "==", user.uid),
+      where("status", "==", "pending")
+    );
+
+    const unsubscribe = onSnapshot(
+      pendingMeetingsQuery,
+      (snapshot) => {
+        setMetrics((prev) => ({
+          ...prev,
+          meetingsPendingApproval: snapshot.size,
+        }));
+      },
+      (error) => {
+        console.error("Error listening to pending meetings:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Update unread messages count from ChatContext
+  useEffect(() => {
+    setMetrics((prev) => ({
+      ...prev,
+      unreadMessages: unreadChatIds?.length || 0,
+    }));
+  }, [unreadChatIds]);
 
   const metricEntries = Object.entries(METRIC_LABELS).map(
     ([metricKey, label]) => ({
       key: metricKey,
       label,
       value: metrics[metricKey] ?? 0,
-      hint:
-        metricKey === "engagements"
-          ? "+ keep nurturing client relationships"
-          : metricKey === "upcomingSessions"
-          ? "Check your availability"
-          : metricKey === "openProposals"
-          ? "Follow up with prospects"
-          : "Stay responsive to requests",
-      icon: METRIC_ICONS[metricKey] || Briefcase,
+      route: METRIC_ROUTES[metricKey],
+      icon: METRIC_ICONS[metricKey] || FolderKanban,
     })
   );
+
+  const handleNavigate = (route) => {
+    if (route) {
+      navigate(route);
+    }
+  };
 
   return (
     <div className="dashboard-page consultant-portal">
       <header className="dashboard-header consultant-header">
-        <h1 className="dashboard-title">Consultant Workspace</h1>
-        <p>Track your engagements, opportunities, and workflow in one place.</p>
+        <h2>Consultant Workspace</h2>
+        <p>Track your projects, communications, and schedule in one place.</p>
       </header>
 
       <section className="consultant-metrics">
-        {metricEntries.map(({ key, label, value, hint, icon }) => (
+        {metricEntries.map(({ key, label, value, route, icon }) => (
           <MetricCard
             key={key}
             icon={icon}
             label={label}
             value={value}
-            hint={hint}
+            route={route}
+            onNavigate={handleNavigate}
           />
         ))}
       </section>
-
-      <div className="consultant-grid">
-        <section className="consultant-panel">
-          <h3>Upcoming Consultations</h3>
-          {upcomingConsultations.length === 0 ? (
-            <p className="consultant-topic">
-              No sessions scheduled yet. New bookings will appear here.
-            </p>
-          ) : (
-            <ul className="consultant-list">
-              {upcomingConsultations.map((item) => (
-                <li key={item.id || `${item.date}-${item.client}`}>
-                  <span className="consultant-date">{item.date}</span>
-                  <div>
-                    <p className="consultant-client">{item.client}</p>
-                    <p className="consultant-topic">{item.topic}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="consultant-panel">
-          <h3>Pipeline Highlights</h3>
-          {pipeline.length === 0 ? (
-            <p className="consultant-topic">
-              No pipeline items yet. Track proposals and deals here.
-            </p>
-          ) : (
-            <ul className="consultant-list">
-              {pipeline.map((lead) => (
-                <li key={lead.id || lead.title}>
-                  <div>
-                    <p className="consultant-client">{lead.title}</p>
-                    <p className="consultant-topic">{lead.status}</p>
-                  </div>
-                  {lead.value ? (
-                    <span className="consultant-value">{lead.value}</span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      <footer className="consultant-footer">
-        Welcome back, {name}. Keep your profile and pipeline current to match
-        with the right clients faster.
-      </footer>
     </div>
   );
 }
 
-function MetricCard({ icon, label, value, hint }) {
+function MetricCard({ icon, label, value, route, onNavigate }) {
   return (
     <div className="consultant-metric">
       <div className="metric-icon" aria-hidden="true">
         {React.createElement(icon, { size: 22 })}
       </div>
-      <div>
+      <div className="metric-content">
         <p className="metric-label">{label}</p>
         <p className="metric-value">{value}</p>
-        <p className="metric-hint">{hint}</p>
+        <button 
+          className="metric-button"
+          onClick={() => onNavigate(route)}
+          aria-label={`Go to ${label}`}
+        >
+          View Details
+        </button>
       </div>
     </div>
   );
