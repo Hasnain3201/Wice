@@ -30,25 +30,7 @@ firebase deploy --only storage
 ```
 Ensure the bucket `wice-granthunt.firebasestorage.app` exists in Firebase Console → Storage.
 
-4) Environment variables (`WiceApp/.env.local`)  
-```
-VITE_FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
-VITE_FIREBASE_AUTH_DOMAIN=wice-granthunt.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=wice-granthunt
-VITE_FIREBASE_STORAGE_BUCKET=wice-granthunt.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=820103276782
-VITE_FIREBASE_APP_ID=1:820103276782:web:81ca17f5f00b0a92a92bff
-VITE_FIREBASE_MEASUREMENT_ID=G-CFQX982R49
-VITE_PROTECTED_ADMIN_EMAIL=admin@wice.org
-
-FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
-FIREBASE_PROJECT_ID=wice-granthunt
-FIREBASE_IMPORT_EMAIL=admin@wice.org
-FIREBASE_IMPORT_PASSWORD=WICEllc@025!!
-```
-Primary admin (`admin@wice.org`) already exists.
-
-5) Run the app (frontend)  
+4) Run the app (frontend)  
 ```bash
 cd WiceApp
 npm run dev
