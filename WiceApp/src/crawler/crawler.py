@@ -9,6 +9,7 @@ from openai import OpenAI
 
 FILE_NAME = "links.txt"
 OUTPUT_FILE = "output.txt"
+KEEP_OUTPUT = True
 
 load_dotenv("../../.env.local")
 
@@ -66,6 +67,7 @@ def crawl(startURL, outFile = "output.txt"):
                 new_link = urljoin(url, link["href"])
                 if urlparse(new_link).netloc == domain and new_link not in visited:
                     q.append(new_link)
+    return pagesCrawled
 
 
 def GPTify(text):
@@ -122,12 +124,14 @@ def main():
     for i, link in enumerate(links, start=1):
         print(f"\n=== [{i}/{len(links)}] Processing: {link} ===")
 
-        crawl(link, outFile=OUTPUT_FILE)
+        pages_crawled = crawl(link, outFile=OUTPUT_FILE)
 
         # 2 read scraped text
         if not os.path.exists(OUTPUT_FILE):
             print("No output.txt generated, skipping GPT step.")
             continue
+        output_size = os.path.getsize(OUTPUT_FILE)
+        print(f"Scraped {pages_crawled} pages, {output_size} bytes.")
 
         with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
             scraped_text = f.read()
@@ -143,11 +147,14 @@ def main():
         except Exception as e:
             print(f"Error calling OpenAI: {e}")
 
-        try:
-            os.remove(OUTPUT_FILE)
-            print("🗑️ Deleted output.txt")
-        except FileNotFoundError:
-            pass
+        if not KEEP_OUTPUT:
+            try:
+                os.remove(OUTPUT_FILE)
+                print("🗑️ Deleted output.txt")
+            except FileNotFoundError:
+                pass
+        else:
+            print(f"🔎 Keeping {OUTPUT_FILE} for inspection")
         
 if __name__ == "__main__":
     main()
