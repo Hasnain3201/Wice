@@ -64,6 +64,15 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.local
+WiceApp/.env.local
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+WiceApp/src/crawler/output.txt
 
 # dataconnect generated files
 .dataconnect
+WiceApp/src/crawler/debug/bot/

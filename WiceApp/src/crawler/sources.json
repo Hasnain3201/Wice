@@ -1,0 +1,611 @@
+[
+  {
+    "name": "American Planning Association RFP Search",
+    "base_url": "https://www.planning.org",
+    "list_urls": ["https://www.planning.org/consultants/rfp/search/"],
+    "region": "US",
+    "type_hint": "RFP",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 12,
+    "list_selectors": [".search-results", ".search-results__results", ".search-result", ".result", ".listing", ".card"]
+  },
+  {
+    "name": "Lilly Endowment",
+    "base_url": "https://lillyendowment.org",
+    "list_urls": ["https://lillyendowment.org/for-grantseekers/"],
+    "region": "US",
+    "type_hint": "Grant",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10
+  },
+  {
+    "name": "Ford Foundation Grant Opportunities",
+    "base_url": "https://www.fordfoundation.org",
+    "list_urls": ["https://www.fordfoundation.org/work/our-grants/grant-opportunities/"],
+    "region": "US",
+    "type_hint": "Grant",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10
+  },
+  {
+    "name": "Kresge Foundation Current Funding",
+    "base_url": "https://kresge.org",
+    "list_urls": ["https://kresge.org/grants-social-investments/current-funding-opportunities/"],
+    "region": "US",
+    "type_hint": "Grant",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10
+  },
+  {
+    "name": "Robert Wood Johnson Foundation Funding",
+    "base_url": "https://www.rwjf.org",
+    "list_urls": ["https://www.rwjf.org/en/grants/active-funding-opportunities.html"],
+    "region": "US",
+    "type_hint": "Grant",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10
+  },
+  {
+    "name": "Open Philanthropy Funding",
+    "base_url": "https://www.openphilanthropy.org",
+    "list_urls": ["https://www.openphilanthropy.org/how-to-apply-for-funding/"],
+    "region": "US",
+    "type_hint": "Grant",
+    "phase": 2,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10,
+    "force_all_links": true
+  },
+  {
+    "name": "WHO AHPSR Calls for Proposals",
+    "base_url": "https://ahpsr.who.int",
+    "list_urls": ["https://ahpsr.who.int/call-for-proposals"],
+    "region": "Global",
+    "type_hint": "Grant",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10
+  },
+  {
+    "name": "DGMarket Tenders",
+    "base_url": "https://www.dgmarket.com",
+    "list_urls": ["https://www.dgmarket.com/"],
+    "region": "Global",
+    "type_hint": "RFP",
+    "phase": 1,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 12,
+    "max_records_per_source": 8,
+    "follow_detail": false,
+    "request_timeout": 25,
+    "request_delay": 0.6
+  },
+  {
+    "name": "ReliefWeb Jobs",
+    "base_url": "https://reliefweb.int",
+    "list_urls": ["https://reliefweb.int/jobs"],
+    "region": "Global",
+    "type_hint": "RFP",
+    "phase": 2,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 12
+  },
+  {
+    "name": "IUCN Tenders",
+    "base_url": "https://iucn.org",
+    "list_urls": ["https://iucn.org/procurement/currently-running-tenders"],
+    "region": "Global",
+    "type_hint": "RFP",
+    "phase": 2,
+    "requires_login": false,
+    "js_heavy": false,
+    "max_items": 10,
+    "max_records_per_source": 8,
+    "allow_file_links": false,
+    "file_ext_blocklist": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"],
+    "list_selectors": [".view-content", ".views-row", ".node--type-tender", ".tender", ".node", ".card"]
+  },
+  {
+    "name": "SAM.gov",
+    "base_url": "https://sam.gov",
+    "list_urls": ["https://sam.gov/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "BidNet Direct",
+    "base_url": "https://www.bidnetdirect.com",
+    "list_urls": ["https://www.bidnetdirect.com/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "GovernmentContracts.us",
+    "base_url": "https://www.governmentcontracts.us",
+    "list_urls": ["https://www.governmentcontracts.us/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "California eProcure",
+    "base_url": "https://caleprocure.ca.gov",
+    "list_urls": ["https://caleprocure.ca.gov/pages/Events-BS3/event-search.aspx"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "eMaryland Marketplace Advantage",
+    "base_url": "https://emma.maryland.gov",
+    "list_urls": [
+      "https://emma.maryland.gov/page.aspx/en/usr/login?ReturnUrl=%2fpage.aspx%2fen%2fbuy%2fhomepage"
+    ],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "eVA (Virginia)",
+    "base_url": "https://mvendor.cgieva.com",
+    "list_urls": ["https://mvendor.cgieva.com/Vendor/public/AllOpportunities.jsp"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "DC OCP Solicitations",
+    "base_url": "https://contracts.ocp.dc.gov",
+    "list_urls": ["https://contracts.ocp.dc.gov/solicitations/search"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Gates Foundation",
+    "base_url": "https://www.gatesfoundation.org",
+    "list_urls": ["https://www.gatesfoundation.org/about/how-we-work/grant-opportunities"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": false
+  },
+  {
+    "name": "Bezos Earth Fund",
+    "base_url": "https://www.bezosearthfund.org",
+    "list_urls": ["https://www.bezosearthfund.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Rockefeller Foundation",
+    "base_url": "https://www.rockefellerfoundation.org",
+    "list_urls": ["https://www.rockefellerfoundation.org/what-we-do/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": false
+  },
+  {
+    "name": "Open Society Foundations",
+    "base_url": "https://www.opensocietyfoundations.org",
+    "list_urls": ["https://www.opensocietyfoundations.org/grants"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "The Lawrence Foundation",
+    "base_url": "https://thelawrencefoundation.org",
+    "list_urls": ["https://thelawrencefoundation.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": false
+  },
+  {
+    "name": "MacArthur Foundation",
+    "base_url": "https://www.macfound.org",
+    "list_urls": ["https://www.macfound.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": false
+  },
+  {
+    "name": "Packard Foundation",
+    "base_url": "https://www.packard.org",
+    "list_urls": ["https://www.packard.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Bloomberg Philanthropies",
+    "base_url": "https://www.bloomberg.org",
+    "list_urls": ["https://www.bloomberg.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Grantmakers in Health",
+    "base_url": "https://www.gih.org",
+    "list_urls": ["https://www.gih.org/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": false
+  },
+  {
+    "name": "Swiss Agency for Development and Cooperation",
+    "base_url": "https://www.deza.eda.admin.ch",
+    "list_urls": ["https://www.deza.eda.admin.ch/en"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Austrian Development Agency",
+    "base_url": "https://www.entwicklung.at",
+    "list_urls": ["https://www.entwicklung.at/en/"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Swedish International Development Cooperation Agency",
+    "base_url": "https://www.sida.se",
+    "list_urls": ["https://www.sida.se/en"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Netherlands Enterprise Agency (RVO)",
+    "base_url": "https://english.rvo.nl",
+    "list_urls": [
+      "https://english.rvo.nl/subsidy-guide?sortBy=title&sortOrder=ASC&status=3294%2C3295"
+    ],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "GIZ Procurement",
+    "base_url": "https://www.giz.de",
+    "list_urls": ["https://www.giz.de/en/workingwithgiz/bidding_procurement.html"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Irish Aid",
+    "base_url": "https://www.ireland.ie",
+    "list_urls": ["https://www.ireland.ie/en/irish-aid/"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "AusTender",
+    "base_url": "https://www.tenders.gov.au",
+    "list_urls": ["https://www.tenders.gov.au/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "AusConnect",
+    "base_url": "https://ausconnect.dfat.gov.au",
+    "list_urls": ["https://ausconnect.dfat.gov.au/opportunities"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "UNIDO Procurement Opportunities",
+    "base_url": "https://www.unido.org",
+    "list_urls": ["https://www.unido.org/get-involved/procurement/procurement-opportunities"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "UNDP Consultancies",
+    "base_url": "https://jobs.undp.org",
+    "list_urls": ["https://jobs.undp.org/cj_view_consultancies.cfm"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "UNDP Procurement Notices",
+    "base_url": "https://procurement-notices.undp.org",
+    "list_urls": ["https://procurement-notices.undp.org/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "WHO TDR",
+    "base_url": "https://tdr.who.int",
+    "list_urls": ["https://tdr.who.int/about-us"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "UNOPS Business Opportunities",
+    "base_url": "https://www.unops.org",
+    "list_urls": ["https://www.unops.org/business-opportunities"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "UN Global Marketplace (UNGM)",
+    "base_url": "https://www.ungm.org",
+    "list_urls": ["https://www.ungm.org/Public/Notice"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "African Development Bank Procurement",
+    "base_url": "https://www.afdb.org",
+    "list_urls": ["https://www.afdb.org/en/projects-and-operations/procurement"],
+    "region": "Africa",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Asian Development Bank Opportunities",
+    "base_url": "https://www.adb.org",
+    "list_urls": ["https://www.adb.org/work-with-us/business-opportunities"],
+    "region": "Asia",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Inter-American Development Bank",
+    "base_url": "https://www.iadb.org",
+    "list_urls": ["https://www.iadb.org/en/who-we-are/about-idb"],
+    "region": "LAC",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "World Bank Vendor Registry",
+    "base_url": "https://www.worldbank.org",
+    "list_urls": [
+      "https://www.worldbank.org/en/about/corporate-procurement/vendors/potential-vendor-registry"
+    ],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Wellcome Trust",
+    "base_url": "https://wellcome.org",
+    "list_urls": ["https://wellcome.org/research-funding/schemes"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": false,
+    "js_heavy": true
+  },
+  {
+    "name": "Green Climate Fund Procurement",
+    "base_url": "https://www.greenclimate.fund",
+    "list_urls": ["https://www.greenclimate.fund/about/procurement"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Judith Neilson Foundation",
+    "base_url": "https://www.judithneilsonfoundation.org",
+    "list_urls": ["https://www.judithneilsonfoundation.org/portfolio-innovation/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Mastercard Foundation",
+    "base_url": "https://mastercardfdn.org",
+    "list_urls": ["https://mastercardfdn.org/en/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "EU Funding and Tenders Portal",
+    "base_url": "https://ec.europa.eu",
+    "list_urls": ["https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home"],
+    "region": "EU",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Pacific Community Procurement",
+    "base_url": "https://www.spc.int",
+    "list_urls": ["https://www.spc.int/procurement"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "African Union Bids",
+    "base_url": "https://au.int",
+    "list_urls": ["https://au.int/en/bids"],
+    "region": "Africa",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Finance Resources for Biodiversity (FIRE)",
+    "base_url": "https://fire.biofin.org",
+    "list_urls": ["https://fire.biofin.org/?name="],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "FFA Tenders",
+    "base_url": "https://www.ffa.int",
+    "list_urls": ["https://www.ffa.int/work-with-us/tenders/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Devex",
+    "base_url": "https://www.devex.com",
+    "list_urls": [
+      "https://www.devex.com/jobs/individual-consultant-advance-the-private-sector-road-map-to-reduce-food-loss-and-waste-tanzania-ethiopia-kenya-1297344"
+    ],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "DevelopmentAid",
+    "base_url": "https://www.developmentaid.org",
+    "list_urls": ["https://www.developmentaid.org/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "LinkedIn",
+    "base_url": "https://www.linkedin.com",
+    "list_urls": ["https://www.linkedin.com/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Impact Funding Substack",
+    "base_url": "https://impactfunding.substack.com",
+    "list_urls": [
+      "https://impactfunding.substack.com/p/cross-cutting-intersectional-impact-1ca?utm_medium=email"
+    ],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Skoll World Forum Session",
+    "base_url": "https://skoll.org",
+    "list_urls": [
+      "https://skoll.org/session/skoll-world-forum-2020/funding-community-based-organizations-in-times-of-crisis/"
+    ],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Global Innovation Fund",
+    "base_url": "https://www.globalinnovation.fund",
+    "list_urls": ["https://www.globalinnovation.fund/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "Cleat",
+    "base_url": "https://www.cleat.ai",
+    "list_urls": ["https://www.cleat.ai/"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "ELMA Philanthropies",
+    "base_url": "https://www.elmaphilanthropies.org",
+    "list_urls": ["https://www.elmaphilanthropies.org/elma/investment-framework"],
+    "region": "Global",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "W.K. Kellogg Foundation",
+    "base_url": "https://www.wkkf.org",
+    "list_urls": ["https://www.wkkf.org/grantseekers/"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  },
+  {
+    "name": "U.S. International Development Finance Corporation",
+    "base_url": "https://www.dfc.gov",
+    "list_urls": ["https://www.dfc.gov/what-we-offer/work-with-us/eligibility-checklist"],
+    "region": "US",
+    "phase": 2,
+    "requires_login": true,
+    "js_heavy": true
+  }
+]
