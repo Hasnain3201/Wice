@@ -19,8 +19,9 @@ const ROLE_LABELS = {
   consultant: "Consultant",
   client: "Client",
 };
-const PROTECTED_ADMIN_EMAIL =
-  "admin@wice.org";
+const PROTECTED_ADMIN_EMAIL = (
+  import.meta.env.VITE_PROTECTED_ADMIN_EMAIL || ""
+).toLowerCase();
 
 function getAccountType(entry) {
   return (

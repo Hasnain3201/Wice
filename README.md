@@ -1,92 +1,158 @@
-# WICE Platform
-Web app for WICE clients to find consultants and for consultants to manage profiles, chats, projects, and marketplace presence. This repo includes the React/Vite frontend (`WiceApp`) and Firebase Cloud Functions (`functions`).
+<p align="center">
+  <img src="WiceApp/src/assets/Wice_logo.jpg" alt="WICE logo" width="140" />
+</p>
 
-## Prerequisites
-- VS Code: https://code.visualstudio.com/
-- Node.js 18+ (LTS): https://nodejs.org/ (restart terminal after install)
-- Git: https://git-scm.com/downloads
-- Firebase CLI: `npm install -g firebase-tools`
+<h1 align="center">WICE Platform</h1>
+
+<p align="center">
+  A React and Firebase workspace for matching clients with consultants, managing projects and chats, tracking grants, and administering platform activity.
+</p>
+
+<p align="center">
+  <a href="#screenshots">Screenshots</a> |
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#environment">Environment</a> |
+  <a href="#security">Security</a> |
+  <a href="#project-map">Project Map</a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/landing.png" alt="WICE landing page" width="920" />
+</p>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/client-login.png" alt="WICE client login screen" />
+      <br />
+      <strong>Role-based portal entry</strong>
+      <br />
+      Separate client, consultant, and admin paths keep each workflow focused.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/signup.png" alt="WICE signup screen" />
+      <br />
+      <strong>Account creation</strong>
+      <br />
+      New users choose a client or consultant profile before entering the app.
+    </td>
+  </tr>
+</table>
+
+## What WICE Includes
+
+- Consultant marketplace with searchable skills, industries, locations, and availability.
+- Client and consultant dashboards for profiles, projects, saved items, calendar, and messages.
+- GrantHunt workspace for scanning funding opportunities.
+- Admin views for user management, account status, help content, and platform analytics.
+- Firebase Authentication, Firestore, Storage rules, and Cloud Functions support.
 
 ## Quick Start
-1) Clone the repo  
+
 ```bash
-git clone https://github.com/<your-repo>/Wice.git
+git clone https://github.com/<your-org>/<your-repo>.git
 cd Wice/WiceApp
-```
-
-2) Install dependencies (frontend)  
-```bash
 npm install
-```
-Only run `npm install` in `functions/` if you plan to work on Cloud Functions.
-
-3) Firebase CLI (uses existing project `wice-granthunt`)  
-```bash
-firebase login
-firebase use wice-granthunt
-# one-time, from repo root, to deploy Storage rules if needed:
-cd /Users/<yourname>/Wice
-firebase deploy --only storage
-```
-Ensure the bucket `wice-granthunt.firebasestorage.app` exists in Firebase Console → Storage.
-
-4) Environment variables (`WiceApp/.env.local`)  
-```
-VITE_FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
-VITE_FIREBASE_AUTH_DOMAIN=wice-granthunt.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=wice-granthunt
-VITE_FIREBASE_STORAGE_BUCKET=wice-granthunt.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=820103276782
-VITE_FIREBASE_APP_ID=1:820103276782:web:81ca17f5f00b0a92a92bff
-VITE_FIREBASE_MEASUREMENT_ID=G-CFQX982R49
-VITE_PROTECTED_ADMIN_EMAIL=admin@wice.org
-
-FIREBASE_API_KEY=AIzaSyCxGLVbQFj3VoWJXQc5UCdpU16wA23lKuc
-FIREBASE_PROJECT_ID=wice-granthunt
-FIREBASE_IMPORT_EMAIL=admin@wice.org
-FIREBASE_IMPORT_PASSWORD=WICEllc@025!!
-```
-Primary admin (`admin@wice.org`) already exists.
-
-5) Run the app (frontend)  
-```bash
-cd WiceApp
+cp .env.example .env.local
 npm run dev
 ```
-Open the printed URL (e.g., http://localhost:5173) in your browser. Ensure Firebase Auth allowed domains include `localhost`.
 
-## Test Credentials
-- Client: `client@gmail.com / Client123`
-- Consultant: `consultant@gmail.com / Consultant123`
-- Admin: `admin@wice.org / WICEllc@025!!`
-- Client (dummy): `dummy@gmail.com / Test123`
+Open the local Vite URL printed in the terminal, usually `http://localhost:5173`.
 
-## Cloud Functions (optional)
+## Environment
+
+Create `WiceApp/.env.local` from `WiceApp/.env.example` and fill in values from your Firebase project settings or secure team password manager.
+
 ```bash
-cd functions
-firebase emulators:start
-# or deploy:
-firebase deploy --only functions
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+VITE_PROTECTED_ADMIN_EMAIL=
+
+FIREBASE_API_KEY=
+FIREBASE_PROJECT_ID=
+FIREBASE_IMPORT_EMAIL=
+FIREBASE_IMPORT_PASSWORD=
 ```
 
-## Project Structure
-- `WiceApp/` — React/Vite app  
-  - `src/Pages/` — auth, profile builders, marketplace, chat, admin, etc.  
-  - `src/context/` — auth/chat providers  
-  - `src/services/` — Firebase data access  
-  - `src/data/` — static taxonomy/config  
-- `functions/` — Firebase Cloud Functions (admin helpers, etc.)
-- `firestore.rules` / `firestore.indexes.json` — Firestore security rules and indexes
+The crawler reads optional OpenAI settings from the shell environment:
+
+```bash
+export OPENAI_API_KEY="<set-in-your-local-shell-or-secret-manager>"
+export OPENAI_MODEL="gpt-4.1-mini"
+```
 
 ## Common Commands
-- Lint: `npm run lint` (inside `WiceApp`)
-- Build: `npm run build` (inside `WiceApp`)
-- Preview: `npm run preview` (inside `WiceApp`)
 
-## Deployment (frontend)
-Build and deploy via your hosting provider (Firebase Hosting, Netlify, Vercel, etc.):
+Run these from `WiceApp/` unless noted.
+
 ```bash
-cd WiceApp
+npm run dev
+npm run lint
 npm run build
-# deploy the dist/ folder
+npm run preview
 ```
+
+Cloud Functions are optional during frontend work.
+
+```bash
+cd functions
+npm install
+npm run serve
+```
+
+## Firebase
+
+This repo is structured for Firebase-backed development:
+
+- `firebase.json` wires Firestore, Storage rules, and Cloud Functions.
+- `.firebaserc` selects the active Firebase project for deploy commands.
+- `firestore.rules`, `firestore.indexes.json`, and `storage.rules` live at the repo root.
+- `functions/` contains Firebase Admin helper functions.
+
+For deployments, authenticate with Firebase CLI and select the intended project before deploying.
+
+```bash
+firebase login
+firebase use <firebase-project-id>
+firebase deploy --only firestore,storage,functions
+```
+
+## Security
+
+No production credentials, personal passwords, import passwords, API keys, private tokens, or demo account passwords should be committed to this repository or written into README files.
+
+- Keep local secrets in `WiceApp/.env.local`; it is ignored by git.
+- Keep shared credentials in a password manager or deployment secret store.
+- Share demo credentials privately instead of documenting passwords in source control.
+- Rotate any credential that was previously copied into docs, commits, screenshots, logs, or crawler output.
+- Review generated crawler output before committing. HTTP headers, cookies, and debug logs can contain sensitive values.
+
+## Project Map
+
+```text
+.
++-- WiceApp/                  # React/Vite frontend
+|   +-- src/Pages/            # Client, consultant, admin, chat, profile, and project views
+|   +-- src/Components/       # Shared UI components
+|   +-- src/context/          # Auth and chat providers
+|   +-- src/services/         # Firebase data access helpers
+|   +-- src/data/             # Taxonomy, grant, skills, and terms data
+|   +-- src/crawler/          # Grant source crawler utilities
++-- functions/                # Firebase Cloud Functions
++-- docs/screenshots/         # README screenshots captured from the app
++-- firestore.rules           # Firestore security rules
++-- firestore.indexes.json    # Firestore index definitions
++-- storage.rules             # Firebase Storage rules
++-- firebase.json             # Firebase project configuration
+```
+
+## Documentation Notes
+
+The screenshots in `docs/screenshots/` were captured from public, unauthenticated app screens so they do not expose account records, private messages, grants, or admin data.
