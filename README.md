@@ -22,6 +22,8 @@
 
 ## Screenshots
 
+### Public Entry
+
 <table>
   <tr>
     <td width="50%">
@@ -37,6 +39,59 @@
       <strong>Account creation</strong>
       <br />
       New users choose a client or consultant profile before entering the app.
+    </td>
+  </tr>
+</table>
+
+### Signed-In Workflows
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/client-dashboard.png" alt="WICE client dashboard" />
+      <br />
+      <strong>Client dashboard</strong>
+      <br />
+      Clients can jump into consultations, messages, marketplace discovery, and recent updates.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/consultant-workspace.png" alt="WICE consultant workspace" />
+      <br />
+      <strong>Consultant workspace</strong>
+      <br />
+      Consultants can scan projects, unread messages, help tickets, and meeting activity.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/profile-builder.png" alt="WICE consultant profile builder" />
+      <br />
+      <strong>Profile builder</strong>
+      <br />
+      New consultants are guided through the required profile setup before entering the platform.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/grant-hunt.png" alt="WICE GrantHunt workspace" />
+      <br />
+      <strong>GrantHunt</strong>
+      <br />
+      Funding opportunities can be searched, filtered, reviewed, and saved from one workspace.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/projects.png" alt="WICE projects workspace" />
+      <br />
+      <strong>Projects</strong>
+      <br />
+      Consultants and clients can track active work and project collaboration.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/settings.png" alt="WICE settings screen" />
+      <br />
+      <strong>Settings</strong>
+      <br />
+      Users can manage account security and notification preferences.
     </td>
   </tr>
 </table>
@@ -155,4 +210,4 @@ No production credentials, personal passwords, import passwords, API keys, priva
 
 ## Documentation Notes
 
-The screenshots in `docs/screenshots/` were captured from public, unauthenticated app screens so they do not expose account records, private messages, grants, or admin data.
+The screenshots in `docs/screenshots/` were captured from public screens and locally generated dummy sessions. They do not use real account records, private messages, passwords, or admin data.
